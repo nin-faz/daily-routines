@@ -1,0 +1,43 @@
+// Utilitaires pour la gestion des dates (formatage, comparaison, etc.)
+
+import { startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, subDays } from "date-fns";
+import type { Locale } from "date-fns";
+
+/**
+ * Formate une date JS en 'YYYY-MM-DD' (date locale, sans fuseau horaire)
+ */
+export function formatDateYMD(date: Date): string {
+  const pad = (n: number) => n.toString().padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+}
+
+// Retourne un tableau de dates (string) pour le mois courant, formatées YMD
+export function getDatesOfCurrentMonth(fromDate = new Date()): string[] {
+  const start = startOfMonth(fromDate);
+  const end = endOfMonth(fromDate);
+  return eachDayOfInterval({ start, end }).map(formatDateYMD);
+}
+
+// Retourne un tableau de dates (Date) pour la semaine de la date donnée (lundi à dimanche)
+export function getWeekDays(date: Date, options?: { locale?: Locale; weekStartsOn?: number }): Date[] {
+  // date-fns expects weekStartsOn as Day (0-6), so cast if provided
+  const opts =
+    options ? { ...options, weekStartsOn: options.weekStartsOn as 0 | 1 | 2 | 3 | 4 | 5 | 6 | undefined } : undefined;
+  const weekStart = startOfWeek(date, opts);
+  const weekEnd = endOfWeek(date, opts);
+  return eachDayOfInterval({ start: weekStart, end: weekEnd });
+}
+
+// Retourne un tableau de dates (string) pour les n derniers jours, formatées YMD
+export function getLastNDates(n: number, fromDate = new Date()): string[] {
+  return Array.from({ length: n }, (_, i) => {
+    const date = subDays(fromDate, n - 1 - i);
+    return formatDateYMD(date);
+  });
+}
+
+// Retourne un tableau de dates (string YMD) entre deux dates incluses
+export function getDatesBetween(startDate: Date, endDate: Date): string[] {
+  if (startDate > endDate) return [];
+  return eachDayOfInterval({ start: startDate, end: endDate }).map(formatDateYMD);
+}

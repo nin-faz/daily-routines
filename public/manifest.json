@@ -1,0 +1,18 @@
+{
+  "name": "Daily Routines",
+  "short_name": "Daily Routines",
+  "description": "Gérez vos routines et projets quotidiens",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ff6b35",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/logo.webp",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
