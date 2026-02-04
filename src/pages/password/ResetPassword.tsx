@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { passwordSchema } from "@/lib/validationSchemas";
 import { Button } from "@/components/ui/button";
 import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
@@ -14,113 +15,135 @@ import {
 } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Lock, CheckCircle } from "lucide-react";
-import { z } from "zod";
-
-const passwordSchema = z
-  .string()
-  .min(6, "Le mot de passe doit contenir au moins 6 caractères");
 
 const ResetPassword = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  const [errors, setErrors] = useState<{
-    password?: string;
-    confirmPassword?: string;
-  }>({});
+  const [accessToken, setAccessToken] = useState<string | null>(null);
+  const [refreshToken, setRefreshToken] = useState<string | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  // Extraire les tokens du HASH de l'URL (#access_token=...&refresh_token=...)
   useEffect(() => {
-    const checkSession = async () => {
-      // 1. On attend un tout petit peu que Supabase traite le lien dans l'URL
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
+    const hashParams = new URLSearchParams(window.location.hash.substring(1));
+    const token = hashParams.get("access_token");
+    const refresh = hashParams.get("refresh_token");
 
-      // 2. On regarde si l'URL contient une erreur d'expiration (OTP_EXPIRED)
-      const hash = window.location.hash;
-      if (
-        hash.includes("error_code=otp_expired") ||
-        hash.includes("error=access_denied")
-      ) {
+    if (token && refresh) {
+      setAccessToken(token);
+      setRefreshToken(refresh);
+    } else {
+      toast({
+        title: "Accès refusé",
+        description:
+          "Lien de récupération invalide. Veuillez utiliser le lien reçu par email.",
+        variant: "destructive",
+      });
+      navigate("/forgot-password");
+    }
+  }, [navigate, toast]);
+
+  // Soumission: mise à jour du mot de passe via Supabase
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!accessToken) {
+      toast({
+        title: "Erreur",
+        description:
+          "Token manquant. Veuillez utiliser le lien reçu par email.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      toast({
+        title: "Erreur",
+        description: "Les mots de passe ne correspondent pas",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validation avec Zod
+    const passwordResult = passwordSchema.safeParse(password);
+    if (!passwordResult.success) {
+      toast({
+        title: "Erreur",
+        description: passwordResult.error.errors[0].message,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      if (!refreshToken) {
         toast({
-          title: "Lien expiré",
-          description:
-            "Ce lien de récupération n'est plus valide. Veuillez en demander un nouveau.",
+          title: "Erreur",
+          description: "Session expirée. Token manquant.",
           variant: "destructive",
         });
         navigate("/forgot-password");
         return;
       }
 
-      // 3. Si pas de session et pas d'erreur, on redirige car l'accès est interdit
-      if (!session) {
+      console.log("🔐 Création session temporaire...");
+      // Créer une session temporaire UNIQUEMENT pour updateUser
+      const { error: sessionError } = await supabase.auth.setSession({
+        access_token: accessToken,
+        refresh_token: refreshToken,
+      });
+
+      if (sessionError) {
+        console.error("❌ Erreur setSession:", sessionError);
         toast({
-          title: "Accès refusé",
-          description:
-            "Session introuvable. Veuillez utiliser le lien reçu par email.",
+          title: "Lien expiré",
+          description: "Ce lien de récupération n'est plus valide.",
           variant: "destructive",
         });
         navigate("/forgot-password");
+        return;
       }
-    };
 
-    checkSession();
-  }, [navigate, toast]);
-
-  const validateForm = () => {
-    const newErrors: { password?: string; confirmPassword?: string } = {};
-
-    const passwordResult = passwordSchema.safeParse(password);
-    if (!passwordResult.success) {
-      newErrors.password = passwordResult.error.errors[0].message;
-    }
-
-    if (password !== confirmPassword) {
-      newErrors.confirmPassword = "Les mots de passe ne correspondent pas";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!validateForm()) return;
-
-    setIsLoading(true);
-
-    try {
-      console.log("Début de la mise à jour du mot de passe...");
-
-      // 1. On s'assure d'avoir la session la plus récente
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (!session) throw new Error("Session perdue. Veuillez recommencer.");
-
+      console.log("✅ Session temporaire créée");
+      // Mettre à jour le mot de passe
       const { error } = await supabase.auth.updateUser({
         password: password,
       });
 
-      console.log("Réponse reçue:", error ? "Erreur" : "Succès");
-
-      if (error) {
-        throw error;
-      }
-
-      // Déconnexion pour forcer l'utilisateur à se reconnecter avec le nouveau mot de passe
+      console.log("🚪 Déconnexion immédiate...");
+      // Déconnecter IMMÉDIATEMENT pour ne pas laisser l'utilisateur connecté
       await supabase.auth.signOut();
 
-      setIsSuccess(true);
-    } catch (error: any) {
-      console.error("Erreur lors de la mise à jour:", error);
+      if (error) {
+        toast({
+          title: "Erreur",
+          description: error.message,
+          variant: "destructive",
+        });
+      } else {
+        setIsSuccess(true);
+        toast({
+          title: "Succès",
+          description: "Votre mot de passe a été mis à jour avec succès.",
+        });
+
+        // Rediriger vers la page de connexion après 2 secondes
+        setTimeout(() => {
+          navigate("/auth");
+        }, 2000);
+      }
+    } catch (err: any) {
+      console.error("Unexpected error:", err);
       toast({
         title: "Erreur",
-        description:
-          error.message || "Une erreur est survenue. Veuillez réessayer.",
+        description: "Une erreur inattendue s'est produite.",
         variant: "destructive",
       });
     } finally {
@@ -184,9 +207,6 @@ const ResetPassword = () => {
                 disabled={isLoading}
                 autoComplete="new-password"
               />
-              {errors.password && (
-                <p className="text-sm text-destructive">{errors.password}</p>
-              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="confirmPassword">Confirmer le mot de passe</Label>
@@ -198,11 +218,6 @@ const ResetPassword = () => {
                 disabled={isLoading}
                 autoComplete="new-password"
               />
-              {errors.confirmPassword && (
-                <p className="text-sm text-destructive">
-                  {errors.confirmPassword}
-                </p>
-              )}
             </div>
           </CardContent>
           <CardFooter>

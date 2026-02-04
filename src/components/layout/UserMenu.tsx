@@ -1,5 +1,6 @@
-import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "@/hooks/useAuth";
+import { Link } from "react-router-dom";
+import { useAuth } from "@/context/AuthContext";
+import { useUser } from "@/context/UserContext";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -11,7 +12,8 @@ import {
 import { User, LogOut, Shield, Settings } from "lucide-react";
 
 const UserMenu = () => {
-  const { user, isAdmin, signOut } = useAuth();
+  const { user, signOut } = useAuth();
+  const { isAdmin } = useUser();
 
   const handleSignOut = async () => {
     await signOut();

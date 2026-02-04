@@ -1,6 +1,7 @@
 import { ReactNode } from "react";
 import { Navigate } from "react-router-dom";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/context/AuthContext";
+import { useUser } from "@/context/UserContext";
 import Loader from "@/components/shared/Loader";
 import FloatingHelp from "@/components/shared/FloatingHelp";
 
@@ -13,7 +14,8 @@ const ProtectedRoute = ({
   children,
   requireAdmin = false,
 }: ProtectedRouteProps) => {
-  const { user, loading, isAdmin } = useAuth();
+  const { user, loading } = useAuth();
+  const { isAdmin } = useUser();
 
   if (loading) {
     return <Loader />;
@@ -21,7 +23,7 @@ const ProtectedRoute = ({
 
   if (!user) {
     window.location.href = "/auth";
-    return <Loader />; // Affiche un loader pendant le redirectionnement
+    return <Loader />;
   }
 
   if (requireAdmin && !isAdmin) {

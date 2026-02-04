@@ -221,6 +221,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         signIn,
         signUp,
         signOut,
+        resetPassword,
+        updatePassword,
       }}
     >
       {children}

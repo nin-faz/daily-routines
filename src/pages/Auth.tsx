@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
@@ -17,12 +17,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, LogIn, UserPlus, Timer } from "lucide-react";
 import Loader from "@/components/shared/Loader";
-import { z } from "zod";
-
-const emailSchema = z.string().email("Email invalide");
-const passwordSchema = z
-  .string()
-  .min(6, "Le mot de passe doit contenir au moins 6 caractères");
+import { emailSchema, passwordSchema } from "@/lib/validationSchemas";
 
 const Auth = () => {
   const [email, setEmail] = useState("");
@@ -30,7 +25,7 @@ const Auth = () => {
   const [displayName, setDisplayName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string }>(
-    {}
+    {},
   );
 
   const { signIn, signUp, user, loading } = useAuth();

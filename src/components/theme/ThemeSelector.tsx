@@ -6,7 +6,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useTheme, type ThemePalette } from "@/hooks/useTheme";
+import { useTheme, type ThemePalette } from "@/context/ThemeContext";
 import { cn } from "@/lib/utils";
 
 const themes: { value: ThemePalette; label: string; colors: string[] }[] = [
