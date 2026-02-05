@@ -117,18 +117,36 @@ const Routines = () => {
   // Retourne les infos d'affichage (icône, label, couleur) selon le moment de la journée
   const getTimeOfDayLabel = (timeOfDay: TimeOfDay) => {
     const labels = {
-      [TimeOfDay.Morning]: { icon: Sunrise, label: "Matin", color: "text-amber-500" },
-      [TimeOfDay.Afternoon]: { icon: Sun, label: "Après-midi", color: "text-orange-500" },
-      [TimeOfDay.Evening]: { icon: Moon, label: "Soir", color: "text-indigo-500" },
+      [TimeOfDay.Morning]: {
+        icon: Sunrise,
+        label: "Matin",
+        color: "text-amber-500",
+      },
+      [TimeOfDay.Afternoon]: {
+        icon: Sun,
+        label: "Après-midi",
+        color: "text-orange-500",
+      },
+      [TimeOfDay.Evening]: {
+        icon: Moon,
+        label: "Soir",
+        color: "text-indigo-500",
+      },
     };
     return labels[timeOfDay];
   };
 
   // Regroupe les routines par moment de la journée (matin, après-midi, soir, ou non taguée)
   const groupedRoutines = {
-    [TimeOfDay.Morning]: routines.filter((r) => r.timeOfDay === TimeOfDay.Morning),
-    [TimeOfDay.Afternoon]: routines.filter((r) => r.timeOfDay === TimeOfDay.Afternoon),
-    [TimeOfDay.Evening]: routines.filter((r) => r.timeOfDay === TimeOfDay.Evening),
+    [TimeOfDay.Morning]: routines.filter(
+      (r) => r.timeOfDay === TimeOfDay.Morning,
+    ),
+    [TimeOfDay.Afternoon]: routines.filter(
+      (r) => r.timeOfDay === TimeOfDay.Afternoon,
+    ),
+    [TimeOfDay.Evening]: routines.filter(
+      (r) => r.timeOfDay === TimeOfDay.Evening,
+    ),
     untagged: routines.filter((r) => !r.timeOfDay),
   };
 
@@ -154,7 +172,6 @@ const Routines = () => {
             )}
           </div>
         </header>
-
         <main className="space-y-6">
           {isLoading ? (
             <RoutineListSkeleton />
@@ -195,7 +212,9 @@ const Routines = () => {
                               key={routine.id}
                               routine={routine}
                               status={status}
-                              onToggleComplete={() => handleToggleComplete(routine.id)}
+                              onToggleComplete={() =>
+                                handleToggleComplete(routine.id)
+                              }
                               onSkipToday={() => handleSkipToday(routine.id)}
                               onEdit={() => handleEditRoutine(routine)}
                               onDelete={() => handleDeleteRoutine(routine.id)}
@@ -243,10 +262,9 @@ const Routines = () => {
             </>
           )}
         </main>
-
         <OnboardingDialog />
-
         <CreateRoutineDialog onCreateRoutine={handleCreateRoutine} />
+
         {editingRoutine && (
           <CreateRoutineDialog
             routine={editingRoutine}

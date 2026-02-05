@@ -43,7 +43,7 @@ Une application web moderne pour gérer vos routines quotidiennes et projets, co
 - **États vides** avec messages et illustrations
 - **PWA installable** sur mobile et desktop
 - **Notifications push** avec demande de permission et planification
-- **Aide flottante & info contextuelle**
+- **Assistant IA de feedback** — Chatbot conversationnel pour recueillir les avis utilisateurs (intégré avec Netlify Forms)
 - **Sélecteur de thème & mode sombre/clair**
 - **Accessibilité basique** : attributs ARIA et composants compatibles (focus, labels)
 
@@ -78,6 +78,7 @@ npm run dev
 - **PWA** — Installation mobile & notifications
 - **sonner** — toasts / notifications UI
 - **zod** — validation / schémas
+- **Netlify Forms** — Collecte de feedbacks utilisateurs
 
 Consultez `package.json` pour la liste complète des dépendances et versions.
 
@@ -119,7 +120,7 @@ src/
 │   ├── layout/                 # Header, Navigation, ProtectedRoute, UserMenu
 │   ├── project/                # Kanban, EditProjectDialog, DayDeadlinesList
 │   ├── routine/                # RoutineCard, Timer, CreateRoutineDialog, DayRoutinesList
-│   ├── shared/                 # EmptyState, OnboardingDialog, FloatingHelp, Loader
+│   ├── shared/                 # EmptyState, OnboardingDialog, Loader
 │   ├── stats/                  # CalendarHeatmap, WeeklyView, StatsSkeleton
 │   ├── theme/                  # ThemeSelector, ThemeToggle
 │   ├── ui/                     # primitives shadcn/ui et Radix wrappers

@@ -48,107 +48,107 @@ const App = () => (
               future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
             >
               <Suspense fallback={<Loader className="py-12" />}>
-              <Routes>
-                <Route
-                  path="/auth"
-                  element={
-                    <GuestRoute>
-                      <Auth />
-                    </GuestRoute>
-                  }
-                />
-                <Route
-                  path="/forgot-password"
-                  element={
-                    <GuestRoute>
-                      <ForgotPassword />
-                    </GuestRoute>
-                  }
-                />
-                <Route path="/reset-password" element={<ResetPassword />} />
-                <Route
-                  path="/"
-                  element={
-                    <ProtectedRoute>
-                      <Routines />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/calendar"
-                  element={
-                    <ProtectedRoute>
-                      <Calendar />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/projects"
-                  element={
-                    <ProtectedRoute>
-                      <Projects />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/stats"
-                  element={
-                    <ProtectedRoute>
-                      <Stats />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/routine/:routineId"
-                  element={
-                    <ProtectedRoute>
-                      <RoutineDetails />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/timer/:routineId"
-                  element={
-                    <ProtectedRoute>
-                      <TimerView />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/profile"
-                  element={
-                    <ProtectedRoute>
-                      <Profile />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/admin"
-                  element={
-                    <ProtectedRoute requireAdmin>
-                      <AdminDashboard />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/admin/users"
-                  element={
-                    <ProtectedRoute requireAdmin>
-                      <AdminUsers />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/admin/projects"
-                  element={
-                    <ProtectedRoute requireAdmin>
-                      <AdminProjects />
-                    </ProtectedRoute>
-                  }
-                />
-                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
+                <Routes>
+                  <Route
+                    path="/auth"
+                    element={
+                      <GuestRoute>
+                        <Auth />
+                      </GuestRoute>
+                    }
+                  />
+                  <Route
+                    path="/forgot-password"
+                    element={
+                      <GuestRoute>
+                        <ForgotPassword />
+                      </GuestRoute>
+                    }
+                  />
+                  <Route path="/reset-password" element={<ResetPassword />} />
+                  <Route
+                    path="/"
+                    element={
+                      <ProtectedRoute>
+                        <Routines />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/calendar"
+                    element={
+                      <ProtectedRoute>
+                        <Calendar />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/projects"
+                    element={
+                      <ProtectedRoute>
+                        <Projects />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/stats"
+                    element={
+                      <ProtectedRoute>
+                        <Stats />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/routine/:routineId"
+                    element={
+                      <ProtectedRoute>
+                        <RoutineDetails />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/timer/:routineId"
+                    element={
+                      <ProtectedRoute>
+                        <TimerView />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/profile"
+                    element={
+                      <ProtectedRoute>
+                        <Profile />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin"
+                    element={
+                      <ProtectedRoute requireAdmin>
+                        <AdminDashboard />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/users"
+                    element={
+                      <ProtectedRoute requireAdmin>
+                        <AdminUsers />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/projects"
+                    element={
+                      <ProtectedRoute requireAdmin>
+                        <AdminProjects />
+                      </ProtectedRoute>
+                    }
+                  />
+                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
               </Suspense>
             </BrowserRouter>
           </CustomThemeProvider>

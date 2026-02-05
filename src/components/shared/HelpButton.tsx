@@ -8,22 +8,19 @@ import {
 import { Button } from "@/components/ui/button";
 import { HelpCircle } from "lucide-react";
 
-export default function FloatingHelp() {
+export default function HelpButton() {
   const [open, setOpen] = useState(false);
 
   return (
-    <div>
-      <div className="fixed left-4 bottom-20 z-50">
-        <Button
-          variant="secondary"
-          size="icon"
-          className="rounded-full p-2 shadow-lg"
-          onClick={() => setOpen(true)}
-          aria-label="Aide"
-        >
-          <HelpCircle className="h-5 w-5" />
-        </Button>
-      </div>
+    <>
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={() => setOpen(true)}
+        aria-label="Aide"
+      >
+        <HelpCircle className="h-5 w-5" />
+      </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-lg max-h-[70vh] overflow-auto">
@@ -87,6 +84,6 @@ export default function FloatingHelp() {
           </div>
         </DialogContent>
       </Dialog>
-    </div>
+    </>
   );
 }

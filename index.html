@@ -38,6 +38,13 @@
   </head>
 
   <body>
+    <!-- Formulaire caché pour Netlify Forms -->
+    <form name="avis-utilisateurs" method="POST" data-netlify="true" hidden>
+      <input type="hidden" name="form-name" value="avis-utilisateurs" />
+      <input type="text" name="name" />
+      <textarea name="feedback"></textarea>
+    </form>
+
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
