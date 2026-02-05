@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { routineStorage, getTodayString } from "@/integrations/supabase/routines";
 import { Routine } from "@/types/routine";
+import { toast } from "sonner";
 
 export const useRoutines = () => {
   const queryClient = useQueryClient();
@@ -38,9 +39,50 @@ export const useRoutines = () => {
   const toggleComplete = useMutation({
     mutationFn: (routineId: string) =>
       routineStorage.toggleRoutineComplete(routineId, getTodayString()),
-    onSuccess: () => {
-      // Invalide à la fois les routines ET les statuts pour rafraîchir l'affichage
-      queryClient.invalidateQueries({ queryKey: ["routines"] });
+    // Optimistic update pour un feedback instantané
+    onMutate: async (routineId: string) => {
+      // Annule les requêtes en cours pour éviter qu'elles écrasent notre update optimiste
+      await queryClient.cancelQueries({ queryKey: ["routine-statuses", today] });
+      
+      // Snapshot de l'état actuel pour pouvoir rollback en cas d'erreur
+      const previousStatuses = queryClient.getQueryData<typeof statuses>(["routine-statuses", today]);
+      
+      // Update optimiste : met à jour immédiatement l'UI
+      queryClient.setQueryData<typeof statuses>(["routine-statuses", today], (old = []) => {
+        const existingStatus = old.find(s => s.routineId === routineId);
+        
+        if (existingStatus) {
+          // Si le statut existe, toggle la complétion ET force skipped à false
+          return old.map(s => 
+            s.routineId === routineId 
+              ? { ...s, completed: !s.completed, skipped: false, completedAt: !s.completed ? new Date().toISOString() : undefined }
+              : s
+          );
+        } else {
+          // Si pas de statut, crée un nouveau statut complété
+          return [...old, {
+            id: crypto.randomUUID(),
+            routineId,
+            date: today,
+            completed: true,
+            skipped: false,
+            completedAt: new Date().toISOString(),
+          }];
+        }
+      });
+      
+      return { previousStatuses };
+    },
+    // En cas d'erreur, rollback vers l'état précédent
+    onError: (_err, _routineId, context) => {
+      if (context?.previousStatuses) {
+        queryClient.setQueryData(["routine-statuses", today], context.previousStatuses);
+      }
+      toast.error("Impossible de modifier le statut. Veuillez réessayer.");
+    },
+    // Dans tous les cas, refetch pour synchroniser avec le serveur
+    onSettled: () => {
+      queryClient.refetchQueries({ queryKey: ["routine-statuses", today] });
       queryClient.invalidateQueries({ queryKey: ["routine-statuses"] });
     },
   });
@@ -48,9 +90,44 @@ export const useRoutines = () => {
   const skipToday = useMutation({
     mutationFn: (routineId: string) =>
       routineStorage.skipRoutineToday(routineId, getTodayString()),
-    onSuccess: () => {
-      // Invalide à la fois les routines ET les statuts pour rafraîchir l'affichage
-      queryClient.invalidateQueries({ queryKey: ["routines"] });
+    // Optimistic update pour un feedback instantané
+    onMutate: async (routineId: string) => {
+      await queryClient.cancelQueries({ queryKey: ["routine-statuses", today] });
+      
+      const previousStatuses = queryClient.getQueryData<typeof statuses>(["routine-statuses", today]);
+      
+      queryClient.setQueryData<typeof statuses>(["routine-statuses", today], (old = []) => {
+        const existingStatus = old.find(s => s.routineId === routineId);
+        
+        if (existingStatus) {
+          // Toggle le statut "skipped" ET force completed à false + supprime completedAt
+          return old.map(s => 
+            s.routineId === routineId 
+              ? { ...s, skipped: !s.skipped, completed: false, completedAt: undefined }
+              : s
+          );
+        } else {
+          // Crée un nouveau statut "skipped"
+          return [...old, {
+            id: crypto.randomUUID(),
+            routineId,
+            date: today,
+            completed: false,
+            skipped: true,
+          }];
+        }
+      });
+      
+      return { previousStatuses };
+    },
+    onError: (_err, _routineId, context) => {
+      if (context?.previousStatuses) {
+        queryClient.setQueryData(["routine-statuses", today], context.previousStatuses);
+      }
+      toast.error("Impossible de modifier le statut. Veuillez réessayer.");
+    },
+    onSettled: () => {
+      queryClient.refetchQueries({ queryKey: ["routine-statuses", today] });
       queryClient.invalidateQueries({ queryKey: ["routine-statuses"] });
     },
   });
@@ -58,14 +135,60 @@ export const useRoutines = () => {
   const updateRoutine = useMutation({
     mutationFn: ({ id, data }: { id: string; data: Routine }) =>
       routineStorage.updateRoutine(id, data),
-    onSuccess: () => {
+    // Optimistic update : modification instantanée dans l'UI
+    onMutate: async ({ id, data }) => {
+      // Annule les requêtes en cours
+      await queryClient.cancelQueries({ queryKey: ["routines"] });
+      
+      // Snapshot pour rollback
+      const previousRoutines = queryClient.getQueryData<Routine[]>(["routines"]);
+      
+      // Met à jour immédiatement la routine dans l'UI
+      queryClient.setQueryData<Routine[]>(["routines"], (old = []) =>
+        old.map(routine => routine.id === id ? data : routine)
+      );
+      
+      return { previousRoutines };
+    },
+    // En cas d'erreur, restaure l'état précédent
+    onError: (_err, _variables, context) => {
+      if (context?.previousRoutines) {
+        queryClient.setQueryData(["routines"], context.previousRoutines);
+      }
+      toast.error("Impossible de modifier la routine. Veuillez réessayer.");
+    },
+    // Resynchronise avec le serveur
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["routines"] });
     },
   });
 
   const deleteRoutine = useMutation({
     mutationFn: (routineId: string) => routineStorage.deleteRoutine(routineId),
-    onSuccess: () => {
+    // Optimistic update : suppression instantanée de l'UI
+    onMutate: async (routineId: string) => {
+      // Annule les requêtes en cours
+      await queryClient.cancelQueries({ queryKey: ["routines"] });
+      
+      // Snapshot pour rollback
+      const previousRoutines = queryClient.getQueryData<Routine[]>(["routines"]);
+      
+      // Supprime immédiatement la routine de l'UI
+      queryClient.setQueryData<Routine[]>(["routines"], (old = []) => 
+        old.filter(routine => routine.id !== routineId)
+      );
+      
+      return { previousRoutines };
+    },
+    // En cas d'erreur, restaure la liste et affiche une notification
+    onError: (_err, _routineId, context) => {
+      if (context?.previousRoutines) {
+        queryClient.setQueryData(["routines"], context.previousRoutines);
+      }
+      toast.error("Impossible de supprimer la routine. Veuillez réessayer.");
+    },
+    // Resynchronise avec le serveur
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["routines"] });
     },
   });

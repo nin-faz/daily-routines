@@ -161,7 +161,6 @@ export const routineStorage = {
 
   /**
    * Gère le clic sur la checkbox d'une routine :
-   * - Si la routine est sautée (skipped), ne fait rien (on ne peut pas cocher une routine sautée)
    * - Si la routine est complétée, décocher = supprimer le statut
    * - Si pas de statut, cocher = créer un statut "completed"
    */
@@ -173,10 +172,7 @@ export const routineStorage = {
 
     const existing = await this.getTodayStatus(routineId, today);
 
-    if (existing?.skipped) {
-      // Si la routine est sautée, cliquer sur la checkbox ne fait rien
-      return;
-    } else if (existing?.completed) {
+    if (existing?.completed) {
       // Si déjà complétée, décocher = supprimer le statut
       const { error } = await supabase
         .from("routine_statuses")
@@ -223,9 +219,6 @@ export const routineStorage = {
       if (error) {
         throw error;
       }
-    } else if (hasTodayStatus && hasTodayStatus.completed) {
-      // Si complété, on ne peut pas sauter
-      return;
     } else {
       // Sinon on crée un nouveau statut "sauté"
       const { error } = await supabase.from("routine_statuses").insert({

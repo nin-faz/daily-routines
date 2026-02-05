@@ -71,31 +71,36 @@ const Stats = () => {
     };
   });
 
-  /** Taux global : pour chaque jour, on compte toutes les routines existantes ce jour-là (même sans statut) */
-  let totalRoutinesCompleted = 0;
-  let totalRoutines = 0;
-  firstToLastDate.forEach((date) => {
-    const activeRoutines = getActiveRoutinesAtDate(routines, statuses, date);
-    totalRoutines += activeRoutines.length;
-    activeRoutines.forEach((routine) => {
-      const status = statuses.find(
-        (statusForRoutine) =>
-          statusForRoutine.date === date &&
-          statusForRoutine.routineId === routine.id,
-      );
-      if (status && status.completed) {
-        totalRoutinesCompleted++;
-      }
-    });
+  /** Taux global : Taux de complétion d'aujourd'hui uniquement */
+  const todayYMD = formatDateYMD(today);
+
+  // Compte les routines actives aujourd'hui
+  const todayActiveRoutines = routines.filter((routine) => {
+    const routineCreatedDate = formatDateYMD(
+      typeof routine.createdAt === "string"
+        ? new Date(routine.createdAt)
+        : routine.createdAt,
+    );
+    return routineCreatedDate <= todayYMD;
   });
 
-  /** Taux de complétion global : Taux de routines */
+  // Compte combien sont complétées aujourd'hui
+  const todayCompletedRoutines = todayActiveRoutines.filter((routine) => {
+    const status = statuses.find(
+      (s) => s.routineId === routine.id && s.date === todayYMD,
+    );
+    return status?.completed;
+  });
+
+  /** Taux de complétion global : Taux de routines d'aujourd'hui */
   const overallCompletionRate =
-    totalRoutines > 0
-      ? Math.round((totalRoutinesCompleted / totalRoutines) * 100)
+    todayActiveRoutines.length > 0
+      ? Math.round(
+          (todayCompletedRoutines.length / todayActiveRoutines.length) * 100,
+        )
       : 0;
 
-  // Génère toutes les dates depuis la première routine jusqu'à aujourd'hui
+  // Génère toutes les dates depuis la première routine jusqu'à aujourd'hui (pour les streaks)
   const allRoutineDates = (() => {
     if (routines.length === 0) return [];
     const firstDate = routines.reduce((min, r) => {
@@ -103,7 +108,6 @@ const Stats = () => {
         typeof r.createdAt === "string" ? new Date(r.createdAt) : r.createdAt;
       return d < min ? d : min;
     }, new Date());
-    const todayYMD = formatDateYMD(today);
     const dates: string[] = [];
     let d = new Date(firstDate);
     while (formatDateYMD(d) <= todayYMD) {

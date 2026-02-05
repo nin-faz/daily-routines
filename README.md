@@ -90,7 +90,7 @@ Consultez `package.json` pour la liste complète des dépendances et versions.
 npx supabase login
 
 # Générer les types TypeScript
-npx supabase gen types typescript --project-id cfqmqkaumxtyagllutfa > src/integrations/supabase/types.ts
+npx supabase gen types typescript --project-id gaytlowwebmmycswnshu > src/integrations/supabase/types.ts
 
 # Appliquer les migrations
 npx supabase db push

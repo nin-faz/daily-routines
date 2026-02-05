@@ -44,6 +44,7 @@ const RoutineCard = ({
             <Checkbox
               checked={isCompleted}
               onCheckedChange={onToggleComplete}
+              disabled={isSkipped}
               className="flex-shrink-0"
             />
 
@@ -89,6 +90,7 @@ const RoutineCard = ({
               variant="ghost"
               size="sm"
               onClick={onSkipToday}
+              disabled={isCompleted}
               className={cn(
                 "h-7 w-7 sm:h-8 sm:w-8 p-0",
                 isSkipped && "text-primary bg-primary/10",
