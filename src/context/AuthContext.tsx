@@ -36,16 +36,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // onAuthStateChange se déclenche immédiatement au montage
-    // et gère tous les changements d'état sans auto-créer de session depuis l'URL
+    /**
+     * onAuthStateChange se déclenche immédiatement au montage
+     * et gère tous les changements d'état sans auto-créer de session depuis l'URL
+     */
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      console.log(
-        "🔐 Auth state change:",
-        _event,
-        session ? "session active" : "no session",
-      );
       setUser(session?.user ?? null);
       setSession(session);
       setLoading(false);
@@ -65,7 +62,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       email,
       password,
       options: {
-        // emailRedirectTo: `${window.location.origin}/`,
         data: {
           display_name: displayName,
         },
@@ -83,7 +79,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const signOut = async () => {
-    console.log("🚪 Déconnexion en cours...");
     const { error } = await supabase.auth.signOut();
     if (error) {
       console.error("❌ Erreur lors de la déconnexion:", error);

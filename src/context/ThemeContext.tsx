@@ -1,192 +1,84 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { useUser } from "./UserContext";
-
-export type ThemePalette =
-  | "orange"
-  | "blue"
-  | "green"
-  | "purple"
-  | "pink"
-  | "cyan";
-
-const themeColors: Record<
-  ThemePalette,
-  {
-    light: Record<string, string>;
-    dark: Record<string, string>;
-  }
-> = {
-  orange: {
-    light: {
-      "--primary": "16 90% 58%",
-      "--secondary": "200 80% 60%",
-      "--gradient-primary":
-        "linear-gradient(135deg, hsl(16 90% 58%), hsl(30 95% 65%))",
-      "--ring": "16 90% 58%",
-    },
-    dark: {
-      "--primary": "16 90% 58%",
-      "--secondary": "200 80% 60%",
-      "--gradient-primary":
-        "linear-gradient(135deg, hsl(16 90% 58%), hsl(30 95% 65%))",
-      "--ring": "16 90% 58%",
-    },
-  },
-  blue: {
-    light: {
-      "--primary": "217 91% 60%",
-      "--secondary": "142 76% 55%",
-      "--gradient-primary":
-        "linear-gradient(135deg, hsl(217 91% 60%), hsl(200 100% 65%))",
-      "--ring": "217 91% 60%",
-    },
-    dark: {
-      "--primary": "217 91% 60%",
-      "--secondary": "142 76% 55%",
-      "--gradient-primary":
-        "linear-gradient(135deg, hsl(217 91% 60%), hsl(200 100% 65%))",
-      "--ring": "217 91% 60%",
-    },
-  },
-  green: {
-    light: {
-      "--primary": "142 76% 45%",
-      "--secondary": "48 96% 53%",
-      "--gradient-primary":
-        "linear-gradient(135deg, hsl(142 76% 45%), hsl(160 84% 60%))",
-      "--ring": "142 76% 45%",
-    },
-    dark: {
-      "--primary": "142 76% 45%",
-      "--secondary": "48 96% 53%",
-      "--gradient-primary":
-        "linear-gradient(135deg, hsl(142 76% 45%), hsl(160 84% 60%))",
-      "--ring": "142 76% 45%",
-    },
-  },
-  purple: {
-    light: {
-      "--primary": "271 91% 65%",
-      "--secondary": "340 82% 62%",
-      "--gradient-primary":
-        "linear-gradient(135deg, hsl(271 91% 65%), hsl(290 100% 70%))",
-      "--ring": "271 91% 65%",
-    },
-    dark: {
-      "--primary": "271 91% 65%",
-      "--secondary": "340 82% 62%",
-      "--gradient-primary":
-        "linear-gradient(135deg, hsl(271 91% 65%), hsl(290 100% 70%))",
-      "--ring": "271 91% 65%",
-    },
-  },
-  pink: {
-    light: {
-      "--primary": "330 81% 60%",
-      "--secondary": "280 100% 70%",
-      "--gradient-primary":
-        "linear-gradient(135deg, hsl(330 81% 60%), hsl(340 90% 65%))",
-      "--ring": "330 81% 60%",
-    },
-    dark: {
-      "--primary": "330 81% 60%",
-      "--secondary": "280 100% 70%",
-      "--gradient-primary":
-        "linear-gradient(135deg, hsl(330 81% 60%), hsl(340 90% 65%))",
-      "--ring": "330 81% 60%",
-    },
-  },
-  cyan: {
-    light: {
-      "--primary": "189 94% 43%",
-      "--secondary": "171 82% 48%",
-      "--gradient-primary":
-        "linear-gradient(135deg, hsl(189 94% 43%), hsl(180 100% 55%))",
-      "--ring": "189 94% 43%",
-    },
-    dark: {
-      "--primary": "189 94% 43%",
-      "--secondary": "171 82% 48%",
-      "--gradient-primary":
-        "linear-gradient(135deg, hsl(189 94% 43%), hsl(180 100% 55%))",
-      "--ring": "189 94% 43%",
-    },
-  },
-};
-
-interface ThemeContextType {
-  palette: ThemePalette;
-  setPalette: (palette: ThemePalette) => Promise<void>;
-}
+import { useTheme as useNextTheme } from "next-themes";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "./AuthContext";
+import { ThemePalette, ThemeContextType } from "@/types/theme";
+import { THEME_COLORS } from "@/lib/themeColors";
 
 const ThemeContext = createContext<ThemeContextType | null>(null);
 
+/**
+ * Hook pour accéder aux données de thème comme palette, setPalette et loading
+ */
 export const useTheme = () => {
-  const context = useContext(ThemeContext);
-  if (!context) {
-    throw new Error("useTheme must be used within a ThemeProvider");
-  }
-  return context;
+  return useContext(ThemeContext);
 };
 
 export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
-  const { colorTheme, updateColorTheme } = useUser();
+  const { user } = useAuth();
+  const { theme } = useNextTheme();
+  const [palette, setPalette] = useState<ThemePalette>("orange");
+  const [themeLoading, setThemeLoading] = useState(true);
 
-  const [palette, setPaletteState] = useState<ThemePalette>(() => {
-    const saved = localStorage.getItem("theme-palette");
-    return (saved as ThemePalette) || "orange";
-  });
-
-  // Synchroniser avec UserContext.colorTheme
   useEffect(() => {
-    if (colorTheme && colorTheme !== palette) {
-      setPaletteState(colorTheme);
-    }
-  }, [colorTheme, palette]);
+    let shouldUpdate = true;
 
-  // Appliquer les couleurs CSS
-  useEffect(() => {
-    const updateColors = () => {
-      const isDark = document.documentElement.classList.contains("dark");
-      const colors = themeColors[palette][isDark ? "dark" : "light"];
-
-      Object.entries(colors).forEach(([key, value]) => {
-        document.documentElement.style.setProperty(key, value);
-      });
+    const load = async () => {
+      if (!user) {
+        setPalette("orange");
+        setThemeLoading(false);
+        return;
+      }
+      const { data } = await supabase
+        .from("profiles")
+        .select("color_theme")
+        .eq("id", user.id)
+        .single();
+      if (shouldUpdate) {
+        const color_theme = data?.color_theme as ThemePalette;
+        setPalette(color_theme || "orange");
+        localStorage.setItem("theme-palette", color_theme || "orange");
+        setThemeLoading(false);
+      }
     };
+    load();
+    return () => {
+      shouldUpdate = false;
+    };
+  }, [user]);
 
-    updateColors();
-
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        if (mutation.attributeName === "class") {
-          updateColors();
-        }
-      });
+  /** Appliquer les couleurs CSS quand la palette ou le dark/light mode change */
+  useEffect(() => {
+    const isDark = theme === "dark";
+    const colors = THEME_COLORS[palette][isDark ? "dark" : "light"];
+    Object.entries(colors).forEach(([key, value]) => {
+      document.documentElement.style.setProperty(key, value);
     });
+  }, [palette, theme]);
 
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ["class"],
-    });
-
-    return () => observer.disconnect();
-  }, [palette]);
-
-  const setPalette = async (newPalette: ThemePalette) => {
-    setPaletteState(newPalette);
+  const updatePalette = async (newPalette: ThemePalette) => {
+    if (!user) return;
+    setPalette(newPalette);
     localStorage.setItem("theme-palette", newPalette);
-
     try {
-      await updateColorTheme(newPalette);
+      const { error } = await supabase
+        .from("profiles")
+        .update({ color_theme: newPalette })
+        .eq("id", user.id);
+      if (error) {
+        console.error("❌ Erreur lors de la mise à jour du thème:", error);
+        throw error;
+      }
     } catch (error) {
-      console.error("Erreur lors de la sauvegarde du thème:", error);
+      console.error("❌ Exception updateColorTheme:", error);
+      throw error;
     }
   };
 
   const value: ThemeContextType = {
     palette,
-    setPalette,
+    setPalette: updatePalette,
+    loading: themeLoading,
   };
 
   return (

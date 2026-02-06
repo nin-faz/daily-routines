@@ -71,33 +71,32 @@ const Stats = () => {
     };
   });
 
-  /** Taux global : Taux de complétion d'aujourd'hui uniquement */
-  const todayYMD = formatDateYMD(today);
+  /** Taux global : pour chaque jour jusqu'à aujourd'hui, on compte toutes les routines actives (même sans statut) */
+  let totalRoutinesCompleted = 0;
+  let totalRoutines = 0;
+  const datesUpToToday = firstToLastDate.filter(
+    (date) => date <= formatDateYMD(today),
+  );
 
-  // Compte les routines actives aujourd'hui
-  const todayActiveRoutines = routines.filter((routine) => {
-    const routineCreatedDate = formatDateYMD(
-      typeof routine.createdAt === "string"
-        ? new Date(routine.createdAt)
-        : routine.createdAt,
-    );
-    return routineCreatedDate <= todayYMD;
+  datesUpToToday.forEach((date) => {
+    const activeRoutines = getActiveRoutinesAtDate(routines, statuses, date);
+
+    activeRoutines.forEach((routine) => {
+      const status = statuses.find(
+        (s) => s.date === date && s.routineId === routine.id,
+      );
+      totalRoutines++;
+
+      if (status?.completed) {
+        totalRoutinesCompleted++;
+      }
+    });
   });
 
-  // Compte combien sont complétées aujourd'hui
-  const todayCompletedRoutines = todayActiveRoutines.filter((routine) => {
-    const status = statuses.find(
-      (s) => s.routineId === routine.id && s.date === todayYMD,
-    );
-    return status?.completed;
-  });
-
-  /** Taux de complétion global : Taux de routines d'aujourd'hui */
+  /** Taux de complétion global : Taux de routines */
   const overallCompletionRate =
-    todayActiveRoutines.length > 0
-      ? Math.round(
-          (todayCompletedRoutines.length / todayActiveRoutines.length) * 100,
-        )
+    totalRoutines > 0
+      ? Math.round((totalRoutinesCompleted / totalRoutines) * 100)
       : 0;
 
   // Génère toutes les dates depuis la première routine jusqu'à aujourd'hui (pour les streaks)
@@ -110,7 +109,7 @@ const Stats = () => {
     }, new Date());
     const dates: string[] = [];
     let d = new Date(firstDate);
-    while (formatDateYMD(d) <= todayYMD) {
+    while (formatDateYMD(d) <= formatDateYMD(today)) {
       dates.push(formatDateYMD(d));
       d.setDate(d.getDate() + 1);
     }
@@ -261,10 +260,10 @@ const Stats = () => {
                   </p>
                   <div className="flex justify-center mt-1 mb-1">
                     <Badge
-                      variant="secondary"
-                      className="flex items-center gap-1 text-[10px] sm:text-xs font-semibold"
+                      variant="outline"
+                      className="flex items-center gap-1 text-[10px] sm:text-xs font-semibold bg-amber-50 dark:bg-amber-950/30 border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-300"
                     >
-                      <Award className="w-3.5 h-3.5 text-primary" />
+                      <Award className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
                       Record : {recordStreak}
                     </Badge>
                   </div>

@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/context/AuthContext";
-import { UserProvider } from "@/context/UserContext";
+import { UserProvider, useUser } from "@/context/UserContext";
 import { ThemeProvider as CustomThemeProvider } from "@/context/ThemeContext";
 import { useTheme } from "@/context/ThemeContext";
 import ProtectedRoute from "@/routes/ProtectedRoute";
@@ -35,6 +35,134 @@ const ThemeInitializer = () => {
   return null;
 };
 
+// Composant wrapper pour gérer le chargement du thème
+const AppContent = () => {
+  const user = useUser();
+  const theme = useTheme();
+
+  if (!user || !theme || user.loading || theme.loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader />
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <Toaster />
+      <Sonner />
+      <BrowserRouter
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+      >
+        <Suspense fallback={<Loader className="py-12" />}>
+          <Routes>
+            <Route
+              path="/auth"
+              element={
+                <GuestRoute>
+                  <Auth />
+                </GuestRoute>
+              }
+            />
+            <Route
+              path="/forgot-password"
+              element={
+                <GuestRoute>
+                  <ForgotPassword />
+                </GuestRoute>
+              }
+            />
+            <Route path="/reset-password" element={<ResetPassword />} />
+            <Route
+              path="/"
+              element={
+                <ProtectedRoute>
+                  <Routines />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/calendar"
+              element={
+                <ProtectedRoute>
+                  <Calendar />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/projects"
+              element={
+                <ProtectedRoute>
+                  <Projects />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/stats"
+              element={
+                <ProtectedRoute>
+                  <Stats />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/routine/:routineId"
+              element={
+                <ProtectedRoute>
+                  <RoutineDetails />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/timer/:routineId"
+              element={
+                <ProtectedRoute>
+                  <TimerView />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute>
+                  <Profile />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin"
+              element={
+                <ProtectedRoute requireAdmin>
+                  <AdminDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/users"
+              element={
+                <ProtectedRoute requireAdmin>
+                  <AdminUsers />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/projects"
+              element={
+                <ProtectedRoute requireAdmin>
+                  <AdminProjects />
+                </ProtectedRoute>
+              }
+            />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Suspense>
+      </BrowserRouter>
+    </>
+  );
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider attribute="class" defaultTheme="light">
@@ -42,115 +170,7 @@ const App = () => (
         <UserProvider>
           <CustomThemeProvider>
             <ThemeInitializer />
-            <Toaster />
-            <Sonner />
-            <BrowserRouter
-              future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-            >
-              <Suspense fallback={<Loader className="py-12" />}>
-                <Routes>
-                  <Route
-                    path="/auth"
-                    element={
-                      <GuestRoute>
-                        <Auth />
-                      </GuestRoute>
-                    }
-                  />
-                  <Route
-                    path="/forgot-password"
-                    element={
-                      <GuestRoute>
-                        <ForgotPassword />
-                      </GuestRoute>
-                    }
-                  />
-                  <Route path="/reset-password" element={<ResetPassword />} />
-                  <Route
-                    path="/"
-                    element={
-                      <ProtectedRoute>
-                        <Routines />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/calendar"
-                    element={
-                      <ProtectedRoute>
-                        <Calendar />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/projects"
-                    element={
-                      <ProtectedRoute>
-                        <Projects />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/stats"
-                    element={
-                      <ProtectedRoute>
-                        <Stats />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/routine/:routineId"
-                    element={
-                      <ProtectedRoute>
-                        <RoutineDetails />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/timer/:routineId"
-                    element={
-                      <ProtectedRoute>
-                        <TimerView />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/profile"
-                    element={
-                      <ProtectedRoute>
-                        <Profile />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/admin"
-                    element={
-                      <ProtectedRoute requireAdmin>
-                        <AdminDashboard />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/admin/users"
-                    element={
-                      <ProtectedRoute requireAdmin>
-                        <AdminUsers />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/admin/projects"
-                    element={
-                      <ProtectedRoute requireAdmin>
-                        <AdminProjects />
-                      </ProtectedRoute>
-                    }
-                  />
-                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </Suspense>
-            </BrowserRouter>
+            <AppContent />
           </CustomThemeProvider>
         </UserProvider>
       </AuthProvider>
