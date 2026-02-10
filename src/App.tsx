@@ -1,4 +1,4 @@
-import { Suspense, lazy } from "react";
+import { Suspense, lazy, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -11,6 +11,11 @@ import { useTheme } from "@/context/ThemeContext";
 import ProtectedRoute from "@/routes/ProtectedRoute";
 import GuestRoute from "@/routes/GuestRoute";
 import Loader from "@/components/shared/Loader";
+import {
+  NotificationProvider,
+  useNotifications,
+} from "./context/NotificationContext";
+import { registerServiceWorker } from "./lib/notifications";
 
 const Routines = lazy(() => import("./pages/routine/Routines"));
 const Calendar = lazy(() => import("./pages/Calendar"));
@@ -39,6 +44,35 @@ const ThemeInitializer = () => {
 const AppContent = () => {
   const user = useUser();
   const theme = useTheme();
+  const { refreshStatus } = useNotifications();
+
+  useEffect(() => {
+    const initNotifications = async () => {
+      if (user && !user.loading) {
+        // Si la permission est déjà donnée, synchroniser la subscription avec la DB
+        if (Notification.permission === "granted") {
+          // registerServiceWorker() va :
+          // 1. Récupérer ou créer la subscription locale
+          // 2. Toujours l'envoyer à la DB pour s'assurer qu'elle y est
+          await registerServiceWorker();
+
+          // Rafraîchir le statut après synchronisation
+          refreshStatus();
+        }
+      }
+    };
+
+    // Vérifier au chargement de l'utilisateur
+    initNotifications();
+
+    // Re-vérifier quand l'app reçoit le focus
+    // (pour détecter si l'utilisateur a activé les notifs dans les réglages)
+    window.addEventListener("focus", initNotifications);
+
+    return () => {
+      window.removeEventListener("focus", initNotifications);
+    };
+  }, [user]);
 
   if (!user || !theme || user.loading || theme.loading) {
     return (
@@ -166,14 +200,16 @@ const AppContent = () => {
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider attribute="class" defaultTheme="light">
-      <AuthProvider>
-        <UserProvider>
-          <CustomThemeProvider>
-            <ThemeInitializer />
-            <AppContent />
-          </CustomThemeProvider>
-        </UserProvider>
-      </AuthProvider>
+      <NotificationProvider>
+        <AuthProvider>
+          <UserProvider>
+            <CustomThemeProvider>
+              <ThemeInitializer />
+              <AppContent />
+            </CustomThemeProvider>
+          </UserProvider>
+        </AuthProvider>
+      </NotificationProvider>
     </ThemeProvider>
   </QueryClientProvider>
 );

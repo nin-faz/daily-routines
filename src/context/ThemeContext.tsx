@@ -85,3 +85,5 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
     <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
   );
 };
+
+export type { ThemePalette };

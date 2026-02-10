@@ -19,30 +19,27 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ArrowLeft, User, Save, Loader2, Bell, BellOff } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Switch } from "@/components/ui/switch";
-import { requestNotificationPermission } from "@/lib/notifications";
+import {
+  registerServiceWorker,
+  unsubscribeFromPushNotifications,
+} from "@/lib/notifications";
+import { useNotifications } from "@/context/NotificationContext";
 
 const Profile = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { isSubscribed, refreshStatus } = useNotifications();
   const { toast } = useToast();
 
   const [pseudo, setPseudo] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isFetching, setIsFetching] = useState(true);
-  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
 
   useEffect(() => {
     if (user) {
       fetchProfile();
-      checkNotificationStatus();
     }
   }, [user]);
-
-  const checkNotificationStatus = () => {
-    if ("Notification" in window) {
-      setNotificationsEnabled(Notification.permission === "granted");
-    }
-  };
 
   const fetchProfile = async () => {
     if (!user) return;
@@ -82,7 +79,7 @@ const Profile = () => {
         },
         {
           onConflict: "id",
-        }
+        },
       );
 
       if (error) throw error;
@@ -104,25 +101,49 @@ const Profile = () => {
   };
 
   const handleNotificationToggle = async () => {
-    if (notificationsEnabled) {
+    // Si les notifications sont déjà activées
+    if (isSubscribed) {
+      const success = await unsubscribeFromPushNotifications();
+
+      if (success) {
+        await refreshStatus();
+
+        toast({
+          title: "Notifications désactivées",
+          description: "Cet appareil ne recevra plus de rappels.",
+        });
+        return;
+      } else {
+        toast({
+          title: "Erreur",
+          description: "Impossible de désactiver les notifications.",
+          variant: "destructive",
+        });
+      }
+      return;
+    }
+
+    const success = await registerServiceWorker();
+
+    if (success) {
+      await refreshStatus();
+
       toast({
-        title: "Notifications",
-        description:
-          "Pour désactiver les notifications, utilisez les paramètres de votre navigateur.",
+        title: "Notifications activées !",
+        description: "Cet appareil est prêt à recevoir vos rappels.",
       });
     } else {
-      const granted = await requestNotificationPermission();
-      setNotificationsEnabled(granted);
-      if (granted) {
+      if (Notification.permission === "denied") {
         toast({
-          title: "Notifications activées",
-          description: "Vous recevrez des rappels pour vos routines.",
+          title: "Accès refusé",
+          description:
+            "Veuillez autoriser les notifications dans les réglages de votre navigateur.",
+          variant: "destructive",
         });
       } else {
         toast({
-          title: "Notifications refusées",
-          description:
-            "Vous pouvez les activer dans les paramètres de votre navigateur.",
+          title: "Erreur",
+          description: "Impossible d'activer les notifications.",
           variant: "destructive",
         });
       }
@@ -217,19 +238,19 @@ const Profile = () => {
             <CardContent>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  {notificationsEnabled ? (
+                  {isSubscribed ? (
                     <Bell className="h-5 w-5 text-primary" />
                   ) : (
                     <BellOff className="h-5 w-5 text-muted-foreground" />
                   )}
                   <span className="text-sm">
-                    {notificationsEnabled
+                    {isSubscribed
                       ? "Notifications activées"
                       : "Notifications désactivées"}
                   </span>
                 </div>
                 <Switch
-                  checked={notificationsEnabled}
+                  checked={isSubscribed}
                   onCheckedChange={handleNotificationToggle}
                 />
               </div>

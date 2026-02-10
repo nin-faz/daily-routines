@@ -19,7 +19,13 @@ const themes: { value: ThemePalette; label: string; colors: string[] }[] = [
 ];
 
 export const ThemeSelector = () => {
-  const { palette, setPalette } = useTheme();
+  const theme = useTheme();
+  
+  if (!theme) {
+    return null;
+  }
+  
+  const { palette, setPalette } = theme;
 
   return (
     <DropdownMenu>

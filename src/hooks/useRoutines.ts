@@ -31,7 +31,32 @@ export const useRoutines = () => {
       };
       return routineStorage.addRoutine(newRoutine);
     },
+    onMutate: async (routineData: Omit<Routine, "id" | "createdAt">) => {
+      // Annule les requêtes en cours
+      await queryClient.cancelQueries({ queryKey: ["routines"] });
+      
+      // Snapshot de l'état actuel
+      const previousRoutines = queryClient.getQueryData<Routine[]>(["routines"]);
+      
+      // Update optimiste : ajoute la nouvelle routine immédiatement
+      const newRoutine: Routine = {
+        ...routineData,
+        id: crypto.randomUUID(),
+        createdAt: new Date().toISOString(),
+      };
+      
+      queryClient.setQueryData<Routine[]>(["routines"], (old = []) => [...old, newRoutine]);
+      
+      return { previousRoutines };
+    },
+    onError: (_err, _routineData, context) => {
+      // En cas d'erreur, rollback
+      if (context?.previousRoutines) {
+        queryClient.setQueryData(["routines"], context.previousRoutines);
+      }
+    },
     onSuccess: () => {
+      // Refetch pour synchroniser avec la base de données
       queryClient.invalidateQueries({ queryKey: ["routines"] });
     },
   });

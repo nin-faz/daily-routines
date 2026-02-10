@@ -1,11 +1,17 @@
 project_id = "gaytlowwebmmycswnshu"
+
 [functions.welcome-email]
 enabled = true
 verify_jwt = true
 import_map = "./functions/welcome-email/deno.json"
-# Uncomment to specify a custom file path to the entrypoint.
-# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
 entrypoint = "./functions/welcome-email/index.ts"
-# Specifies static files to be bundled with the function. Supports glob patterns.
-# For example, if you want to serve static HTML pages in your function:
-# static_files = [ "./functions/welcome-email/*.html" ]
+
+[functions.save-subscription]
+enabled = true
+verify_jwt = true
+
+[functions.send-routine-notifications]
+enabled = true
+verify_jwt = false
+# Le cron est configuré via pg_cron dans la migration 06_cron_notifications.sql
+

@@ -10,11 +10,47 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Plus, Bell, Sunrise, Sun, Moon } from "lucide-react";
 import { Routine, TimeOfDay } from "@/types/routine";
 import { toast } from "sonner";
-import { requestNotificationPermission } from "@/lib/notifications";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { useNotifications } from "@/context/NotificationContext";
+
+// Générer les options pour les heures (00-23)
+const HOURS = Array.from({ length: 24 }, (_, i) =>
+  i.toString().padStart(2, "0"),
+);
+// Les 4 créneaux imposés
+const MINUTES = ["00", "15", "30", "45"];
+
+/**
+ * Convertir l'heure locale en UTC pour stockage en base
+ * Exemple: "08:15" à Paris (UTC+1) → "07:15" UTC
+ */
+const convertToUTC = (localTime: string): string => {
+  const [hours, minutes] = localTime.split(":").map(Number);
+  const date = new Date();
+  date.setHours(hours, minutes, 0, 0);
+  return date.toISOString().substring(11, 16);
+};
+
+/**
+ * Convertir l'heure UTC en heure locale pour affichage
+ * Exemple: "07:15" UTC → "08:15" à Paris (UTC+1)
+ */
+const convertToLocal = (utcTime: string): string => {
+  const [hours, minutes] = utcTime.split(":").map(Number);
+  const date = new Date();
+  date.setUTCHours(hours, minutes, 0, 0);
+  return `${date.getHours().toString().padStart(2, "0")}:${date.getMinutes().toString().padStart(2, "0")}`;
+};
 
 interface CreateRoutineDialogProps {
   routine?: Routine;
@@ -33,8 +69,10 @@ const CreateRoutineDialog = ({
 }: CreateRoutineDialogProps) => {
   const [internalOpen, setInternalOpen] = useState(false);
   const [title, setTitle] = useState("");
-  const [duration, setDuration] = useState<string>("");
-  const [notificationTime, setNotificationTime] = useState<string>("");
+  const [durationHours, setDurationHours] = useState<string>("");
+  const [durationMinutes, setDurationMinutes] = useState<string>("");
+  const [selectedHour, setSelectedHour] = useState("08");
+  const [selectedMinute, setSelectedMinute] = useState("00");
   const [enableNotification, setEnableNotification] = useState(false);
   const [timeOfDay, setTimeOfDay] = useState<TimeOfDay | undefined>(undefined);
 
@@ -42,22 +80,67 @@ const CreateRoutineDialog = ({
   const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
   const setOpen = onOpenChange || setInternalOpen;
 
+  const { isSubscribed } = useNotifications();
+
   useEffect(() => {
     if (routine && open) {
       setTitle(routine.title);
-      setDuration(routine.duration ? routine.duration.toString() : "");
-      setNotificationTime(routine.notificationTime || "");
-      setEnableNotification(!!routine.notificationTime);
+
+      // Décomposer la durée totale (minutes) en heures + minutes
+      if (routine.duration) {
+        const hours = Math.floor(routine.duration / 60);
+        const minutes = routine.duration % 60;
+        setDurationHours(hours > 0 ? hours.toString() : "");
+        setDurationMinutes(minutes > 0 ? minutes.toString() : "");
+      } else {
+        setDurationHours("");
+        setDurationMinutes("");
+      }
+
+      // Convertir UTC → locale pour les sélecteurs
+      if (routine.notificationTime) {
+        const localTime = convertToLocal(routine.notificationTime);
+        const [h, m] = localTime.split(":");
+        setSelectedHour(h);
+        setSelectedMinute(m);
+        setEnableNotification(true);
+      } else {
+        setSelectedHour("08");
+        setSelectedMinute("00");
+        setEnableNotification(false);
+      }
+
       setTimeOfDay(routine.timeOfDay);
     } else if (!open) {
-      // Reset form when closing
+      // Réinitialiser le formulaire à chaque fermeture du dialog
       setTitle("");
-      setDuration("");
-      setNotificationTime("");
+      setDurationHours("");
+      setDurationMinutes("");
+      setSelectedHour("08");
+      setSelectedMinute("00");
       setEnableNotification(false);
       setTimeOfDay(undefined);
     }
   }, [routine, open]);
+
+  // À l'intérieur de CreateRoutineDialog
+  useEffect(() => {
+    // On ne vérifie que si le formulaire est ouvert et qu'on est en mode édition
+    if (open && isEditMode && routine?.notificationTime) {
+      if (Notification.permission !== "granted") {
+        // On désactive le switch visuellement car la permission est absente
+        setEnableNotification(false);
+
+        // On prévient l'utilisateur avec un message clair
+        toast.error(
+          "Les notifications sont bloquées par votre navigateur. Le rappel a été désactivé.",
+          {
+            description: "Vérifiez vos paramètres de profil ou de navigateur.",
+          },
+        );
+      }
+    }
+  }, [open, isEditMode, routine]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,19 +150,27 @@ const CreateRoutineDialog = ({
       return;
     }
 
-    const durationNum = duration ? parseInt(duration) : undefined;
+    // Calculer la durée totale en minutes
+    const hours = durationHours ? parseInt(durationHours) : 0;
+    const minutes = durationMinutes ? parseInt(durationMinutes) : 0;
+    const durationNum =
+      hours > 0 || minutes > 0 ? hours * 60 + minutes : undefined;
 
-    if (duration && (!durationNum || durationNum <= 0)) {
-      toast.error("La durée doit être un nombre positif");
+    if (
+      (durationHours || durationMinutes) &&
+      (!durationNum || durationNum <= 0)
+    ) {
+      toast.error("La durée doit être supérieure à 0");
       return;
     }
 
-    if (enableNotification && notificationTime) {
-      const hasPermission = await requestNotificationPermission();
-      if (!hasPermission) {
-        toast.error("Permission de notification refusée");
-        return;
-      }
+    // Gestion des notifications avec conversion UTC
+    let finalNotificationTime: string | undefined = undefined;
+
+    if (enableNotification) {
+      // Fusionner heure + minute et convertir en UTC
+      const localTime = `${selectedHour}:${selectedMinute}`;
+      finalNotificationTime = convertToUTC(localTime);
     }
 
     if (isEditMode && onUpdateRoutine && routine) {
@@ -88,8 +179,7 @@ const CreateRoutineDialog = ({
         title: title.trim(),
         duration: durationNum,
         hasTimer: !!durationNum,
-        notificationTime:
-          enableNotification && notificationTime ? notificationTime : undefined,
+        notificationTime: finalNotificationTime,
         timeOfDay,
       });
       toast.success("Routine modifiée avec succès");
@@ -98,8 +188,7 @@ const CreateRoutineDialog = ({
         title: title.trim(),
         duration: durationNum,
         hasTimer: !!durationNum,
-        notificationTime:
-          enableNotification && notificationTime ? notificationTime : undefined,
+        notificationTime: finalNotificationTime,
         timeOfDay,
       });
       toast.success("Routine créée avec succès");
@@ -135,7 +224,9 @@ const CreateRoutineDialog = ({
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 mt-4">
           <div className="space-y-2">
-            <Label htmlFor="title">Titre de la routine</Label>
+            <Label htmlFor="title" className="after:content-['*'] after:ml-0.5">
+              Titre de la routine{" "}
+            </Label>
             <Input
               id="title"
               value={title}
@@ -146,19 +237,37 @@ const CreateRoutineDialog = ({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="duration">Durée (minutes, optionnel)</Label>
-            <Input
-              id="duration"
-              type="number"
-              min="1"
-              value={duration}
-              onChange={(e) => setDuration(e.target.value)}
-              placeholder="30"
-            />
+            <Label>Durée</Label>
+            <div className="flex items-center gap-2">
+              <div className="flex-1">
+                <Input
+                  id="durationHours"
+                  type="number"
+                  min="0"
+                  max="23"
+                  value={durationHours}
+                  onChange={(e) => setDurationHours(e.target.value)}
+                  placeholder="0"
+                />
+                <p className="text-xs text-muted-foreground mt-1">Heures</p>
+              </div>
+              <div className="flex-1">
+                <Input
+                  id="durationMinutes"
+                  type="number"
+                  min="0"
+                  max="59"
+                  value={durationMinutes}
+                  onChange={(e) => setDurationMinutes(e.target.value)}
+                  placeholder="0"
+                />
+                <p className="text-xs text-muted-foreground mt-1">Minutes</p>
+              </div>
+            </div>
           </div>
 
           <div className="space-y-3">
-            <Label>Moment de la journée (optionnel)</Label>
+            <Label>Moment de la journée</Label>
             <RadioGroup
               value={timeOfDay || ""}
               onValueChange={(value) =>
@@ -209,29 +318,76 @@ const CreateRoutineDialog = ({
             )}
           </div>
 
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Bell className="h-4 w-4 text-muted-foreground" />
-              <Label htmlFor="notification" className="cursor-pointer">
-                Notification quotidienne
-              </Label>
+          <div className="space-y-2">
+            {" "}
+            {/* Conteneur parent pour espacer le bloc et le texte rouge */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Bell
+                  className={`h-4 w-4 ${enableNotification ? "text-primary" : "text-muted-foreground"}`}
+                />
+                <Label htmlFor="notification" className="cursor-pointer">
+                  Notification quotidienne
+                </Label>
+              </div>
+
+              <Switch
+                id="notification"
+                checked={enableNotification}
+                disabled={!isSubscribed}
+                onCheckedChange={(checked) => {
+                  if (!isSubscribed) {
+                    toast.error(
+                      "Veuillez d'abord activer les notifications dans votre profil.",
+                    );
+                    return;
+                  }
+                  setEnableNotification(checked);
+                }}
+              />
             </div>
-            <Switch
-              id="notification"
-              checked={enableNotification}
-              onCheckedChange={setEnableNotification}
-            />
+            {/* Le texte rouge s'affiche ici, en dessous du bloc principal */}
+            {!isSubscribed && (
+              <p className="text-xs text-center text-red-500 font-medium leading-tight">
+                ⚠️ Les notifications sont désactivées. Activez-les dans votre
+                profil.
+              </p>
+            )}
           </div>
 
           {enableNotification && (
             <div className="space-y-2">
               <Label htmlFor="notificationTime">Heure de la notification</Label>
-              <Input
-                id="notificationTime"
-                type="time"
-                value={notificationTime}
-                onChange={(e) => setNotificationTime(e.target.value)}
-              />
+              <div className="flex items-center gap-2">
+                <Select value={selectedHour} onValueChange={setSelectedHour}>
+                  <SelectTrigger className="w-[120px]">
+                    <SelectValue placeholder="Heure" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {HOURS.map((h) => (
+                      <SelectItem key={h} value={h}>
+                        {h}h
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <span className="text-muted-foreground">:</span>
+                <Select
+                  value={selectedMinute}
+                  onValueChange={setSelectedMinute}
+                >
+                  <SelectTrigger className="w-[120px]">
+                    <SelectValue placeholder="Minutes" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {MINUTES.map((m) => (
+                      <SelectItem key={m} value={m}>
+                        {m}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           )}
 

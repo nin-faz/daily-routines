@@ -13,7 +13,7 @@ import { User, LogOut, Shield, Settings } from "lucide-react";
 
 const UserMenu = () => {
   const { user, signOut } = useAuth();
-  const { isAdmin } = useUser();
+  const isAdmin = useUser()?.isAdmin ?? false;
 
   const handleSignOut = async () => {
     await signOut();

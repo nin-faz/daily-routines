@@ -6,10 +6,7 @@ import CreateRoutineDialog from "@/components/routine/CreateRoutineDialog";
 import { Sparkles, Sunrise, Sun, Moon, Coffee } from "lucide-react";
 import Navigation from "@/components/layout/Navigation";
 import Header from "@/components/layout/Header";
-import {
-  requestNotificationPermission,
-  scheduleRoutineNotification,
-} from "@/lib/notifications";
+import { requestNotificationPermission } from "@/lib/notifications";
 import { RoutineListSkeleton } from "@/components/routine/RoutineSkeleton";
 import EmptyState from "@/components/shared/EmptyState";
 import OnboardingDialog from "@/components/shared/OnboardingDialog";
@@ -41,15 +38,6 @@ const Routines = () => {
     requestNotificationPermission();
     setTodayDate(getTodayString());
   }, []);
-
-  // À chaque changement de routines : programme les notifications pour celles qui en ont une
-  useEffect(() => {
-    routines.forEach((routine) => {
-      if (routine.notificationTime) {
-        scheduleRoutineNotification(routine.title, routine.notificationTime);
-      }
-    });
-  }, [routines]);
 
   // Ajoute une nouvelle routine (appelé lors de la soumission du formulaire de création)
   const handleCreateRoutine = (
