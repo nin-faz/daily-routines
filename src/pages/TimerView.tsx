@@ -10,11 +10,35 @@ const TimerView = () => {
   const navigate = useNavigate();
   const [routine, setRoutine] = useState<Routine | null>(null);
   const intervalRef = useRef<number | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
 
-  // Initialize from saved state
   const savedState = routineId ? timerStorage.getTimerState(routineId) : null;
   const [timeLeft, setTimeLeft] = useState(savedState?.timeLeft ?? 0);
   const [isRunning, setIsRunning] = useState(savedState?.isRunning ?? true);
+
+  /**
+   * Initialiser le contexte audio au premier clic/touch de l'utilisateur pour éviter les problèmes d'autoplay sur mobile.
+   * On utilise useRef pour stocker le contexte audio de manière persistante sans déclencher de re-render.
+   * Les événements sont configurés pour n'écouter que la première interaction (once: true) afin de ne pas réinitialiser le contexte à chaque clic.
+   */
+  useEffect(() => {
+    const initAudio = () => {
+      if (!audioContextRef.current) {
+        audioContextRef.current = new (
+          window.AudioContext || (window as any).webkitAudioContext
+        )();
+      }
+    };
+
+    // Écouter les interactions utilisateur pour initialiser le contexte audio (nécessaire pour les sons sur mobile)
+    document.addEventListener("touchstart", initAudio, { once: true });
+    document.addEventListener("click", initAudio, { once: true });
+
+    return () => {
+      document.removeEventListener("touchstart", initAudio);
+      document.removeEventListener("click", initAudio);
+    };
+  }, []);
 
   useEffect(() => {
     const loadRoutine = async () => {
@@ -22,7 +46,6 @@ const TimerView = () => {
       const found = routines.find((r) => r.id === routineId);
       if (found && found.duration) {
         setRoutine(found);
-        // Only set initial time if no saved state
         if (!savedState) {
           setTimeLeft(found.duration * 60);
         }
@@ -33,7 +56,6 @@ const TimerView = () => {
     loadRoutine();
   }, [routineId, navigate]);
 
-  // Save timer state whenever it changes
   useEffect(() => {
     if (routineId) {
       timerStorage.saveTimerState({
@@ -74,26 +96,67 @@ const TimerView = () => {
   }, [isRunning, timeLeft, routineId]);
 
   const playCompletionSound = () => {
-    // Create a simple beep sound using Web Audio API
-    const audioContext = new (window.AudioContext ||
-      (window as any).webkitAudioContext)();
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
+    // 1. Vibration pour mobile (3 courtes vibrations)
+    if ("vibrate" in navigator) {
+      navigator.vibrate([200, 100, 200, 100, 200]);
+    }
 
-    oscillator.connect(gainNode);
-    gainNode.connect(audioContext.destination);
+    // 2. Son via Web Audio API (déjà initialisé par interaction utilisateur)
+    try {
+      const audioContext =
+        audioContextRef.current ||
+        new (window.AudioContext || (window as any).webkitAudioContext)();
 
-    oscillator.frequency.value = 800;
-    oscillator.type = "sine";
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
 
-    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(
-      0.01,
-      audioContext.currentTime + 0.5
-    );
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
 
-    oscillator.start(audioContext.currentTime);
-    oscillator.stop(audioContext.currentTime + 0.5);
+      // Son plus agréable (tonalité haute)
+      oscillator.frequency.value = 880; // A5 note
+      oscillator.type = "sine";
+
+      gainNode.gain.setValueAtTime(0.5, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(
+        0.01,
+        audioContext.currentTime + 0.8,
+      );
+
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.8);
+
+      // Ajouter une seconde note pour effet "ding-dong"
+      const oscillator2 = audioContext.createOscillator();
+      const gainNode2 = audioContext.createGain();
+
+      oscillator2.connect(gainNode2);
+      gainNode2.connect(audioContext.destination);
+
+      oscillator2.frequency.value = 660; // E5 note
+      oscillator2.type = "sine";
+
+      gainNode2.gain.setValueAtTime(0.5, audioContext.currentTime + 0.15);
+      gainNode2.gain.exponentialRampToValueAtTime(
+        0.01,
+        audioContext.currentTime + 0.95,
+      );
+
+      oscillator2.start(audioContext.currentTime + 0.15);
+      oscillator2.stop(audioContext.currentTime + 0.95);
+    } catch (error) {
+      console.log("Audio context not available:", error);
+    }
+
+    // 3. Notification système (si permission accordée)
+    if ("Notification" in window && Notification.permission === "granted") {
+      new Notification("⏰ Timer terminé !", {
+        body: `La routine "${routine?.title}" est terminée`,
+        icon: "/icon-192.png",
+        badge: "/icon-192.png",
+        tag: "timer-complete",
+      });
+    }
   };
 
   const formatTime = (seconds: number): string => {

@@ -346,8 +346,8 @@ const RoutineHistory = () => {
               <div className="flex flex-col items-center justify-center py-8">
                 <p className="text-center text-muted-foreground">
                   {completedDates.length === 0
-                    ? "Aucune complétion pour le moment"
-                    : "Aucune complétion ce mois-ci"}
+                    ? "Pas encore de routines complétées"
+                    : "Aucune routine complétée ce mois-ci"}
                 </p>
               </div>
             ) : (

@@ -93,45 +93,40 @@ serve(async (req) => {
 
     console.log('✅ Subscription upserted successfully')
 
-    // ÉTAPE 2 : Compter le nombre de subscriptions de cet utilisateur
-    const { count } = await supabaseClient
-      .from('push_subscriptions')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', user.id)
-
-    // ÉTAPE 3 : Si l'utilisateur a plus de 3 subscriptions, supprimer les plus anciennes (par updated_at)
-    if (count && count > 3) {
-      // Récupérer les subscriptions triées par date de mise à jour (les plus anciennes en premier)
-      const { data: oldSubscriptions } = await supabaseClient
-        .from('push_subscriptions')
-        .select('id, endpoint, updated_at')
-        .eq('user_id', user.id)
-        .order('updated_at', { ascending: true }) // Les plus vieilles d'abord
-        .limit(count - 3) // Garder seulement 3, supprimer le reste
-
-      if (oldSubscriptions && oldSubscriptions.length > 0) {
-        const idsToDelete = oldSubscriptions.map(s => s.id)
-
-        await supabaseClient
+    // ÉTAPE 2 : Nettoyage asynchrone des anciennes subscriptions (ne pas bloquer la réponse)
+    // On lance ça en arrière-plan via un setTimeout
+    setTimeout(async () => {
+      try {
+        const { count } = await supabaseClient
           .from('push_subscriptions')
-          .delete()
-          .in('id', idsToDelete)
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id)
 
-        console.log(`🧹 Nettoyage: ${idsToDelete.length} anciennes subscriptions supprimées`)
-        console.log(`   Endpoints supprimés: ${oldSubscriptions.map(s => s.endpoint.substring(0, 30) + '...').join(', ')}`)
+        if (count && count > 3) {
+          const { data: oldSubscriptions } = await supabaseClient
+            .from('push_subscriptions')
+            .select('id, endpoint')
+            .eq('user_id', user.id)
+            .order('updated_at', { ascending: true })
+            .limit(count - 3)
+
+          if (oldSubscriptions && oldSubscriptions.length > 0) {
+            const idsToDelete = oldSubscriptions.map(s => s.id)
+            await supabaseClient
+              .from('push_subscriptions')
+              .delete()
+              .in('id', idsToDelete)
+
+            console.log(`🧹 Nettoyage: ${idsToDelete.length} anciennes subscriptions supprimées`)
+          }
+        }
+      } catch (error) {
+        console.error('Erreur lors du nettoyage en arrière-plan:', error)
       }
-    }
-
-    // ÉTAPE 4 : Récupérer le nombre final de subscriptions
-    const { data: finalSubs } = await supabaseClient
-      .from('push_subscriptions')
-      .select('id')
-      .eq('user_id', user.id)
-
-    console.log(`📱 User ${user.id.substring(0, 8)} a maintenant ${finalSubs?.length || 0} subscription(s) active(s)`)
+    }, 0)
 
     return new Response(
-      JSON.stringify({ success: true, data: upsertedData, totalSubscriptions: finalSubs?.length || 0 }),
+      JSON.stringify({ success: true, data: upsertedData }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,

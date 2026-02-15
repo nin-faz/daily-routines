@@ -3,7 +3,7 @@ import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { formatDateYMD } from "@/lib/date";
 
-// Calcule le taux de complétion d'un jour donné
+// Calcule le taux de réussite d'un jour donné
 // - Si toutes les routines sont skipped, retourne null (jour ignoré)
 // - Si toutes les non-skipped sont complétées, retourne 100
 // - Sinon, retourne le pourcentage de complétion
@@ -22,7 +22,7 @@ export function getDayCompletionRate(routines: Routine[], statuses: RoutineStatu
   return Math.round((completed.length / nonSkipped.length) * 100);
 }
 
-// Calcule le taux de complétion d'un ensemble de routines pour une date donnée
+// Calcule le taux de réussite d'un ensemble de routines pour une date donnée
 export function getRoutineCompletionRate(routines: Routine[], statuses: RoutineStatus[]) {
   const total = routines.length;
   if (total === 0) return { completedCount: 0, total: 0, rate: 0 };

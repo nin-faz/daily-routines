@@ -48,7 +48,7 @@ const Stats = () => {
   const today = new Date();
   const firstToLastDate = getDatesOfCurrentMonth(today);
 
-  /** Graphique X-Y : Taux de complétion sur le mois
+  /** Graphique X-Y : Taux de réussite sur le mois
    * Routines (complétés ou non, sautés ne sont pas pris en compte) pour le jour en question
    */
   const completionsByDate = firstToLastDate.map((date) => {
@@ -93,7 +93,7 @@ const Stats = () => {
     });
   });
 
-  /** Taux de complétion global : Taux de routines */
+  /** Score global : Taux de routines */
   const overallCompletionRate =
     totalRoutines > 0
       ? Math.round((totalRoutinesCompleted / totalRoutines) * 100)
@@ -194,7 +194,7 @@ const Stats = () => {
 
   const totalTasks = tasks.length;
 
-  /** Taux de complétion global : Taux de tâches */
+  /** Score global : Taux de tâches */
   const projectCompletionRate =
     totalTasks > 0 ? Math.round((tasksByStatus.done / totalTasks) * 100) : 0;
 
@@ -304,7 +304,7 @@ const Stats = () => {
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-xs sm:text-sm font-medium">
-                    {`Taux de complétion (${firstToLastDate.length} jours)`}
+                    {`Taux de réussite (${firstToLastDate.length} jours)`}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-2 sm:p-6 pt-0 sm:pt-0">

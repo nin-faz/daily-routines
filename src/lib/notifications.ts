@@ -116,6 +116,7 @@ export const requestNotificationPermission = async (): Promise<boolean> => {
     return true;
   }
 
+  /** Affiche la pop up souhaitant autoriser ou non, ces notifications */
   if (Notification.permission !== 'denied') {
     const permission = await Notification.requestPermission();
     return permission === 'granted';

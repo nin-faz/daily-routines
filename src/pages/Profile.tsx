@@ -33,7 +33,14 @@ const Profile = () => {
 
   const [pseudo, setPseudo] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [isFetching, setIsFetching] = useState(true);
+
+  // État local optimiste pour le switch (change instantanément)
+  const [localIsSubscribed, setLocalIsSubscribed] = useState(isSubscribed);
+
+  // Synchroniser l'état local avec le context
+  useEffect(() => {
+    setLocalIsSubscribed(isSubscribed);
+  }, [isSubscribed]);
 
   useEffect(() => {
     if (user) {
@@ -60,8 +67,6 @@ const Profile = () => {
       }
     } catch (error) {
       console.error("Error:", error);
-    } finally {
-      setIsFetching(false);
     }
   };
 
@@ -101,7 +106,11 @@ const Profile = () => {
   };
 
   const handleNotificationToggle = async () => {
-    // Si les notifications sont déjà activées
+    // Update optimiste : changement instantané de l'UI
+    const newState = !localIsSubscribed;
+    setLocalIsSubscribed(newState);
+
+    // Si les notifications sont déjà activées, on désactive
     if (isSubscribed) {
       const success = await unsubscribeFromPushNotifications();
 
@@ -112,8 +121,9 @@ const Profile = () => {
           title: "Notifications désactivées",
           description: "Cet appareil ne recevra plus de rappels.",
         });
-        return;
       } else {
+        // Revert en cas d'erreur
+        setLocalIsSubscribed(isSubscribed);
         toast({
           title: "Erreur",
           description: "Impossible de désactiver les notifications.",
@@ -123,9 +133,12 @@ const Profile = () => {
       return;
     }
 
+    // Sinon, on active les notifications
     const success = await registerServiceWorker();
 
     if (success) {
+      // Attendre un court délai pour que le navigateur mette à jour son état
+      await new Promise((resolve) => setTimeout(resolve, 300));
       await refreshStatus();
 
       toast({
@@ -133,6 +146,9 @@ const Profile = () => {
         description: "Cet appareil est prêt à recevoir vos rappels.",
       });
     } else {
+      // Revert en cas d'erreur
+      setLocalIsSubscribed(isSubscribed);
+
       if (Notification.permission === "denied") {
         toast({
           title: "Accès refusé",
@@ -204,14 +220,13 @@ const Profile = () => {
                   value={pseudo}
                   onChange={(e) => setPseudo(e.target.value)}
                   placeholder="Votre nom"
-                  disabled={isFetching}
                 />
               </div>
 
               <Button
                 onClick={handleSave}
                 className="w-full bg-gradient-primary hover:opacity-90"
-                disabled={isLoading || isFetching}
+                disabled={isLoading}
               >
                 {isLoading ? (
                   <>
@@ -238,19 +253,19 @@ const Profile = () => {
             <CardContent>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  {isSubscribed ? (
+                  {localIsSubscribed ? (
                     <Bell className="h-5 w-5 text-primary" />
                   ) : (
                     <BellOff className="h-5 w-5 text-muted-foreground" />
                   )}
                   <span className="text-sm">
-                    {isSubscribed
+                    {localIsSubscribed
                       ? "Notifications activées"
                       : "Notifications désactivées"}
                   </span>
                 </div>
                 <Switch
-                  checked={isSubscribed}
+                  checked={localIsSubscribed}
                   onCheckedChange={handleNotificationToggle}
                 />
               </div>

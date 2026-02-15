@@ -6,7 +6,14 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { HelpCircle } from "lucide-react";
+import {
+  HelpCircle,
+  TrendingUp,
+  Flame,
+  BarChart3,
+  SkipForward,
+  Calendar,
+} from "lucide-react";
 
 export default function HelpButton() {
   const [open, setOpen] = useState(false);
@@ -25,58 +32,108 @@ export default function HelpButton() {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-lg max-h-[70vh] overflow-auto">
           <DialogHeader>
-            <DialogTitle>Aide rapide</DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              <HelpCircle className="h-5 w-5" />
+              Aide rapide
+            </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-2">
-            <section>
-              <h3 className="font-semibold">Taux de routines</h3>
-              <p className="text-sm text-muted-foreground">
-                Le taux de routines correspond au pourcentage de routines
-                complétées sur une période donnée. Par exemple, si vous avez 10
-                routines prévues dans le mois et que 7 ont été marquées comme
-                complétées, le taux est de 70%.
-              </p>
+            {/* Taux de routines */}
+            <section className="flex gap-3 p-3 rounded-lg bg-muted/50 transition-all duration-200 hover:bg-muted/70 hover:scale-[1.02] hover:shadow-md cursor-default">
+              <div className="flex-shrink-0">
+                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                  <TrendingUp className="h-5 w-5 text-primary" />
+                </div>
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold mb-1">Taux de routines</h3>
+                <p className="text-sm text-muted-foreground">
+                  Pourcentage de routines complétées sur une période.
+                  <span className="block mt-1 text-xs">
+                    Exemple : 7 routines complétées sur 10 prévues = 70%
+                  </span>
+                </p>
+              </div>
             </section>
 
-            <section>
-              <h3 className="font-semibold">Streaks</h3>
-              <p className="text-sm text-muted-foreground">
-                Une streak indique le nombre de jours consécutifs où vous avez
-                complété au moins une routine (ou la condition que vous avez
-                choisie). Les streaks encouragent la régularité.
-              </p>
+            {/* Streaks */}
+            <section className="flex gap-3 p-3 rounded-lg bg-muted/50 transition-all duration-200 hover:bg-muted/70 hover:scale-[1.02] hover:shadow-md cursor-default">
+              <div className="flex-shrink-0">
+                <div className="w-10 h-10 rounded-full bg-orange-500/10 flex items-center justify-center">
+                  <Flame className="h-5 w-5 text-orange-500" />
+                </div>
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold mb-1">Streaks (Séries)</h3>
+                <p className="text-sm text-muted-foreground">
+                  Nombre de jours consécutifs où vous avez complété au moins une
+                  routine.
+                  <span className="block mt-1 text-xs">
+                    Objectif : maintenir la régularité et ne pas casser la série
+                    !
+                  </span>
+                </p>
+              </div>
             </section>
 
-            <section>
-              <h3 className="font-semibold">
-                Completion rate vs. Overall completion
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                Le "taux de complétion" peut être calculé par routine, par jour,
-                ou globalement. "Overall completion" agrège toutes les routines
-                sur la période choisie.
-              </p>
+            {/* Taux de réussite */}
+            <section className="flex gap-3 p-3 rounded-lg bg-muted/50 transition-all duration-200 hover:bg-muted/70 hover:scale-[1.02] hover:shadow-md cursor-default">
+              <div className="flex-shrink-0">
+                <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center">
+                  <BarChart3 className="h-5 w-5 text-blue-500" />
+                </div>
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold mb-1">
+                  Taux de réussite vs Score global
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  Le taux peut être calculé par routine, par jour, ou
+                  globalement.
+                  <span className="block mt-1 text-xs">
+                    "Score global" = toutes les routines agrégées sur la période
+                  </span>
+                </p>
+              </div>
             </section>
 
-            <section>
-              <h3 className="font-semibold">Sauter une routine</h3>
-              <p className="text-sm text-muted-foreground">
-                Une routine sautée n'est pas considérée comme complétée et n'est
-                pas prise en compte dans le calcul des taux de complétion (elle
-                est exclue du numérateur et du dénominateur).
-              </p>
+            {/* Sauter une routine */}
+            <section className="flex gap-3 p-3 rounded-lg bg-muted/50 transition-all duration-200 hover:bg-muted/70 hover:scale-[1.02] hover:shadow-md cursor-default">
+              <div className="flex-shrink-0">
+                <div className="w-10 h-10 rounded-full bg-yellow-500/10 flex items-center justify-center">
+                  <SkipForward className="h-5 w-5 text-yellow-500" />
+                </div>
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold mb-1">Sauter une routine</h3>
+                <p className="text-sm text-muted-foreground">
+                  Une routine sautée n'est ni complétée ni comptabilisée.
+                  <span className="block mt-1 text-xs">
+                    Elle est exclue du calcul des taux
+                  </span>
+                </p>
+              </div>
             </section>
 
-            <section>
-              <h3 className="font-semibold">Taux moyen (semaine)</h3>
-              <p className="text-sm text-muted-foreground">
-                Le taux moyen pour une semaine est calculé à partir des
-                pourcentages de chaque jour, on divise par le nombre de jours
-                disponibles.
-              </p>
+            {/* Taux moyen semaine */}
+            <section className="flex gap-3 p-3 rounded-lg bg-muted/50 transition-all duration-200 hover:bg-muted/70 hover:scale-[1.02] hover:shadow-md cursor-default">
+              <div className="flex-shrink-0">
+                <div className="w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center">
+                  <Calendar className="h-5 w-5 text-green-500" />
+                </div>
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold mb-1">Taux moyen (semaine)</h3>
+                <p className="text-sm text-muted-foreground">
+                  Moyenne des pourcentages de chaque jour de la semaine.
+                  <span className="block mt-1 text-xs">
+                    Exemple : Lun 80%, Mar 60%, Mer 100% → Moyenne = 80%
+                  </span>
+                </p>
+              </div>
             </section>
 
-            <div className="flex justify-end">
+            <div className="flex justify-end pt-2">
               <Button variant="ghost" onClick={() => setOpen(false)}>
                 Fermer
               </Button>

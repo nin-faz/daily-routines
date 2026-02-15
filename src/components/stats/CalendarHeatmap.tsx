@@ -204,7 +204,7 @@ const CalendarHeatmap = ({ onDateSelect }: CalendarHeatmapProps) => {
               <div className="text-xs">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
                   <span className="font-medium mb-2 sm:mb-0 sm:mr-4">
-                    Taux de complétion :
+                    Taux de réussite :
                   </span>
                   <div className="flex items-center flex-wrap gap-5">
                     <div className="flex items-center gap-1.5">

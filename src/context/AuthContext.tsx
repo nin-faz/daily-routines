@@ -80,6 +80,28 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signOut = async () => {
     const { error } = await supabase.auth.signOut();
+
+    if (!error) {
+      const keepKeys = ["theme", "onboarding_completed"];
+      const toKeep: Record<string, string> = {};
+
+      // Sauvegarder les clés à garder
+      keepKeys.forEach((key) => {
+        const value = localStorage.getItem(key);
+        if (value !== null) {
+          toKeep[key] = value;
+        }
+      });
+
+      // Tout effacer
+      localStorage.clear();
+
+      // Restaurer les clés à garder
+      Object.entries(toKeep).forEach(([key, value]) => {
+        localStorage.setItem(key, value);
+      });
+    }
+
     if (error) {
       console.error("❌ Erreur lors de la déconnexion:", error);
       throw error;

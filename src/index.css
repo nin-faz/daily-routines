@@ -51,9 +51,13 @@ All colors MUST be HSL.
     --success: 142 70% 45%;
     --success-foreground: 0 0% 100%;
 
-    --gradient-primary: linear-gradient(135deg, hsl(16 90% 58%), hsl(30 95% 65%));
+    --gradient-primary: linear-gradient(
+      135deg,
+      hsl(16 90% 58%),
+      hsl(30 95% 65%)
+    );
     --gradient-bg: linear-gradient(180deg, hsl(30 40% 98%), hsl(30 30% 96%));
-    
+
     --shadow-card: 0 4px 20px -4px hsl(20 40% 15% / 0.08);
     --shadow-card-hover: 0 8px 30px -4px hsl(20 40% 15% / 0.12);
 
@@ -99,9 +103,13 @@ All colors MUST be HSL.
     --success: 142 70% 45%;
     --success-foreground: 0 0% 100%;
 
-    --gradient-primary: linear-gradient(135deg, hsl(16 90% 58%), hsl(30 95% 65%));
+    --gradient-primary: linear-gradient(
+      135deg,
+      hsl(16 90% 58%),
+      hsl(30 95% 65%)
+    );
     --gradient-bg: linear-gradient(180deg, hsl(20 15% 10%), hsl(20 15% 8%));
-    
+
     --shadow-card: 0 4px 20px -4px hsl(0 0% 0% / 0.3);
     --shadow-card-hover: 0 8px 30px -4px hsl(0 0% 0% / 0.4);
 

@@ -69,8 +69,44 @@ const AppContent = () => {
     // (pour détecter si l'utilisateur a activé les notifs dans les réglages)
     window.addEventListener("focus", initNotifications);
 
+    // Écouter les changements de permission en temps réel
+    let permissionStatus: PermissionStatus | null = null;
+
+    const setupPermissionListener = async () => {
+      try {
+        if ("permissions" in navigator && user && !user.loading) {
+          permissionStatus = await navigator.permissions.query({
+            name: "notifications" as PermissionName,
+          });
+
+          // Détecter quand la permission change (ex: de "default" à "granted")
+          permissionStatus.onchange = async () => {
+            console.log("🔔 Permission notification changée:", permissionStatus?.state);
+
+            // Si l'utilisateur vient d'accepter les notifications
+            if (permissionStatus?.state === "granted") {
+              console.log("✅ Création automatique de la subscription...");
+              await registerServiceWorker();
+              refreshStatus();
+            } else {
+              // Si refusé ou révoqué, juste rafraîchir le statut
+              refreshStatus();
+            }
+          };
+        }
+      } catch (error) {
+        console.log("Permissions API non supportée");
+      }
+    };
+
+    setupPermissionListener();
+
     return () => {
       window.removeEventListener("focus", initNotifications);
+
+      if (permissionStatus) {
+        permissionStatus.onchange = null;
+      }
     };
   }, [user]);
 
@@ -199,7 +235,7 @@ const AppContent = () => {
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <ThemeProvider attribute="class" defaultTheme="light">
+    <ThemeProvider attribute="class" enableSystem={false}>
       <NotificationProvider>
         <AuthProvider>
           <UserProvider>
