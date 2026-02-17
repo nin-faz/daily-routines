@@ -1,5 +1,6 @@
 import { useAdminUsers } from "@/hooks/useAdminQueries";
 import { updateAdminRole } from "@/integrations/supabase/admin";
+import { deleteUser } from "@/integrations/supabase/user";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -14,7 +15,18 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Loader2, Shield, ShieldOff, User } from "lucide-react";
+import { Loader2, Shield, ShieldOff, User, Trash2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "@/components/ui/alert-dialog";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 
@@ -51,6 +63,12 @@ const AdminUsers = () => {
       });
     }
   };
+
+  // Trouver l'utilisateur courant (celui qui est connecté)
+  // On suppose que le premier user dans la liste avec le rôle admin et user_id === id est le courant
+  const currentUser = users.find(
+    (u) => u.roles.includes("admin") && u.id === u.user_id,
+  );
 
   return (
     <AdminLayout>
@@ -99,6 +117,8 @@ const AdminUsers = () => {
                         .join("")
                         .slice(0, 2)
                         .toUpperCase();
+                      const isCurrentUser =
+                        currentUser && user.id === currentUser.id;
                       return (
                         <TableRow
                           key={user.id}
@@ -138,27 +158,86 @@ const AdminUsers = () => {
                               locale: fr,
                             })}
                           </TableCell>
-                          <TableCell className="text-right">
-                            {user?.id !== user.user_id ? (
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() =>
-                                  toggleAdminRole(user.user_id, user.roles)
-                                }
-                              >
-                                {isAdmin ? (
-                                  <>
-                                    <ShieldOff className="h-4 w-4 mr-1" />
-                                    Retirer admin
-                                  </>
-                                ) : (
-                                  <>
-                                    <Shield className="h-4 w-4 mr-1" />
-                                    Rendre admin
-                                  </>
-                                )}
-                              </Button>
+                          <TableCell className="text-right flex gap-2 justify-end">
+                            {!isCurrentUser ? (
+                              <>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() =>
+                                    toggleAdminRole(user.user_id, user.roles)
+                                  }
+                                >
+                                  {isAdmin ? (
+                                    <>
+                                      <ShieldOff className="h-4 w-4 mr-1" />
+                                      Retirer admin
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Shield className="h-4 w-4 mr-1" />
+                                      Rendre admin
+                                    </>
+                                  )}
+                                </Button>
+                                <AlertDialog>
+                                  <AlertDialogTrigger asChild>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                                    >
+                                      <Trash2 className="h-4 w-4 mr-1" />
+                                      Supprimer
+                                    </Button>
+                                  </AlertDialogTrigger>
+                                  <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                      <AlertDialogTitle>
+                                        Supprimer l'utilisateur ?
+                                      </AlertDialogTitle>
+                                      <AlertDialogDescription>
+                                        Cette action est{" "}
+                                        <span className="font-bold text-red-600">
+                                          irréversible
+                                        </span>
+                                        .<br />
+                                        Voulez-vous vraiment supprimer cet
+                                        utilisateur ?
+                                      </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                      <AlertDialogCancel>
+                                        Annuler
+                                      </AlertDialogCancel>
+                                      <AlertDialogAction
+                                        className="bg-red-600 hover:bg-red-700 text-white"
+                                        onClick={async () => {
+                                          const error = await deleteUser(
+                                            user.user_id,
+                                          );
+                                          if (error) {
+                                            toast({
+                                              title: "Erreur",
+                                              description: error,
+                                              variant: "destructive",
+                                            });
+                                          } else {
+                                            toast({
+                                              title: "Utilisateur supprimé",
+                                              description:
+                                                "L'utilisateur a bien été supprimé.",
+                                            });
+                                            refetch();
+                                          }
+                                        }}
+                                      >
+                                        Supprimer
+                                      </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                  </AlertDialogContent>
+                                </AlertDialog>
+                              </>
                             ) : (
                               <span className="text-xs text-muted-foreground">
                                 (Vous)

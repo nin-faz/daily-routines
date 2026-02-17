@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { Routine, RoutineStatus } from "@/types/routine";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { routineStorage } from "@/integrations/supabase/routines";
 import CalendarHeatmap from "@/components/stats/CalendarHeatmap";
 import { WeeklyView } from "@/components/stats/WeeklyView";
@@ -14,32 +14,27 @@ import { formatDateYMD } from "@/lib/date";
 type ViewMode = "monthly" | "weekly";
 
 const Calendar = () => {
-  const [routines, setRoutines] = useState<Routine[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [viewMode, setViewMode] = useState<ViewMode>("monthly");
 
-  useEffect(() => {
-    const loadRoutines = async () => {
-      const loadedRoutines = await routineStorage.getRoutines();
-      setRoutines(loadedRoutines);
-    };
-    loadRoutines();
-  }, []);
+  // Routines avec cache React Query
+  const { data: routines = [] } = useQuery({
+    queryKey: ["routines"],
+    queryFn: () => routineStorage.getRoutines(),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
+  // Statuts du jour sélectionné avec cache React Query
+  const { data: statusesForDate = [] } = useQuery({
+    queryKey: ["routine-statuses", formatDateYMD(selectedDate)],
+    queryFn: () =>
+      routineStorage.getStatusesForDate(formatDateYMD(selectedDate)),
+    staleTime: 1 * 60 * 1000, // 1 minute
+  });
 
   const handleDateSelect = (date: Date) => {
     setSelectedDate(date);
   };
-
-  const [statusesForDate, setStatusesForDate] = useState<RoutineStatus[]>([]);
-
-  useEffect(() => {
-    const loadStatuses = async () => {
-      const dateString = formatDateYMD(selectedDate);
-      const statuses = await routineStorage.getStatusesForDate(dateString);
-      setStatusesForDate(statuses);
-    };
-    loadStatuses();
-  }, [selectedDate]);
 
   return (
     <div className="min-h-screen bg-gradient-bg pb-20 md:pb-24">

@@ -18,10 +18,16 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Plus, Bell, Sunrise, Sun, Moon } from "lucide-react";
-import { Routine, TimeOfDay } from "@/types/routine";
+import {
+  Routine,
+  TimeOfDay,
+  RoutineFrequency,
+  DayOfWeek,
+} from "@/types/routine";
 import { toast } from "sonner";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useNotifications } from "@/context/NotificationContext";
+import { cn } from "@/lib/utils";
 
 // Générer les options pour les heures (00-23)
 const HOURS = Array.from({ length: 24 }, (_, i) =>
@@ -29,6 +35,17 @@ const HOURS = Array.from({ length: 24 }, (_, i) =>
 );
 // Les 4 créneaux imposés
 const MINUTES = ["00", "15", "30", "45"];
+
+// Jours de la semaine
+const DAYS_OF_WEEK: { value: DayOfWeek; label: string; short: string }[] = [
+  { value: DayOfWeek.MONDAY, label: "Lundi", short: "L" },
+  { value: DayOfWeek.TUESDAY, label: "Mardi", short: "M" },
+  { value: DayOfWeek.WEDNESDAY, label: "Mercredi", short: "Me" },
+  { value: DayOfWeek.THURSDAY, label: "Jeudi", short: "J" },
+  { value: DayOfWeek.FRIDAY, label: "Vendredi", short: "V" },
+  { value: DayOfWeek.SATURDAY, label: "Samedi", short: "S" },
+  { value: DayOfWeek.SUNDAY, label: "Dimanche", short: "D" },
+];
 
 /**
  * Convertir l'heure locale en UTC pour stockage en base
@@ -56,7 +73,9 @@ interface CreateRoutineDialogProps {
   routine?: Routine;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
-  onCreateRoutine?: (routine: Omit<Routine, "id" | "createdAt">) => void;
+  onCreateRoutine?: (
+    routine: Omit<Routine, "id" | "createdAt" | "userId" | "updatedAt">,
+  ) => void;
   onUpdateRoutine?: (routine: Routine) => void;
 }
 
@@ -75,6 +94,10 @@ const CreateRoutineDialog = ({
   const [selectedMinute, setSelectedMinute] = useState("00");
   const [enableNotification, setEnableNotification] = useState(false);
   const [timeOfDay, setTimeOfDay] = useState<TimeOfDay | undefined>(undefined);
+  const [frequency, setFrequency] = useState<RoutineFrequency>(
+    RoutineFrequency.DAILY,
+  );
+  const [weekDays, setWeekDays] = useState<DayOfWeek[]>([]);
 
   const isEditMode = !!routine;
   const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
@@ -111,6 +134,8 @@ const CreateRoutineDialog = ({
       }
 
       setTimeOfDay(routine.timeOfDay);
+      setFrequency(routine.frequency || RoutineFrequency.DAILY);
+      setWeekDays(routine.weekDays || []);
     } else if (!open) {
       // Réinitialiser le formulaire à chaque fermeture du dialog
       setTitle("");
@@ -120,6 +145,8 @@ const CreateRoutineDialog = ({
       setSelectedMinute("00");
       setEnableNotification(false);
       setTimeOfDay(undefined);
+      setFrequency(RoutineFrequency.DAILY);
+      setWeekDays([]);
     }
   }, [routine, open]);
 
@@ -142,11 +169,22 @@ const CreateRoutineDialog = ({
     }
   }, [open, isEditMode, routine]);
 
+  const toggleWeekDay = (day: DayOfWeek) => {
+    setWeekDays((prev) =>
+      prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day],
+    );
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!title.trim()) {
       toast.error("Le titre est requis");
+      return;
+    }
+
+    if (frequency === RoutineFrequency.WEEKLY && weekDays.length === 0) {
+      toast.error("Sélectionnez au moins un jour de la semaine");
       return;
     }
 
@@ -181,6 +219,8 @@ const CreateRoutineDialog = ({
         hasTimer: !!durationNum,
         notificationTime: finalNotificationTime,
         timeOfDay,
+        frequency,
+        weekDays: frequency === RoutineFrequency.WEEKLY ? weekDays : undefined,
       });
       toast.success("Routine modifiée avec succès");
     } else if (onCreateRoutine) {
@@ -190,6 +230,8 @@ const CreateRoutineDialog = ({
         hasTimer: !!durationNum,
         notificationTime: finalNotificationTime,
         timeOfDay,
+        frequency,
+        weekDays: frequency === RoutineFrequency.WEEKLY ? weekDays : undefined,
       });
       toast.success("Routine créée avec succès");
     }
@@ -201,7 +243,7 @@ const CreateRoutineDialog = ({
     <Dialog open={open} onOpenChange={setOpen}>
       {!isEditMode && (
         <DialogTrigger asChild>
-          <div className="fixed bottom-20 right-4 z-50 group">
+          <div className="fixed bottom-24 right-4 z-50 group">
             <Button
               size="lg"
               className="rounded-full h-12 w-12 shadow-xl bg-gradient-primary hover:opacity-90 transition-all hover:scale-105 relative"
@@ -216,7 +258,10 @@ const CreateRoutineDialog = ({
           </div>
         </DialogTrigger>
       )}
-      <DialogContent className="sm:max-w-md" aria-describedby={undefined}>
+      <DialogContent
+        className="sm:max-w-md max-h-[90vh] overflow-y-auto"
+        aria-describedby={undefined}
+      >
         <DialogHeader>
           <DialogTitle>
             {isEditMode ? "Modifier la routine" : "Créer une routine"}
@@ -275,7 +320,7 @@ const CreateRoutineDialog = ({
               }
             >
               <div className="flex items-center space-x-2">
-                <RadioGroupItem value={TimeOfDay.Morning} id="morning" />
+                <RadioGroupItem value={TimeOfDay.MORNING} id="morning" />
                 <Label
                   htmlFor="morning"
                   className="cursor-pointer flex items-center gap-2 font-normal"
@@ -285,7 +330,7 @@ const CreateRoutineDialog = ({
                 </Label>
               </div>
               <div className="flex items-center space-x-2">
-                <RadioGroupItem value={TimeOfDay.Afternoon} id="afternoon" />
+                <RadioGroupItem value={TimeOfDay.AFTERNOON} id="afternoon" />
                 <Label
                   htmlFor="afternoon"
                   className="cursor-pointer flex items-center gap-2 font-normal"
@@ -295,7 +340,7 @@ const CreateRoutineDialog = ({
                 </Label>
               </div>
               <div className="flex items-center space-x-2">
-                <RadioGroupItem value={TimeOfDay.Evening} id="evening" />
+                <RadioGroupItem value={TimeOfDay.EVENING} id="evening" />
                 <Label
                   htmlFor="evening"
                   className="cursor-pointer flex items-center gap-2 font-normal"
@@ -317,6 +362,65 @@ const CreateRoutineDialog = ({
               </Button>
             )}
           </div>
+
+          {/* Fréquence */}
+          <div className="space-y-3">
+            <Label>Fréquence</Label>
+            <RadioGroup
+              value={frequency}
+              onValueChange={(value) => setFrequency(value as RoutineFrequency)}
+            >
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem
+                  value={RoutineFrequency.DAILY}
+                  id="freq-daily"
+                />
+                <Label
+                  htmlFor="freq-daily"
+                  className="cursor-pointer font-normal"
+                >
+                  Tous les jours
+                </Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem
+                  value={RoutineFrequency.WEEKLY}
+                  id="freq-weekly"
+                />
+                <Label
+                  htmlFor="freq-weekly"
+                  className="cursor-pointer font-normal"
+                >
+                  Certains jours de la semaine
+                </Label>
+              </div>
+            </RadioGroup>
+          </div>
+
+          {/* Jours de la semaine (si hebdomadaire) */}
+          {frequency === RoutineFrequency.WEEKLY && (
+            <div className="space-y-2">
+              <Label>Jours de la semaine</Label>
+              <div className="flex flex-wrap gap-2">
+                {DAYS_OF_WEEK.map((day) => (
+                  <button
+                    key={day.value}
+                    type="button"
+                    onClick={() => toggleWeekDay(day.value)}
+                    className={cn(
+                      "w-10 h-10 rounded-full text-sm font-medium transition-colors",
+                      weekDays.includes(day.value)
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted hover:bg-muted/80",
+                    )}
+                    title={day.label}
+                  >
+                    {day.short}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="space-y-2">
             {" "}

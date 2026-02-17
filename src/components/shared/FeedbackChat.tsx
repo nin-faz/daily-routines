@@ -221,7 +221,7 @@ export default function FeedbackChat() {
   return (
     <>
       {/* Bouton flottant */}
-      <div className="fixed left-4 bottom-20 z-50 group">
+      <div className="fixed left-4 bottom-24 z-50 group">
         <Button
           size="icon"
           className="rounded-full h-12 w-12 shadow-xl bg-gradient-primary hover:opacity-90 transition-all hover:scale-105"

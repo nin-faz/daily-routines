@@ -1,4 +1,4 @@
-import { Routine, RoutineStatus } from "@/types/routine";
+import { Routine, RoutineStatus, RoutineFrequency } from "@/types/routine";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
@@ -14,10 +14,19 @@ import {
   AlertDialogCancel,
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
-import { Trash2, Clock, TrendingUp, CalendarX, Pencil } from "lucide-react";
+import {
+  Trash2,
+  Clock,
+  TrendingUp,
+  CalendarX,
+  Pencil,
+  Calendar,
+} from "lucide-react";
 import Timer from "./Timer";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
+
+import { getDayLabel } from "@/lib/days";
 
 interface RoutineCardProps {
   routine: Routine;
@@ -39,6 +48,11 @@ const RoutineCard = ({
   const isCompleted = status?.completed || false;
   const isSkipped = status?.skipped || false;
   const navigate = useNavigate();
+
+  const isWeekly =
+    routine.frequency === RoutineFrequency.WEEKLY &&
+    routine.weekDays &&
+    routine.weekDays.length > 0;
 
   return (
     <Card
@@ -78,12 +92,25 @@ const RoutineCard = ({
                   </Badge>
                 )}
               </div>
-              {routine.duration && (
-                <div className="flex items-center gap-1 text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1">
-                  <Clock className="h-3 w-3" />
-                  <span>{routine.duration} min</span>
-                </div>
-              )}
+              <div className="flex items-center gap-2 mt-0.5 sm:mt-1 flex-wrap">
+                {routine.duration && (
+                  <div className="flex items-center gap-1 text-xs sm:text-sm text-muted-foreground">
+                    <Clock className="h-3 w-3" />
+                    <span>{routine.duration} min</span>
+                  </div>
+                )}
+                {isWeekly && (
+                  <Badge
+                    variant="outline"
+                    className="text-xs gap-1 py-0 h-5 border-primary/30 text-primary"
+                  >
+                    <Calendar className="h-3 w-3" />
+                    {routine
+                      .weekDays!.map((day) => getDayLabel(day))
+                      .join(", ")}
+                  </Badge>
+                )}
+              </div>
             </div>
           </div>
 

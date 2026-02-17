@@ -11,6 +11,19 @@ export function formatDateYMD(date: Date): string {
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 }
 
+/** 
+ * Formate une date en français avec jour de la semaine, jour, mois et année
+ * Ex: "lundi 1 janvier 2024"
+ */
+export function formatFrenchDate(date: Date = new Date()): string {
+  return date.toLocaleDateString("fr-FR", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+}
+
 // Retourne un tableau de dates (string) pour le mois courant, formatées YMD
 export function getDatesOfCurrentMonth(fromDate = new Date()): string[] {
   const start = startOfMonth(fromDate);

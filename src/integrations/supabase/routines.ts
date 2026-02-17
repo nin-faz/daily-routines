@@ -1,4 +1,4 @@
-import { Routine, RoutineStatus, TimeOfDay } from "@/types/routine";
+import { Routine, RoutineStatus, TimeOfDay, RoutineFrequency, DayOfWeek } from "@/types/routine";
 import { getActiveRoutinesAtDate } from "@/lib/utils";
 import { formatDateYMD } from "@/lib/date";
 import { supabase } from "@/integrations/supabase/client";
@@ -25,12 +25,16 @@ export const routineStorage = {
 
     return (data || []).map((row) => ({
       id: row.id,
+      userId: row.user_id,
       title: row.title,
       duration: row.duration ?? undefined,
       hasTimer: row.has_timer,
       notificationTime: row.notification_time ?? undefined,
       timeOfDay: row.time_of_day as TimeOfDay | undefined,
+      frequency: (row.frequency as RoutineFrequency) || RoutineFrequency.DAILY,
+      weekDays: (row.week_days as DayOfWeek[]) ?? undefined,
       createdAt: row.created_at,
+      updatedAt: row.updated_at ?? row.created_at,
     }));
   },
 
@@ -48,6 +52,8 @@ export const routineStorage = {
       has_timer: routine.hasTimer,
       notification_time: routine.notificationTime ?? null,
       time_of_day: routine.timeOfDay ?? null,
+      frequency: routine.frequency || RoutineFrequency.DAILY,
+      week_days: routine.weekDays ?? null,
     };
 
     const { error } = await supabase.from("routines").insert(row);
@@ -72,6 +78,10 @@ export const routineStorage = {
       row.notification_time = updates.notificationTime ?? null;
     if ("timeOfDay" in updates)
       row.time_of_day = updates.timeOfDay ?? null;
+    if ("frequency" in updates)
+      row.frequency = updates.frequency ?? RoutineFrequency.DAILY;
+    if ("weekDays" in updates)
+      row.week_days = updates.weekDays ?? null;
 
     const { error } = await supabase
       .from("routines")
@@ -123,11 +133,14 @@ export const routineStorage = {
     }
 
     return (data || []).map((row) => ({
+      id: row.id,
       routineId: row.routine_id,
+      userId: row.user_id,
       date: row.date,
-      completed: row.status === "completed",
-      completedAt: row.status === "completed" ? row.created_at : undefined,
-      skipped: row.status === "skipped",
+      completed: row.completed,
+      completedAt: row.completed_at ?? undefined,
+      skipped: row.skipped,
+      createdAt: row.created_at,
     }));
   },
 
@@ -151,11 +164,14 @@ export const routineStorage = {
     if (error || !data) return undefined;
 
     return {
+      id: data.id,
       routineId: data.routine_id,
+      userId: data.user_id,
       date: data.date,
-      completed: data.status === "completed",
-      completedAt: data.status === "completed" ? data.created_at : undefined,
-      skipped: data.status === "skipped",
+      completed: data.completed,
+      completedAt: data.completed_at ?? undefined,
+      skipped: data.skipped,
+      createdAt: data.created_at,
     };
   },
 
@@ -190,7 +206,9 @@ export const routineStorage = {
         routine_id: routineId,
         user_id: user.id,
         date: today,
-        status: "completed",
+        completed: true,
+        completed_at: new Date().toISOString(),
+        skipped: false,
       });
       if (error) {
         console.error("Erreur lors de la création du statut:", error);
@@ -225,7 +243,8 @@ export const routineStorage = {
         routine_id: routineId,
         user_id: user.id,
         date: today,
-        status: "skipped",
+        completed: false,
+        skipped: true,
       });
 
       if (error) {
@@ -249,7 +268,7 @@ export const routineStorage = {
       .select("*")
       .eq("user_id", user.id)
       .eq("date", date)
-      .eq("status", "completed");
+      .eq("completed", true);
 
     if (error) {
       console.error("Erreur lors de la récupération du taux de complétion:", error);
@@ -348,11 +367,14 @@ export const routineStorage = {
     }
 
     return (data || []).map((row) => ({
+      id: row.id,
       routineId: row.routine_id,
+      userId: row.user_id,
       date: row.date,
-      completed: row.status === "completed",
-      completedAt: row.status === "completed" ? row.created_at : undefined,
-      skipped: row.status === "skipped",
+      completed: row.completed,
+      completedAt: row.completed_at ?? undefined,
+      skipped: row.skipped,
+      createdAt: row.created_at,
     }));
   },
 };

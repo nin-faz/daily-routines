@@ -9,7 +9,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ArrowLeft, Calendar, TrendingUp, Flame, Award } from "lucide-react";
+import {
+  ArrowLeft,
+  Calendar,
+  TrendingUp,
+  Flame,
+  Award,
+  Sparkles,
+  Clock,
+} from "lucide-react";
+import { getTimeOfDayLabel, getFrequencyLabel } from "@/lib/days";
 import {
   BarChart,
   Bar,
@@ -19,19 +28,14 @@ import {
   ResponsiveContainer,
   Cell,
 } from "recharts";
-import {
-  format,
-  parseISO,
-  differenceInDays,
-  eachDayOfInterval,
-} from "date-fns";
+import { format, parseISO, differenceInDays } from "date-fns";
 import { fr } from "date-fns/locale";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useStats } from "@/hooks/useStats";
 import { useRoutines } from "@/hooks/useRoutines";
 import useRoutineStatuses from "@/hooks/useRoutineStatuses";
 import { calculateStatStreak, calculateLongestStreak } from "@/lib/streak";
-import { getDatesBetween } from "@/lib/date";
+import { getDatesBetween, getDatesOfCurrentMonth } from "@/lib/date";
 
 const RoutineHistory = () => {
   const { routineId } = useParams<{ routineId: string }>();
@@ -67,14 +71,16 @@ const RoutineHistory = () => {
     return null;
   }
 
+  // Memo pour éviter recalculs inutiles
   const completedStatuses = allStatuses.filter((s) => s.completed);
   const completedDates = completedStatuses.map((s) => s.date).sort();
 
-  // Filtre les complétions par mois sélectionné
-  const filteredCompletedDates = completedDates.filter((date) => {
-    const d = parseISO(date);
-    return d.getMonth() === selectedMonth && d.getFullYear() === selectedYear;
-  });
+  const filteredCompletedDates = useMemo(() => {
+    return completedDates.filter((date) => {
+      const d = parseISO(date);
+      return d.getMonth() === selectedMonth && d.getFullYear() === selectedYear;
+    });
+  }, [completedDates, selectedMonth, selectedYear]);
 
   // Génère les années et mois disponibles depuis la création jusqu'à aujourd'hui
   const creationYear = parseISO(routine.createdAt).getFullYear();
@@ -105,26 +111,6 @@ const RoutineHistory = () => {
   // Calcul des statistiques
   const totalCompletions = completedDates.length;
 
-  // Prépare les données du graphique pour les 30 derniers jours
-  const prepareLast30DaysData = () => {
-    const today = new Date();
-    const thirtyDaysAgo = new Date(today);
-    thirtyDaysAgo.setDate(today.getDate() - 29);
-
-    const days = eachDayOfInterval({ start: thirtyDaysAgo, end: today });
-
-    return days.map((day) => {
-      const dateStr = format(day, "yyyy-MM-dd");
-      const isCompleted = completedDates.includes(dateStr);
-
-      return {
-        date: format(day, "dd/MM"),
-        fullDate: dateStr,
-        completed: isCompleted ? 1 : 0,
-      };
-    });
-  };
-
   // Prépare la liste de dates depuis la création de la routine jusqu'à aujourd'hui
   const allRoutineDates = getDatesBetween(
     typeof routine.createdAt === "string"
@@ -143,7 +129,21 @@ const RoutineHistory = () => {
     allStatuses,
     allRoutineDates,
   );
-  const chartData = prepareLast30DaysData();
+  // Prépare les données du graphique pour le mois sélectionné
+  const chartData = useMemo(() => {
+    const monthDates = getDatesOfCurrentMonth(
+      new Date(selectedYear, selectedMonth),
+    );
+    return monthDates.map((day) => {
+      const dateStr = format(day, "yyyy-MM-dd");
+      const isCompleted = completedDates.includes(dateStr);
+      return {
+        date: format(day, "dd/MM"),
+        fullDate: dateStr,
+        completed: isCompleted ? 1 : 0,
+      };
+    });
+  }, [completedDates, selectedMonth, selectedYear]);
 
   // Compte le nombre de jours calendaires depuis la création
   const creationDate = format(parseISO(routine.createdAt), "yyyy-MM-dd");
@@ -164,6 +164,8 @@ const RoutineHistory = () => {
     Math.round((totalCompletions / activeDays) * 100),
   );
 
+  const firstToLastDate = getDatesOfCurrentMonth(new Date());
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
       <div className="container mx-auto px-4 py-6 max-w-4xl">
@@ -172,7 +174,8 @@ const RoutineHistory = () => {
           <Button
             variant="ghost"
             onClick={() => navigate("/")}
-            className="mb-4"
+            className="mb-4 focus-visible:ring-2 focus-visible:ring-primary"
+            aria-label="Retour à l'accueil"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Retour
@@ -187,6 +190,47 @@ const RoutineHistory = () => {
               locale: fr,
             })}
           </p>
+          {/* Affichage élégant des propriétés fréquence et moment */}
+          {(routine.frequency || routine.timeOfDay || !routine.timeOfDay) && (
+            <div className="flex flex-wrap gap-3 mt-6">
+              {/* Badge Fréquence */}
+              {routine.frequency && (
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-primary/10 text-primary border border-primary/20 shadow-sm transition-all hover:bg-primary/15">
+                  <Calendar className="h-4 w-4" />
+                  <span className="text-xs font-bold uppercase tracking-wide">
+                    {getFrequencyLabel(routine.frequency)}
+                  </span>
+                </div>
+              )}
+
+              {/* Badge Moment de la journée */}
+              <div
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border shadow-sm transition-all
+                ${
+                  routine.timeOfDay
+                    ? "bg-secondary/10 text-secondary-foreground border-secondary/20"
+                    : "bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 border-indigo-100 dark:border-indigo-900/50"
+                }`}
+              >
+                {/* Icone dynamique : Soit l'icône du moment, soit Sparkles si non-défini */}
+                {routine.timeOfDay ? (
+                  <>
+                    <Clock className="h-4 w-4" />
+                    <span className="text-xs font-bold uppercase tracking-wide">
+                      {getTimeOfDayLabel(routine.timeOfDay)?.label}
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="h-4 w-4" />
+                    <span className="text-xs font-bold uppercase tracking-wide">
+                      À votre rythme
+                    </span>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Statistics Cards */}
@@ -251,7 +295,9 @@ const RoutineHistory = () => {
         {/* Chart */}
         <Card className="mb-6">
           <CardHeader>
-            <CardTitle>Activité des 30 derniers jours</CardTitle>
+            <CardTitle>
+              Activité des {firstToLastDate.length} derniers jours
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={200}>
@@ -267,7 +313,10 @@ const RoutineHistory = () => {
                     if (active && payload && payload[0]) {
                       const data = payload[0].payload;
                       return (
-                        <div className="bg-card border rounded-lg p-2 shadow-lg">
+                        <div
+                          className="bg-card border rounded-lg p-2 shadow-lg"
+                          aria-live="polite"
+                        >
                           <p className="text-sm font-semibold">
                             {format(parseISO(data.fullDate), "dd MMMM yyyy", {
                               locale: fr,
@@ -283,13 +332,16 @@ const RoutineHistory = () => {
                   }}
                 />
                 <Bar dataKey="completed" radius={[4, 4, 0, 0]}>
-                  {chartData.map((entry, index) => (
+                  {chartData.map((entry: { completed: any }, index: any) => (
                     <Cell
                       key={`cell-${index}`}
                       fill={
                         entry.completed
                           ? "hsl(var(--primary))"
                           : "hsl(var(--muted))"
+                      }
+                      aria-label={
+                        entry.completed ? "Jour complété" : "Jour non complété"
                       }
                     />
                   ))}
@@ -344,7 +396,10 @@ const RoutineHistory = () => {
           <CardContent>
             {filteredCompletedDates.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-8">
-                <p className="text-center text-muted-foreground">
+                <p
+                  className="text-center text-muted-foreground"
+                  aria-live="polite"
+                >
                   {completedDates.length === 0
                     ? "Pas encore de routines complétées"
                     : "Aucune routine complétée ce mois-ci"}
@@ -357,10 +412,15 @@ const RoutineHistory = () => {
                   return (
                     <div
                       key={date}
-                      className="flex items-center justify-between p-3 rounded-lg border bg-muted/30"
+                      className="flex items-center justify-between p-3 rounded-lg border bg-muted/30 focus-within:ring-2 focus-within:ring-primary"
+                      tabIndex={0}
+                      aria-label={`Routine complétée le ${format(parseISO(date), "EEEE dd MMMM yyyy", { locale: fr })}`}
                     >
                       <div className="flex items-center gap-3">
-                        <div className="h-2 w-2 rounded-full bg-green-600" />
+                        <div
+                          className="h-2 w-2 rounded-full bg-green-600"
+                          aria-hidden="true"
+                        />
                         <span className="font-medium capitalize">
                           {format(parseISO(date), "EEEE dd MMMM yyyy", {
                             locale: fr,

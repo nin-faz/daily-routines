@@ -1,4 +1,6 @@
 import type { Routine, RoutineStatus } from "@/types/routine";
+import { JS_DAY_TO_DAY_OF_WEEK } from "@/lib/days";
+import { RoutineFrequency } from "@/types/routine";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { formatDateYMD } from "@/lib/date";
@@ -55,13 +57,26 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-// Formate une date en 'yyyy-MM-dd' (date locale)
 
 // Retourne les routines existantes à une date donnée (format yyyy-MM-dd)
 export function getRoutinesAtDate(routines: Routine[], selectedDate: string): Routine[] {
-  return routines.filter((routine) => {
+  return routines.filter((routine: Routine) => {
     const dateCreatedFromRoutine = typeof routine.createdAt === "string" ? new Date(routine.createdAt) : routine.createdAt;
-    return formatDateYMD(dateCreatedFromRoutine) <= selectedDate;
+    if (formatDateYMD(dateCreatedFromRoutine) > selectedDate) return false;
+
+    // Déterminer le jour de la semaine pour selectedDate
+    const jsDate = new Date(selectedDate);
+    const dayOfWeek = JS_DAY_TO_DAY_OF_WEEK[jsDate.getDay()];
+
+    // Quotidienne : toujours active
+    if (!routine.frequency || routine.frequency === RoutineFrequency.DAILY) {
+      return true;
+    }
+    // Hebdomadaire : active seulement si le jour est dans weekDays
+    if (routine.frequency === RoutineFrequency.WEEKLY && routine.weekDays) {
+      return routine.weekDays.includes(dayOfWeek);
+    }
+    return false;
   });
 }
 

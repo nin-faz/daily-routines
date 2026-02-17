@@ -23,6 +23,13 @@ import {
   Award,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import Navigation from "@/components/layout/Navigation";
 import Header from "@/components/layout/Header";
@@ -30,11 +37,13 @@ import { StatsSkeleton } from "@/components/stats/StatsSkeleton";
 import EmptyState from "@/components/shared/EmptyState";
 import { useStats } from "@/hooks/useStats";
 import { format, subDays, isWithinInterval } from "date-fns";
+import { getFrequencyLabel } from "@/lib/days";
 import { formatDateYMD, getDatesOfCurrentMonth, getWeekDays } from "@/lib/date";
 import { getActiveRoutinesAtDate } from "@/lib/utils";
 import { fr } from "date-fns/locale";
 import type { Routine } from "@/types/routine";
 import { calculateStatStreak, calculateLongestStreak } from "@/lib/streak";
+import React from "react";
 
 const CustomBarShape = (props: RectangleProps & { isTop: boolean }) => {
   const { isTop, ...rest } = props;
@@ -43,6 +52,19 @@ const CustomBarShape = (props: RectangleProps & { isTop: boolean }) => {
 
 const Stats = () => {
   const { routines, statuses, projects, tasks, isLoading } = useStats();
+  const [routineType, setRoutineType] = React.useState<
+    "all" | "daily" | "weekly"
+  >("all");
+
+  // Filtrage routines selon le type sélectionné
+  const filteredRoutines = React.useMemo(() => {
+    if (routineType === "all") return routines;
+    if (routineType === "daily")
+      return routines.filter((r) => !r.frequency || r.frequency === "daily");
+    if (routineType === "weekly")
+      return routines.filter((r) => r.frequency === "weekly");
+    return routines;
+  }, [routines, routineType]);
 
   // Calculs pour les routines
   const today = new Date();
@@ -52,7 +74,11 @@ const Stats = () => {
    * Routines (complétés ou non, sautés ne sont pas pris en compte) pour le jour en question
    */
   const completionsByDate = firstToLastDate.map((date) => {
-    const activeRoutines = getActiveRoutinesAtDate(routines, statuses, date);
+    const activeRoutines = getActiveRoutinesAtDate(
+      filteredRoutines,
+      statuses,
+      date,
+    );
     const totalRoutinesCompleted = activeRoutines.filter((completedRoutine) => {
       const statusForRoutinesCompleted = statuses.find(
         (currentStatusForRoutineCompleted) =>
@@ -79,14 +105,16 @@ const Stats = () => {
   );
 
   datesUpToToday.forEach((date) => {
-    const activeRoutines = getActiveRoutinesAtDate(routines, statuses, date);
-
+    const activeRoutines = getActiveRoutinesAtDate(
+      filteredRoutines,
+      statuses,
+      date,
+    );
     activeRoutines.forEach((routine) => {
       const status = statuses.find(
         (s) => s.date === date && s.routineId === routine.id,
       );
       totalRoutines++;
-
       if (status?.completed) {
         totalRoutinesCompleted++;
       }
@@ -101,8 +129,8 @@ const Stats = () => {
 
   // Génère toutes les dates depuis la première routine jusqu'à aujourd'hui (pour les streaks)
   const allRoutineDates = (() => {
-    if (routines.length === 0) return [];
-    const firstDate = routines.reduce((min, r) => {
+    if (filteredRoutines.length === 0) return [];
+    const firstDate = filteredRoutines.reduce((min, r) => {
       const d =
         typeof r.createdAt === "string" ? new Date(r.createdAt) : r.createdAt;
       return d < min ? d : min;
@@ -141,7 +169,7 @@ const Stats = () => {
   // Cette semaine
   const weekDays = getWeekDays(today, { weekStartsOn: 1 });
 
-  /** Graphique de la semaine : routines existantes à chaque jour */
+  /** Graphique de la semaine : routines existantes à chaque jour (selon filtre) */
   type WeeklyData = {
     jour: string;
     complétées: number;
@@ -150,8 +178,8 @@ const Stats = () => {
   };
   const weeklyData: WeeklyData[] = weekDays.map((day: Date) => {
     const formatedDate = formatDateYMD(day);
-    // On prend toutes les routines existantes à la date (même skipped)
-    const routinesAtDate = routines.filter((routine: Routine) => {
+    // On prend toutes les routines existantes à la date (même skipped), mais filtrées selon le type sélectionné
+    const routinesAtDate = filteredRoutines.filter((routine: Routine) => {
       const dateCreated =
         typeof routine.createdAt === "string"
           ? new Date(routine.createdAt)
@@ -223,9 +251,24 @@ const Stats = () => {
               Mes Statistiques
             </h1>
           </div>
-          <p className="text-sm sm:text-base text-muted-foreground text-center">
-            Suivez vos progrès et performances
-          </p>
+          <div className="flex flex-col items-center gap-2">
+            <p className="text-sm sm:text-base text-muted-foreground text-center">
+              Suivez vos progrès et performances
+            </p>
+            <Select
+              value={routineType}
+              onValueChange={(v) => setRoutineType(v as any)}
+            >
+              <SelectTrigger className="w-48">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Toutes les routines</SelectItem>
+                <SelectItem value="daily">Quotidiennes</SelectItem>
+                <SelectItem value="weekly">Hebdomadaires</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </header>
 
         {isLoading ? (
@@ -322,7 +365,46 @@ const Stats = () => {
                           width={30}
                         />
                         <Tooltip
-                          formatter={(value) => [`${value}%`, "Taux"]}
+                          content={({ active, payload, label }) => {
+                            if (active && payload && payload[0]) {
+                              // Routines actives ce jour-là
+                              const routinesForDay = getActiveRoutinesAtDate(
+                                filteredRoutines,
+                                statuses,
+                                firstToLastDate[
+                                  payload[0].payload?.index || 0
+                                ] || label,
+                              );
+                              return (
+                                <div className="bg-card border rounded-lg p-2 shadow-lg min-w-[160px]">
+                                  <div className="font-semibold mb-1">
+                                    {label}
+                                  </div>
+                                  <div className="mb-1 text-xs text-muted-foreground">
+                                    Taux : {payload[0].value}%
+                                  </div>
+                                  <div className="text-xs">
+                                    {routinesForDay.length === 0 ? (
+                                      <span>Aucune routine</span>
+                                    ) : (
+                                      routinesForDay.map((r) => (
+                                        <div
+                                          key={r.id}
+                                          className="flex items-center gap-1"
+                                        >
+                                          <span>{r.title}</span>
+                                          <span className="ml-1 text-[10px] text-muted-foreground">
+                                            ({getFrequencyLabel(r.frequency)})
+                                          </span>
+                                        </div>
+                                      ))
+                                    )}
+                                  </div>
+                                </div>
+                              );
+                            }
+                            return null;
+                          }}
                           contentStyle={{
                             backgroundColor: "hsl(var(--card))",
                             border: "1px solid hsl(var(--border))",
@@ -460,13 +542,35 @@ const Stats = () => {
               </Card>
             )}
 
-            {/* Résumé */}
-            <div className="mt-8 text-center text-muted-foreground">
-              <p className="text-sm">
-                {routines.length} routine{routines.length > 1 ? "s" : ""} •{" "}
-                {projects.length} projet{projects.length > 1 ? "s" : ""} •{" "}
+            {/* Résumé avec breakdown par type de routine */}
+            <div className="mt-8 flex flex-wrap justify-center gap-2 text-center">
+              <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-primary/10 text-primary font-semibold text-sm">
+                {routines.length} routine{routines.length > 1 ? "s" : ""}
+              </span>
+              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-muted text-muted-foreground font-medium text-xs">
+                <span className="w-2 h-2 rounded-full bg-primary" />
+                {(() => {
+                  const quotidiennes = routines.filter(
+                    (r) => !r.frequency || r.frequency === "daily",
+                  ).length;
+                  const hebdos = routines.filter(
+                    (r) => r.frequency === "weekly",
+                  ).length;
+                  return (
+                    <>
+                      {quotidiennes} quotidienne{quotidiennes > 1 ? "s" : ""}
+                      <span className="mx-1">/</span>
+                      {hebdos} hebdo{hebdos > 1 ? "s" : ""}
+                    </>
+                  );
+                })()}
+              </span>
+              <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 font-semibold text-sm">
+                {projects.length} projet{projects.length > 1 ? "s" : ""}
+              </span>
+              <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-semibold text-sm">
                 {totalTasks} tâche{totalTasks > 1 ? "s" : ""}
-              </p>
+              </span>
             </div>
           </>
         )}

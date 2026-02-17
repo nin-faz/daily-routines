@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { routineStorage, getTodayString } from "@/integrations/supabase/routines";
-import { Routine } from "@/types/routine";
+import { Routine, RoutineStatus } from "@/types/routine";
 import { toast } from "sonner";
 
 export const useRoutines = () => {
@@ -23,30 +23,34 @@ export const useRoutines = () => {
   });
 
   const addRoutine = useMutation({
-    mutationFn: (routineData: Omit<Routine, "id" | "createdAt">) => {
+    mutationFn: (routineData: Omit<Routine, "id" | "createdAt" | "userId" | "updatedAt">) => {
       const newRoutine: Routine = {
         ...routineData,
         id: crypto.randomUUID(),
+        userId: "", // Sera remplacé par le trigger de la base de données
         createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       };
       return routineStorage.addRoutine(newRoutine);
     },
-    onMutate: async (routineData: Omit<Routine, "id" | "createdAt">) => {
+    onMutate: async (routineData: Omit<Routine, "id" | "createdAt" | "userId" | "updatedAt">) => {
       // Annule les requêtes en cours
       await queryClient.cancelQueries({ queryKey: ["routines"] });
-      
+
       // Snapshot de l'état actuel
       const previousRoutines = queryClient.getQueryData<Routine[]>(["routines"]);
-      
+
       // Update optimiste : ajoute la nouvelle routine immédiatement
       const newRoutine: Routine = {
         ...routineData,
         id: crypto.randomUUID(),
+        userId: "", // Sera remplacé par le trigger de la base de données
         createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       };
-      
+
       queryClient.setQueryData<Routine[]>(["routines"], (old = []) => [...old, newRoutine]);
-      
+
       return { previousRoutines };
     },
     onError: (_err, _routineData, context) => {
@@ -73,26 +77,37 @@ export const useRoutines = () => {
       const previousStatuses = queryClient.getQueryData<typeof statuses>(["routine-statuses", today]);
       
       // Update optimiste : met à jour immédiatement l'UI
-      queryClient.setQueryData<typeof statuses>(["routine-statuses", today], (old = []) => {
+      queryClient.setQueryData<RoutineStatus[]>(["routine-statuses", today], (old = []) => {
         const existingStatus = old.find(s => s.routineId === routineId);
-        
+
         if (existingStatus) {
           // Si le statut existe, toggle la complétion ET force skipped à false
-          return old.map(s => 
-            s.routineId === routineId 
-              ? { ...s, completed: !s.completed, skipped: false, completedAt: !s.completed ? new Date().toISOString() : undefined }
+          return old.map(s =>
+            s.routineId === routineId
+              ? {
+                  ...s,
+                  completed: !s.completed,
+                  skipped: false,
+                  completedAt: !s.completed ? new Date().toISOString() : undefined,
+                }
               : s
           );
         } else {
           // Si pas de statut, crée un nouveau statut complété
-          return [...old, {
-            id: crypto.randomUUID(),
-            routineId,
-            date: today,
-            completed: true,
-            skipped: false,
-            completedAt: new Date().toISOString(),
-          }];
+          return [
+            ...old,
+            {
+              id: crypto.randomUUID(),
+              routineId,
+              date: today,
+              completed: true,
+              skipped: false,
+              completedAt: new Date().toISOString(),
+              userId: "", // Valeur par défaut ou à ajuster selon votre logique
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+            } as RoutineStatus,
+          ];
         }
       });
       
@@ -133,13 +148,19 @@ export const useRoutines = () => {
           );
         } else {
           // Crée un nouveau statut "skipped"
-          return [...old, {
-            id: crypto.randomUUID(),
-            routineId,
-            date: today,
-            completed: false,
-            skipped: true,
-          }];
+          return [
+            ...old,
+            {
+              id: crypto.randomUUID(),
+              routineId,
+              date: today,
+              completed: false,
+              skipped: true,
+              userId: "", // Valeur par défaut ou à ajuster selon votre logique
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+            } as RoutineStatus,
+          ];
         }
       });
       

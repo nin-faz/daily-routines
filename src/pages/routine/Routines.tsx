@@ -1,9 +1,24 @@
 import { useState, useEffect } from "react";
-import { Routine, TimeOfDay } from "@/types/routine";
+import { Routine, TimeOfDay, RoutineFrequency } from "@/types/routine";
+import {
+  JS_DAY_TO_DAY_OF_WEEK,
+  getTimeOfDayLabel,
+  getTodaysRoutines,
+  groupByTimeOfDay,
+} from "@/lib/days";
+import { formatFrenchDate } from "@/lib/date";
 import { getTodayString } from "@/integrations/supabase/routines";
 import RoutineCard from "@/components/routine/RoutineCard";
 import CreateRoutineDialog from "@/components/routine/CreateRoutineDialog";
-import { Sparkles, Sunrise, Sun, Moon, Coffee } from "lucide-react";
+import {
+  Sparkles,
+  Sunrise,
+  Sun,
+  Moon,
+  Coffee,
+  CalendarDays,
+  Repeat,
+} from "lucide-react";
 import Navigation from "@/components/layout/Navigation";
 import Header from "@/components/layout/Header";
 import { requestNotificationPermission } from "@/lib/notifications";
@@ -41,7 +56,7 @@ const Routines = () => {
 
   // Ajoute une nouvelle routine (appelé lors de la soumission du formulaire de création)
   const handleCreateRoutine = (
-    routineData: Omit<Routine, "id" | "createdAt">,
+    routineData: Omit<Routine, "id" | "createdAt" | "userId" | "updatedAt">,
   ) => {
     addRoutine.mutate(routineData);
   };
@@ -91,55 +106,107 @@ const Routines = () => {
     setCompletedCount(count);
   }, [statuses, todayDate]);
 
-  // Formate la date du jour pour l'affichage (ex: "jeudi 23 janvier 2026")
-  const formatDate = () => {
-    const date = new Date();
-    return date.toLocaleDateString("fr-FR", {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  };
+  const todayDayOfWeek = JS_DAY_TO_DAY_OF_WEEK[new Date().getDay()];
+  const todaysRoutines = getTodaysRoutines(routines, todayDayOfWeek);
 
-  // Retourne les infos d'affichage (icône, label, couleur) selon le moment de la journée
-  const getTimeOfDayLabel = (timeOfDay: TimeOfDay) => {
-    const labels = {
-      [TimeOfDay.Morning]: {
+  // Séparer les routines par fréquence (quotidiennes vs hebdomadaires)
+  const dailyRoutines = todaysRoutines.filter(
+    (r) => !r.frequency || r.frequency === RoutineFrequency.DAILY,
+  );
+  const weeklyRoutines = todaysRoutines.filter(
+    (r) => r.frequency === RoutineFrequency.WEEKLY,
+  );
+
+  // Fonction helper pour rendre un groupe de routines groupées par moment de la journée
+  const renderRoutineGroup = (routinesList: Routine[]) => {
+    const grouped = groupByTimeOfDay(routinesList);
+    const sections = [
+      {
+        id: TimeOfDay.MORNING,
+        ...getTimeOfDayLabel(TimeOfDay.MORNING),
         icon: Sunrise,
-        label: "Matin",
-        color: "text-amber-500",
+        data: grouped[TimeOfDay.MORNING],
       },
-      [TimeOfDay.Afternoon]: {
+      {
+        id: TimeOfDay.AFTERNOON,
+        ...getTimeOfDayLabel(TimeOfDay.AFTERNOON),
         icon: Sun,
-        label: "Après-midi",
-        color: "text-orange-500",
+        data: grouped[TimeOfDay.AFTERNOON],
       },
-      [TimeOfDay.Evening]: {
+      {
+        id: TimeOfDay.EVENING,
+        ...getTimeOfDayLabel(TimeOfDay.EVENING),
         icon: Moon,
-        label: "Soir",
-        color: "text-indigo-500",
+        data: grouped[TimeOfDay.EVENING],
       },
-    };
-    return labels[timeOfDay];
-  };
+      {
+        id: "untagged",
+        label: "À votre rythme",
+        icon: Sparkles,
+        color: "text-indigo-400",
+        data: grouped.untagged,
+      },
+    ];
 
-  // Regroupe les routines par moment de la journée (matin, après-midi, soir, ou non taguée)
-  const groupedRoutines = {
-    [TimeOfDay.Morning]: routines.filter(
-      (r) => r.timeOfDay === TimeOfDay.Morning,
-    ),
-    [TimeOfDay.Afternoon]: routines.filter(
-      (r) => r.timeOfDay === TimeOfDay.Afternoon,
-    ),
-    [TimeOfDay.Evening]: routines.filter(
-      (r) => r.timeOfDay === TimeOfDay.Evening,
-    ),
-    untagged: routines.filter((r) => !r.timeOfDay),
+    return (
+      <div className="space-y-8">
+        {/* Plus d'espace entre les grands groupes */}
+        {sections.filter(Boolean).map((section) => {
+          if (section.data.length === 0) return null;
+
+          const { icon: Icon, label, color, data } = section;
+
+          return (
+            <section
+              key={section.id}
+              className="animate-in fade-in slide-in-from-bottom-2 duration-500"
+            >
+              {/* Header de section plus stylisé */}
+              <div className="flex items-center gap-3 mb-4 px-1">
+                <div
+                  className={`p-2 rounded-xl bg-background shadow-sm border ${color.replace("text-", "text-")}`}
+                >
+                  <Icon className={`h-4 w-4 ${color}`} />
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold tracking-tight">
+                    {label}
+                  </h3>
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-medium">
+                    {data.length} {data.length > 1 ? "routines" : "routine"}
+                  </p>
+                </div>
+                <div className="flex-1 border-b border-dashed ml-2 opacity-20" />
+              </div>
+
+              {/* Grille de routines */}
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
+                {data.map((routine) => {
+                  const status = statuses.find(
+                    (s) => s.routineId === routine.id && s.date === todayDate,
+                  );
+                  return (
+                    <RoutineCard
+                      key={routine.id}
+                      routine={routine}
+                      status={status}
+                      onToggleComplete={() => handleToggleComplete(routine.id)}
+                      onSkipToday={() => handleSkipToday(routine.id)}
+                      onEdit={() => handleEditRoutine(routine)}
+                      onDelete={() => handleDeleteRoutine(routine.id)}
+                    />
+                  );
+                })}
+              </div>
+            </section>
+          );
+        })}
+      </div>
+    );
   };
 
   return (
-    <div className="min-h-screen bg-gradient-bg pb-20 md:pb-24">
+    <div className="min-h-screen bg-gradient-bg pb-36 md:pb-24">
       <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8 max-w-3xl">
         <header className="mb-6 sm:mb-8">
           <Header />
@@ -151,11 +218,12 @@ const Routines = () => {
           </div>
           <div className="text-center">
             <p className="text-sm sm:text-base text-muted-foreground capitalize">
-              {formatDate()}
+              {formatFrenchDate()}
             </p>
             {routines.length > 0 && (
               <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-                {completedCount} / {routines.length} complétées
+                {completedCount} / {todaysRoutines.length} complétées
+                aujourd'hui
               </p>
             )}
           </div>
@@ -171,79 +239,28 @@ const Routines = () => {
             />
           ) : (
             <>
-              {[TimeOfDay.Morning, TimeOfDay.Afternoon, TimeOfDay.Evening].map(
-                (timeOfDay) => {
-                  const routinesForTime = groupedRoutines[timeOfDay];
-                  if (routinesForTime.length === 0) return null;
-
-                  const {
-                    icon: Icon,
-                    label,
-                    color,
-                  } = getTimeOfDayLabel(timeOfDay);
-
-                  return (
-                    <div key={timeOfDay} className="space-y-3">
-                      <div className="flex items-center gap-2">
-                        <Icon className={`h-5 w-5 ${color}`} />
-                        <h2 className="text-lg font-semibold">{label}</h2>
-                      </div>
-                      <div className="space-y-3">
-                        {routinesForTime.map((routine) => {
-                          const status = statuses.find(
-                            (s) =>
-                              s.routineId === routine.id &&
-                              s.date === todayDate,
-                          );
-                          return (
-                            <RoutineCard
-                              key={routine.id}
-                              routine={routine}
-                              status={status}
-                              onToggleComplete={() =>
-                                handleToggleComplete(routine.id)
-                              }
-                              onSkipToday={() => handleSkipToday(routine.id)}
-                              onEdit={() => handleEditRoutine(routine)}
-                              onDelete={() => handleDeleteRoutine(routine.id)}
-                            />
-                          );
-                        })}
-                      </div>
-                    </div>
-                  );
-                },
+              {/* Section Routines Quotidiennes */}
+              {dailyRoutines.length > 0 && (
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    <Repeat className="h-6 w-6 text-primary" />
+                    <h2 className="text-lg font-semibold">Quotidiennes</h2>
+                  </div>
+                  <div className="space-y-4 pl-2">
+                    {renderRoutineGroup(dailyRoutines)}
+                  </div>
+                </div>
               )}
 
-              {groupedRoutines.untagged.length > 0 && (
-                <div className="space-y-3">
-                  {(groupedRoutines.morning.length > 0 ||
-                    groupedRoutines.afternoon.length > 0 ||
-                    groupedRoutines.evening.length > 0) && (
-                    <h2 className="text-lg font-semibold text-muted-foreground">
-                      Autres
-                    </h2>
-                  )}
-                  <div className="space-y-3">
-                    {groupedRoutines.untagged.map((routine) => {
-                      const status = statuses.find(
-                        (s) =>
-                          s.routineId === routine.id && s.date === todayDate,
-                      );
-                      return (
-                        <RoutineCard
-                          key={routine.id}
-                          routine={routine}
-                          status={status}
-                          onToggleComplete={() =>
-                            handleToggleComplete(routine.id)
-                          }
-                          onSkipToday={() => handleSkipToday(routine.id)}
-                          onEdit={() => handleEditRoutine(routine)}
-                          onDelete={() => handleDeleteRoutine(routine.id)}
-                        />
-                      );
-                    })}
+              {/* Section Routines Hebdomadaires */}
+              {weeklyRoutines.length > 0 && (
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    <CalendarDays className="h-6 w-6 text-primary" />
+                    <h2 className="text-lg font-semibold">Hebdomadaires</h2>
+                  </div>
+                  <div className="space-y-4 pl-2">
+                    {renderRoutineGroup(weeklyRoutines)}
                   </div>
                 </div>
               )}

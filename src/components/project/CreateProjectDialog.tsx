@@ -42,7 +42,7 @@ const CreateProjectDialog = ({ onCreateProject }: CreateProjectDialogProps) => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <div className="fixed bottom-20 right-4 z-50 group">
+        <div className="fixed bottom-24 right-4 z-50 group">
           <Button
             size="lg"
             className="rounded-full h-12 w-12 shadow-xl bg-gradient-primary hover:opacity-90 transition-all hover:scale-105 relative"
