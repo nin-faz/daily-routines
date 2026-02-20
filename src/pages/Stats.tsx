@@ -36,14 +36,20 @@ import Header from "@/components/layout/Header";
 import { StatsSkeleton } from "@/components/stats/StatsSkeleton";
 import EmptyState from "@/components/shared/EmptyState";
 import { useStats } from "@/hooks/useStats";
-import { format, subDays, isWithinInterval } from "date-fns";
+import {
+  format,
+  addDays,
+  startOfDay,
+  endOfDay,
+  isWithinInterval,
+} from "date-fns";
 import { getFrequencyLabel } from "@/lib/days";
 import { formatDateYMD, getDatesOfCurrentMonth, getWeekDays } from "@/lib/date";
 import { getActiveRoutinesAtDate } from "@/lib/utils";
 import { fr } from "date-fns/locale";
 import type { Routine } from "@/types/routine";
 import { calculateStatStreak, calculateLongestStreak } from "@/lib/streak";
-import React from "react";
+import React, { useState } from "react";
 
 const CustomBarShape = (props: RectangleProps & { isTop: boolean }) => {
   const { isTop, ...rest } = props;
@@ -51,10 +57,12 @@ const CustomBarShape = (props: RectangleProps & { isTop: boolean }) => {
 };
 
 const Stats = () => {
-  const { routines, statuses, projects, tasks, isLoading } = useStats();
+  const { routines, statuses, folders, tasks, isLoading } = useStats();
   const [routineType, setRoutineType] = React.useState<
     "all" | "daily" | "weekly"
   >("all");
+  const [taskFolderFilter, setTaskFolderFilter] = React.useState<string>("all");
+  const [taskStatusFilter] = useState<"all" | "todo" | "done">("all");
 
   // Filtrage routines selon le type sélectionné
   const filteredRoutines = React.useMemo(() => {
@@ -160,11 +168,27 @@ const Stats = () => {
   // Tâches avec deadline proche (7 jours)
   const upcomingDeadlines = tasks.filter((task) => {
     if (!task.deadline || task.status === "done") return false;
-    const deadline = new Date(task.deadline);
-    // Vérifie si la deadline est dans les 7 prochains jours
-    const sevenDaysFromNow = subDays(today, -7);
-    return isWithinInterval(deadline, { start: today, end: sevenDaysFromNow });
+    const deadline = new Date(task.deadline + "T00:00:00");
+    // Vérifie si la deadline est entre le début d'aujourd'hui et la fin des 7 prochains jours
+    const start = startOfDay(today);
+    const end = endOfDay(addDays(today, 7));
+    return isWithinInterval(deadline, { start, end });
   }).length;
+
+  // Filtre des tâches selon dossier / statut sélectionné
+  const filteredTasks = React.useMemo(() => {
+    return tasks.filter((t) => {
+      const folderMatch =
+        taskFolderFilter === "all"
+          ? true
+          : taskFolderFilter === "unfiled"
+            ? !t.folderId
+            : t.folderId === taskFolderFilter;
+      const statusMatch =
+        taskStatusFilter === "all" ? true : t.status === taskStatusFilter;
+      return folderMatch && statusMatch;
+    });
+  }, [tasks, taskFolderFilter, taskStatusFilter]);
 
   // Cette semaine
   const weekDays = getWeekDays(today, { weekStartsOn: 1 });
@@ -213,25 +237,23 @@ const Stats = () => {
    */
   const maxRoutinesThisWeek = Math.max(...weeklyData.map((d) => d.total), 1);
 
-  // Statistiques des projets
+  // Statistiques des dossiers
   const tasksByStatus = {
-    todo: tasks.filter((task) => task.status === "todo").length,
-    doing: tasks.filter((task) => task.status === "doing").length,
-    done: tasks.filter((task) => task.status === "done").length,
+    todo: filteredTasks.filter((task) => task.status === "todo").length,
+    done: filteredTasks.filter((task) => task.status === "done").length,
   };
 
   const totalTasks = tasks.length;
 
   /** Score global : Taux de tâches */
-  const projectCompletionRate =
+  const tasksCompletionRate =
     totalTasks > 0 ? Math.round((tasksByStatus.done / totalTasks) * 100) : 0;
 
   const pieData = [
-    { name: "À faire", value: tasksByStatus.todo, color: "hsl(var(--muted))" },
     {
-      name: "En cours",
-      value: tasksByStatus.doing,
-      color: "hsl(var(--primary) / 0.6)",
+      name: "À faire",
+      value: tasksByStatus.todo,
+      color: "hsl(var(--muted))",
     },
     {
       name: "Terminé",
@@ -255,29 +277,31 @@ const Stats = () => {
             <p className="text-sm sm:text-base text-muted-foreground text-center">
               Suivez vos progrès et performances
             </p>
-            <Select
-              value={routineType}
-              onValueChange={(v) => setRoutineType(v as any)}
-            >
-              <SelectTrigger className="w-48">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Toutes les routines</SelectItem>
-                <SelectItem value="daily">Quotidiennes</SelectItem>
-                <SelectItem value="weekly">Hebdomadaires</SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="flex flex-wrap items-center gap-2">
+              <Select
+                value={routineType}
+                onValueChange={(v) => setRoutineType(v as any)}
+              >
+                <SelectTrigger className="w-48">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Toutes les routines</SelectItem>
+                  <SelectItem value="daily">Quotidiennes</SelectItem>
+                  <SelectItem value="weekly">Hebdomadaires</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </header>
 
         {isLoading ? (
           <StatsSkeleton />
-        ) : routines.length === 0 && projects.length === 0 ? (
+        ) : routines.length === 0 && folders.length === 0 ? (
           <EmptyState
             icon={BarChart3}
             title="Pas encore de données"
-            description="Créez des routines et des projets pour voir vos statistiques apparaître ici !"
+            description="Créez des routines et des dossiers pour voir vos statistiques apparaître ici !"
           />
         ) : (
           <>
@@ -320,7 +344,7 @@ const Stats = () => {
                 <CardContent className="p-3 sm:p-4 text-center flex flex-col justify-center h-full">
                   <FolderKanban className="h-5 w-5 sm:h-6 sm:w-6 text-primary mx-auto mb-1 sm:mb-2" />
                   <p className="text-xl sm:text-2xl font-bold text-foreground">
-                    {projectCompletionRate}%
+                    {tasksCompletionRate}%
                   </p>
                   <p className="text-[10px] sm:text-xs text-muted-foreground">
                     Tâches terminées
@@ -492,11 +516,30 @@ const Stats = () => {
             {/* Répartition des tâches */}
             {totalTasks > 0 && (
               <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">
-                    Répartition des tâches projet
-                  </CardTitle>
-                </CardHeader>
+                <div className="flex items-center justify-between p-5">
+                  <CardHeader className="p-0">
+                    <CardTitle className="text-sm font-medium">
+                      Répartition des tâches par dossier
+                    </CardTitle>
+                  </CardHeader>
+                  <Select
+                    value={taskFolderFilter}
+                    onValueChange={(v) => setTaskFolderFilter(v as string)}
+                  >
+                    <SelectTrigger className="w-48 md:w-44">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Toutes les tâches</SelectItem>
+                      <SelectItem value="unfiled">Sans dossier</SelectItem>
+                      {folders.map((f) => (
+                        <SelectItem key={f.id} value={f.id}>
+                          {f.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
                 <CardContent>
                   <div className="flex items-center justify-center gap-8">
                     <div className="h-40 w-40">
@@ -522,12 +565,6 @@ const Stats = () => {
                         <div className="w-3 h-3 rounded-full bg-muted" />
                         <span className="text-sm">
                           À faire: {tasksByStatus.todo}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 rounded-full bg-primary/60" />
-                        <span className="text-sm">
-                          En cours: {tasksByStatus.doing}
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
@@ -566,7 +603,7 @@ const Stats = () => {
                 })()}
               </span>
               <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 font-semibold text-sm">
-                {projects.length} projet{projects.length > 1 ? "s" : ""}
+                {folders.length} dossier{folders.length > 1 ? "s" : ""}
               </span>
               <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-semibold text-sm">
                 {totalTasks} tâche{totalTasks > 1 ? "s" : ""}

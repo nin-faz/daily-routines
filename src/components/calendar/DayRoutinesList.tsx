@@ -143,7 +143,8 @@ const DayRoutinesList = ({
                     key={routine.id}
                     className={cn(
                       "group relative flex items-center gap-4 p-4 rounded-2xl transition-all duration-200",
-                      "border border-transparent hover:border-border",
+                      "border border-transparent hover:shadow-card-hover transition-all duration-200",
+
                       isCompleted || isSkipped
                         ? "bg-muted/30 opacity-60"
                         : "bg-card shadow-sm border-border/50 hover:shadow-md",

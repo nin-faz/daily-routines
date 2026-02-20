@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { routineStorage } from "@/integrations/supabase/routines";
-import { projectStorage } from "@/integrations/supabase/projects";
+import { folderStorage } from "@/integrations/supabase/folders";
+import { taskStorage } from "@/integrations/supabase/tasks";
 
 export const useStats = () => {
   const { data: routines = [], isLoading: isLoadingRoutines } = useQuery({
@@ -17,16 +18,16 @@ export const useStats = () => {
     gcTime: 1000 * 60 * 10,
   });
 
-  const { data: projects = [], isLoading: isLoadingProjects } = useQuery({
-    queryKey: ["projects"],
-    queryFn: () => projectStorage.getProjects(),
+  const { data: folders = [], isLoading: isLoadingFolders } = useQuery({
+    queryKey: ["folders"],
+    queryFn: () => folderStorage.getFolders(),
     staleTime: 1000 * 60 * 5,
     gcTime: 1000 * 60 * 10,
   });
 
   const { data: tasks = [], isLoading: isLoadingTasks } = useQuery({
     queryKey: ["tasks"],
-    queryFn: () => projectStorage.getTasks(),
+    queryFn: () => taskStorage.getTasks(),
     staleTime: 1000 * 60 * 5,
     gcTime: 1000 * 60 * 10,
   });
@@ -34,8 +35,9 @@ export const useStats = () => {
   return {
     routines,
     statuses,
-    projects,
+    folders,
     tasks,
-    isLoading: isLoadingRoutines || isLoadingStatuses || isLoadingProjects || isLoadingTasks,
+    isLoading:
+      isLoadingRoutines || isLoadingStatuses || isLoadingFolders || isLoadingTasks,
   };
 };

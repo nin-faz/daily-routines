@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Calendar } from "@/components/ui/calendar";
 import { Card } from "@/components/ui/card";
 import { routineStorage } from "@/integrations/supabase/routines";
-import { projectStorage } from "@/integrations/supabase/projects";
+import { taskStorage } from "@/integrations/supabase/tasks";
 import { cn } from "@/lib/utils";
 import { formatDateYMD } from "@/lib/date";
 
@@ -42,20 +42,32 @@ const CalendarHeatmap = ({ onDateSelect }: CalendarHeatmapProps) => {
   });
 
   // Fetch deadlines with React Query cache
-  const { data: deadlineDates = new Set(), isLoading: isLoadingDeadlines } =
-    useQuery({
-      queryKey: [
-        "deadlines-month",
-        currentMonth.getFullYear(),
-        currentMonth.getMonth(),
-      ],
-      queryFn: () =>
-        projectStorage.getDeadlinesForMonth(
-          currentMonth.getFullYear(),
-          currentMonth.getMonth(),
-        ),
-      staleTime: 5 * 60 * 1000, // Cache pendant 5 minutes
-    });
+  const {
+    data: deadlineDates = new Set<string>(),
+    isLoading: isLoadingDeadlines,
+  } = useQuery({
+    queryKey: [
+      "deadlines-month",
+      currentMonth.getFullYear(),
+      currentMonth.getMonth(),
+    ],
+    queryFn: async () => {
+      const tasks = await taskStorage.getTasks();
+      const set = new Set<string>();
+      tasks.forEach((t) => {
+        if (!t.deadline) return;
+        const d = new Date(t.deadline + "T00:00:00");
+        if (
+          d.getFullYear() === currentMonth.getFullYear() &&
+          d.getMonth() === currentMonth.getMonth()
+        ) {
+          set.add(t.deadline);
+        }
+      });
+      return set;
+    },
+    staleTime: 5 * 60 * 1000, // Cache pendant 5 minutes
+  });
 
   const isLoading = isLoadingRates || isLoadingDeadlines;
 
@@ -183,7 +195,7 @@ const CalendarHeatmap = ({ onDateSelect }: CalendarHeatmapProps) => {
     medium: "bg-yellow-500/50 hover:bg-yellow-500/60 text-foreground",
     high: "bg-green-500/60 hover:bg-green-500/70 text-foreground",
     hasDeadline:
-      "relative after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1.5 after:h-1.5 after:rounded-full after:bg-primary",
+      "relative after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1.5 after:h-1.5 after:rounded-full after:bg-red-500",
   };
 
   return (
@@ -227,7 +239,7 @@ const CalendarHeatmap = ({ onDateSelect }: CalendarHeatmapProps) => {
                 </div>
                 <div className="mt-3 w-full">
                   <div className="flex items-center justify-start sm:justify-end gap-1.5">
-                    <div className="w-4 h-4 rounded-sm border flex-shrink-0 relative after:absolute after:bottom-0.5 after:left-1/2 after:-translate-x-1/2 after:w-1.5 after:h-1.5 after:rounded-full after:bg-primary" />
+                    <div className="w-4 h-4 rounded-sm border flex-shrink-0 relative after:absolute after:bottom-0.5 after:left-1/2 after:-translate-x-1/2 after:w-1.5 after:h-1.5 after:rounded-full after:bg-red-500" />
                     <span>📌 Deadline</span>
                   </div>
                 </div>
@@ -318,7 +330,7 @@ const CalendarHeatmap = ({ onDateSelect }: CalendarHeatmapProps) => {
                     <span className="inline-block text-primary text-lg mb-0.5">
                       📌
                     </span>
-                    <div className="text-lg font-bold text-primary">
+                    <div className="text-lg font-bold text-red-600 dark:text-red-400">
                       {deadlineDates.size}
                     </div>
                     <div className="text-[10px] text-muted-foreground mt-0.5">

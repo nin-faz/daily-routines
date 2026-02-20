@@ -68,8 +68,6 @@ export const registerServiceWorker = async (): Promise<boolean> => {
         return false;
       }
       console.log('✅ Subscription créée:', subscription.endpoint.substring(0, 50) + '...');
-    } else {
-      console.log('Subscription push existante trouvée');
     }
 
     if (!subscription) {
@@ -85,8 +83,10 @@ export const registerServiceWorker = async (): Promise<boolean> => {
       return false;
     }
 
-    // Laisser le Supabase client JS envoyer automatiquement le JWT
-    // (pas besoin de passer les headers manuellement)
+    /**
+     * Laisser le Supabase client JS envoyer automatiquement le JWT
+     * (pas besoin de passer les headers manuellement)
+     */
     const { error } = await supabase.functions.invoke('save-subscription', {
       body: {
         subscription: subscription.toJSON()
@@ -98,7 +98,6 @@ export const registerServiceWorker = async (): Promise<boolean> => {
       return false;
     }
 
-    console.log('✅ Notifications push activées avec succès !');
     return true;
   } catch (error) {
     console.error('❌ ERREUR enregistrement Service Worker:', error);

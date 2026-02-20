@@ -60,7 +60,6 @@ export const useRoutines = () => {
       }
     },
     onSuccess: () => {
-      // Refetch pour synchroniser avec la base de données
       queryClient.invalidateQueries({ queryKey: ["routines"] });
     },
   });
@@ -179,10 +178,10 @@ export const useRoutines = () => {
   });
 
   const updateRoutine = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Routine }) =>
-      routineStorage.updateRoutine(id, data),
+     mutationFn: ({ id, updates }: { id: string; updates: Partial<Routine> }) =>
+      routineStorage.updateRoutine(id, updates),
     // Optimistic update : modification instantanée dans l'UI
-    onMutate: async ({ id, data }) => {
+    onMutate: async ({ id, updates }) => {
       // Annule les requêtes en cours
       await queryClient.cancelQueries({ queryKey: ["routines"] });
       
@@ -191,7 +190,7 @@ export const useRoutines = () => {
       
       // Met à jour immédiatement la routine dans l'UI
       queryClient.setQueryData<Routine[]>(["routines"], (old = []) =>
-        old.map(routine => routine.id === id ? data : routine)
+        old.map(routine => routine.id === id ? { ...routine, ...updates } : routine)
       );
       
       return { previousRoutines };

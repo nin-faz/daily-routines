@@ -61,6 +61,40 @@ serve(async (req) => {
       )
     }
 
+    // Filtrer les routines selon la fréquence et les jours choisis.
+    const DAYS = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
+    const currentDay = DAYS[now.getDay()]
+
+    const routinesToNotify = (routines ?? []).filter((r: any) => {
+      try {
+        const freq = (r.frequency || 'daily').toString().toLowerCase()
+
+        if (freq === 'daily') return true
+
+        if (freq === 'weekly') {
+          const weekDays = r.week_days || r.weekDays || []
+          if (!Array.isArray(weekDays) || weekDays.length === 0) return false
+          return weekDays.map(String).map((s: string) => s.toLowerCase()).includes(currentDay)
+        }
+
+        // Par défaut, notifier si on n'est pas certain
+        return true
+      } catch (err) {
+        console.warn('⚠️ Erreur lors du filtrage d\'une routine:', err)
+        return false
+      }
+    })
+
+    console.log(`📋 Routines après filtrage par jour: ${routinesToNotify.length}`)
+
+    if (routinesToNotify.length === 0) {
+      console.log('ℹ️ Aucune routine à notifier après filtrage des jours')
+      return new Response(
+        JSON.stringify({ message: 'No routines to notify after day filter', time: currentTime }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } }
+      )
+    }
+
     // Grouper les routines par user_id (simple, sans assertions)
     console.log('👤 Groupement des routines par user...')
     const routinesByUser: Record<string, Array<{

@@ -1,6 +1,6 @@
 # 🎯 Daily Routine Tracker
 
-Une application web moderne pour gérer vos routines quotidiennes et projets, construite avec React, TypeScript et Tailwind CSS.
+Une application web moderne pour gérer vos routines quotidiennes et dossiers, construite avec React, TypeScript et Tailwind CSS.
 
 ## ✨ Fonctionnalités
 
@@ -19,11 +19,11 @@ Une application web moderne pour gérer vos routines quotidiennes et projets, co
 - **Dashboard global** avec KPIs clés (taux de complétion, série actuelle, record, deadlines à venir) et graphiques d'évolution
 - **États de chargement** avec skeletons animés
 
-### 📁 Gestion de Projets
+### 📁 Gestion de Dossiers
 
 - **Tableau Kanban** avec drag & drop (To-Do, En cours, Terminé)
 - **Deadlines** avec intégration calendrier
-- **Vue d'ensemble** des projets avec compteurs de tâches
+- **Vue d'ensemble** des dossiers avec compteurs de tâches
 
 ### 👤 Profil & Authentification
 
@@ -118,10 +118,12 @@ src/
 ├── components/                 # Composants réutilisables
 │   ├── admin/                  # vues / outils admin
 │   ├── layout/                 # Header, Navigation, ProtectedRoute, UserMenu
-│   ├── project/                # Kanban, EditProjectDialog, DayDeadlinesList
+│   ├── calendar/               # DayDeadlinesList, CalendarHeatmap, WeeklyView
+│   ├── folder/                 # FolderCard, CreateFolderDialog
+│   ├── task/                   # TaskCard, CreateTaskDialog
 │   ├── routine/                # RoutineCard, Timer, CreateRoutineDialog, DayRoutinesList
 │   ├── shared/                 # EmptyState, OnboardingDialog, Loader
-│   ├── stats/                  # CalendarHeatmap, WeeklyView, StatsSkeleton
+│   ├── stats/                  # StatsSkeleton
 │   ├── theme/                  # ThemeSelector, ThemeToggle
 │   ├── ui/                     # primitives shadcn/ui et Radix wrappers
 │   └── ...
@@ -129,19 +131,18 @@ src/
 │   ├── Auth.tsx                # Authentification (login / signup)
 │   ├── Calendar.tsx            # Calendrier / heatmap
 │   ├── Stats.tsx               # Dashboard statistiques
-│   ├── Projects.tsx            # Gestion de projets
+│   ├── FolderDetails.tsx       # Détails du dossier et de ses tâches
+│   ├── Tasks.tsx               # Gestion des tâches et dossiers
 │   ├── Profile.tsx             # Réglages utilisateur
-│   ├── TimerView.tsx           # Vue plein écran du timer
-│   ├── Help.tsx                # Page d'aide / documentation
 │   ├── NotFound.tsx            # 404
 │   ├── admin/                  # pages admin (outils et vues réservées)
 │   ├── password/               # pages liées aux password (mot de passe oublié et réinit)
-│   └── routine/                # pages liées aux routines (list et détails)
+│   └── routine/                # pages liées aux routines (liste, détails et timer)
 ├── integrations/
 │   └── supabase/               # client Supabase, types et helpers
 ├── lib/                        # utilitaires (date.ts, notifications.ts, streak.ts, utils.ts)
 ├── hooks/                      # hooks personnalisés (useAuth, useRoutines, useStats...)
-├── types/                      # types TypeScript (routine.ts, project.ts...)
+├── types/                      # types TypeScript (routine.ts, folder.ts...)
 ├── supabase/                   # config, functions, migrations
 │   ├── functions/              # serverless functions (ex: welcome-email)
 │   └── migrations/             # SQL migrations

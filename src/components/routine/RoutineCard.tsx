@@ -3,25 +3,8 @@ import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  AlertDialog,
-  AlertDialogTrigger,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogCancel,
-  AlertDialogAction,
-} from "@/components/ui/alert-dialog";
-import {
-  Trash2,
-  Clock,
-  TrendingUp,
-  CalendarX,
-  Pencil,
-  Calendar,
-} from "lucide-react";
+import ConfirmDeleteButton from "@/components/ui/ConfirmDeleteButton";
+import { Clock, TrendingUp, CalendarX, Pencil, Calendar } from "lucide-react";
 import Timer from "./Timer";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
@@ -57,7 +40,7 @@ const RoutineCard = ({
   return (
     <Card
       className={cn(
-        "p-3 sm:p-4 shadow-card hover:shadow-card-hover transition-all duration-200",
+        "p-3 sm:p-4 shadow-card hover:border-primary/30",
         isCompleted && "opacity-60",
         isSkipped && "opacity-50 border-muted",
       )}
@@ -158,35 +141,14 @@ const RoutineCard = ({
             >
               <Pencil className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             </Button>
-
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-7 w-7 sm:h-8 sm:w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
-                >
-                  <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Supprimer la routine ?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Cette action supprimera definitivement "{routine.title}".
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Annuler</AlertDialogCancel>
-                  <AlertDialogAction
-                    onClick={onDelete}
-                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                  >
-                    Supprimer
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+            <ConfirmDeleteButton
+              onConfirm={onDelete}
+              label="Supprimer la routine ?"
+              description={`Cette action supprimera définitivement "${routine.title}".`}
+              iconSize={3.5}
+              buttonClassName="h-7 w-7 sm:h-8 sm:w-8 p-0 text-destructive"
+              actionLabel="Supprimer"
+            />
           </div>
         </div>
 

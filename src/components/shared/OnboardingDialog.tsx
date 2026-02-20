@@ -29,7 +29,7 @@ const steps: Array<{
     icon: Sparkles,
     title: "Bienvenue sur Mes Routines ! 🎉",
     description:
-      "Votre compagnon quotidien pour développer de bonnes habitudes et gérer vos projets efficacement.",
+      "Votre compagnon quotidien pour développer de bonnes habitudes et gérer vos dossiers efficacement.",
   },
   {
     icon: Calendar,
@@ -39,9 +39,9 @@ const steps: Array<{
   },
   {
     icon: FolderKanban,
-    title: "Gérez vos projets",
+    title: "Organisez vos tâches",
     description:
-      "Organisez vos tâches avec un tableau Kanban intuitif. Suivez l'avancement de vos projets facilement.",
+      "Classez vos tâches quand vous le souhaitez — créez des dossiers pour structurer les projets, ou laissez des tâches sans dossier pour rester flexible.",
   },
   {
     icon: Bell,

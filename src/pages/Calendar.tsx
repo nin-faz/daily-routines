@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { routineStorage } from "@/integrations/supabase/routines";
-import CalendarHeatmap from "@/components/stats/CalendarHeatmap";
-import { WeeklyView } from "@/components/stats/WeeklyView";
-import DayRoutinesList from "@/components/routine/DayRoutinesList";
-import DayDeadlinesList from "@/components/project/DayDeadlinesList";
+import CalendarHeatmap from "@/components/calendar/CalendarHeatmap";
+import { WeeklyView } from "@/components/calendar/WeeklyView";
+import DayRoutinesList from "@/components/calendar/DayRoutinesList";
+import DayDeadlinesList from "@/components/calendar/DayDeadlinesList";
 import Navigation from "@/components/layout/Navigation";
 import Header from "@/components/layout/Header";
 import { Sparkles, Calendar as CalendarIcon, CalendarDays } from "lucide-react";

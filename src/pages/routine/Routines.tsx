@@ -20,6 +20,7 @@ import {
   Repeat,
 } from "lucide-react";
 import Navigation from "@/components/layout/Navigation";
+import { Link } from "react-router-dom";
 import Header from "@/components/layout/Header";
 import { requestNotificationPermission } from "@/lib/notifications";
 import { RoutineListSkeleton } from "@/components/routine/RoutineSkeleton";
@@ -78,9 +79,9 @@ const Routines = () => {
   };
 
   // Met à jour une routine existante (appelé lors de la soumission du formulaire d'édition)
-  const handleUpdateRoutine = (updatedRoutine: Routine) => {
+  const handleUpdateRoutine = (id: string, updates: Partial<Routine>) => {
     updateRoutine.mutate(
-      { id: updatedRoutine.id, data: updatedRoutine },
+      { id, updates },
       {
         onSuccess: () => {
           setEditDialogOpen(false);
@@ -107,7 +108,14 @@ const Routines = () => {
   }, [statuses, todayDate]);
 
   const todayDayOfWeek = JS_DAY_TO_DAY_OF_WEEK[new Date().getDay()];
-  const todaysRoutines = getTodaysRoutines(routines, todayDayOfWeek);
+  const todaysRoutines = getTodaysRoutines(
+    [...routines].sort(
+      (a, b) =>
+        new Date(b.createdAt || 0).getTime() -
+        new Date(a.createdAt || 0).getTime(),
+    ),
+    todayDayOfWeek,
+  );
 
   // Séparer les routines par fréquence (quotidiennes vs hebdomadaires)
   const dailyRoutines = todaysRoutines.filter(
@@ -220,6 +228,14 @@ const Routines = () => {
             <p className="text-sm sm:text-base text-muted-foreground capitalize">
               {formatFrenchDate()}
             </p>
+            <div className="mt-2">
+              <Link
+                to="/routines/all"
+                className="text-xs text-primary hover:underline"
+              >
+                Voir toutes les routines
+              </Link>
+            </div>
             {routines.length > 0 && (
               <p className="text-xs sm:text-sm text-muted-foreground mt-1">
                 {completedCount} / {todaysRoutines.length} complétées

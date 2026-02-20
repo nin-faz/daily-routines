@@ -15,7 +15,8 @@ const ProtectedRoute = ({
   requireAdmin = false,
 }: ProtectedRouteProps) => {
   const { user, loading } = useAuth();
-  const { isAdmin } = useUser();
+  const userContext = useUser();
+  const isAdmin = userContext?.isAdmin ?? false;
 
   if (loading) {
     return <Loader />;
@@ -33,7 +34,7 @@ const ProtectedRoute = ({
   return (
     <>
       {children}
-      <FeedbackChat />
+      {!requireAdmin && <FeedbackChat />}
     </>
   );
 };

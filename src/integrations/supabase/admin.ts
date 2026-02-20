@@ -2,9 +2,9 @@ import { supabase } from './client';
 
 // Statistiques globales pour l'admin
 export interface AdminStats {
-    totalUsers: number;
-    totalProjects: number;
-    totalTasks: number;
+  totalUsers: number;
+  totalFolders: number;
+  totalTasks: number;
     adminCount: number;
 }
 
@@ -18,11 +18,12 @@ export interface UserProfile {
   roles: string[];
 }
 
-// Modèle de projet pour l'admin
-export interface AdminProject {
+// Modèle de dossier pour l'admin
+export interface AdminFolder {
   id: string;
-  title: string;
-  description: string | null;
+  name: string;
+  icon?: string | null;
+  color?: string | null;
   user_id: string;
   created_at: string;
   owner_email?: string;
@@ -30,12 +31,11 @@ export interface AdminProject {
 }
 
 
-// Récupère les statistiques admin (utilisateurs, projets, tâches, admins)
+// Récupère les statistiques admin (utilisateurs, dossiers, tâches, admins)
 export async function fetchAdminStats(): Promise<AdminStats> {
-  // Récupère profils, projets, tâches
-  const [{ data: profiles }, { count: projectsCount }, { count: tasksCount }] = await Promise.all([
+  const [{ data: profiles }, { count: foldersCount }, { count: tasksCount }] = await Promise.all([
     supabase.from('profiles').select('id, role'),
-    supabase.from('projects').select('id', { count: 'exact', head: true }),
+    supabase.from('folders').select('id', { count: 'exact', head: true }),
     supabase.from('tasks').select('id', { count: 'exact', head: true }),
   ]);
 
@@ -46,7 +46,7 @@ export async function fetchAdminStats(): Promise<AdminStats> {
 
   return {
     totalUsers,
-    totalProjects: projectsCount || 0,
+    totalFolders: foldersCount || 0,
     totalTasks: tasksCount || 0,
     adminCount,
   };
@@ -82,14 +82,14 @@ export async function updateAdminRole(userId: string, makeAdmin: boolean): Promi
   return error ? error.message : null;
 }
 
-// Récupère la liste des projets avec infos propriétaires et nombre de tâches
-export async function fetchAdminProjects() {
-  // Récupère les projets
-  const { data: projectsData, error: projectsError } = await supabase
-    .from('projects')
+// Récupère la liste des dossiers avec infos propriétaires et nombre de tâches
+export async function fetchAdminFolders() {
+  // Récupère les dossiers
+  const { data: foldersData, error: foldersError } = await supabase
+    .from('folders')
     .select('*')
     .order('created_at', { ascending: false });
-  if (projectsError) throw projectsError;
+  if (foldersError) throw foldersError;
 
   // Récupère les profils pour l'info propriétaire
   const { data: profilesRaw } = await supabase
@@ -100,18 +100,18 @@ export async function fetchAdminProjects() {
     email: p.email,
   })) || [];
 
-  // Récupère les tâches pour compter par projet
+  // Récupère les tâches pour compter par dossier
   const { data: tasks } = await supabase
     .from('tasks')
-    .select('project_id');
+    .select('folder_id');
 
-  // Combine les données projets/propriétaires/tâches
+  // Combine les données dossiers/propriétaires/tâches
   return (
-    projectsData?.map((project) => {
-      const owner = profiles?.find((p) => p.user_id === project.user_id);
-      const taskCount = tasks?.filter((t) => t.project_id === project.id).length || 0;
+    foldersData?.map((folder) => {
+      const owner = profiles?.find((p) => p.user_id === folder.user_id);
+      const taskCount = tasks?.filter((t) => t.folder_id === folder.id).length || 0;
       return {
-        ...project,
+        ...folder,
         owner_email: owner?.email || 'Inconnu',
         task_count: taskCount,
       };

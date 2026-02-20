@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { fetchAdminStats, fetchAdminUsers, fetchAdminProjects } from '@/integrations/supabase/admin';
+import { fetchAdminStats, fetchAdminUsers, fetchAdminFolders } from '@/integrations/supabase/admin';
 
 // Récupère les statistiques admin avec cache React Query
 export function useAdminStats() {
@@ -19,11 +19,13 @@ export function useAdminUsers() {
   });
 }
 
-// Récupère la liste des projets avec infos propriétaires et nombre de tâches, avec cache React Query
-export function useAdminProjects() {
+// Récupère la liste des dossiers avec infos propriétaires et nombre de tâches, avec cache React Query
+export function useAdminFolders() {
   return useQuery({
-    queryKey: ['admin-projects'],
-    queryFn: fetchAdminProjects,
+    queryKey: ['admin-folders'],
+    queryFn: fetchAdminFolders,
     staleTime: 30 * 1000, // 30 secondes
   });
 }
+
+

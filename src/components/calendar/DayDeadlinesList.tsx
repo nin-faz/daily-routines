@@ -1,5 +1,8 @@
-import { projectStorage } from "@/integrations/supabase/projects";
-import type { ProjectTask, Project } from "@/types/project";
+import { taskStorage } from "@/integrations/supabase/tasks";
+import { folderStorage } from "@/integrations/supabase/folders";
+import type { Task } from "@/types/task";
+import type { Folder } from "@/types/folder";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CalendarClock, FolderKanban } from "lucide-react";
@@ -26,20 +29,22 @@ const statusVariants: Record<string, "default" | "secondary" | "outline"> = {
 
 const DayDeadlinesList = ({ date }: DayDeadlinesListProps) => {
   const dateString = formatDateYMD(date);
-  const [tasks, setTasks] = useState<ProjectTask[]>([]);
-  const [projects, setProjects] = useState<Project[]>([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [folders, setFolders] = useState<Folder[]>([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     let mounted = true;
     (async () => {
       try {
-        const t = await projectStorage.getTasksWithDeadlineOnDate(dateString);
-        const p = await projectStorage.getProjects();
+        const allTasks = await taskStorage.getTasks();
+        const t = allTasks.filter((task) => task.deadline === dateString);
+        const p = await folderStorage.getFolders();
         if (!mounted) return;
         setTasks(t);
-        setProjects(p);
+        setFolders(p);
       } catch (err) {
-        console.error("Error loading project tasks for calendar:", err);
+        console.error("Error loading tasks for calendar:", err);
       }
     })();
     return () => {
@@ -47,9 +52,10 @@ const DayDeadlinesList = ({ date }: DayDeadlinesListProps) => {
     };
   }, [dateString]);
 
-  const getProjectTitle = (projectId: string): string => {
-    const project = projects.find((p) => p.id === projectId);
-    return project?.title || "Projet inconnu";
+  const getFolderTitle = (folderId?: string): string => {
+    if (!folderId) return "Sans dossier";
+    const folder = folders.find((f) => f.id === folderId);
+    return folder?.name || "Dossier inconnu";
   };
 
   if (!tasks || tasks.length === 0) return null;
@@ -64,22 +70,28 @@ const DayDeadlinesList = ({ date }: DayDeadlinesListProps) => {
       </CardHeader>
       <CardContent className="space-y-2">
         {tasks.map((task) => (
-          <div
+          <button
             key={task.id}
-            className="flex items-center justify-between gap-2 p-3 bg-muted/50 rounded-lg"
+            type="button"
+            onClick={() =>
+              navigate(task.folderId ? `/folder/${task.folderId}` : "/tasks")
+            }
+            className="flex items-center justify-between gap-2 p-3 bg-muted/50 rounded-lg w-full text-left hover:shadow-md hover:bg-muted/60"
           >
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium truncate">{task.title}</p>
               <p className="text-xs text-muted-foreground flex items-center gap-1">
                 <FolderKanban className="h-3 w-3" />
-                {getProjectTitle(task.projectId)}
+                <span className="ml-1 text-xs text-muted-foreground">
+                  {getFolderTitle(task.folderId)}
+                </span>
               </p>
             </div>
 
             <Badge variant={statusVariants[task.status]}>
               {statusLabels[task.status]}
             </Badge>
-          </div>
+          </button>
         ))}
       </CardContent>
     </Card>

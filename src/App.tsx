@@ -19,17 +19,20 @@ import { registerServiceWorker } from "./lib/notifications";
 
 const Routines = lazy(() => import("./pages/routine/Routines"));
 const Calendar = lazy(() => import("./pages/Calendar"));
-const Projects = lazy(() => import("./pages/Projects"));
+const Tasks = lazy(() => import("./pages/Tasks"));
+const RoutineDetails = lazy(() => import("./pages/routine/RoutineDetails"));
+const AllRoutines = lazy(() => import("./pages/routine/AllRoutines"));
+const TimerView = lazy(() => import("./pages/routine/TimerView"));
+const FolderDetails = lazy(() => import("./pages/FolderDetails"));
 const Stats = lazy(() => import("./pages/Stats"));
 const Auth = lazy(() => import("./pages/Auth"));
 const ForgotPassword = lazy(() => import("./pages/password/ForgotPassword"));
 const ResetPassword = lazy(() => import("./pages/password/ResetPassword"));
-const RoutineDetails = lazy(() => import("./pages/routine/RoutineDetails"));
-const TimerView = lazy(() => import("./pages/TimerView"));
 const Profile = lazy(() => import("./pages/Profile"));
 const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
 const AdminUsers = lazy(() => import("./pages/admin/AdminUsers"));
-const AdminProjects = lazy(() => import("./pages/admin/AdminProjects"));
+const AdminProjects = lazy(() => import("./pages/admin/AdminFolders"));
+const AdminTasks = lazy(() => import("./pages/admin/AdminTasks"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
@@ -81,7 +84,10 @@ const AppContent = () => {
 
           // Détecter quand la permission change (ex: de "default" à "granted")
           permissionStatus.onchange = async () => {
-            console.log("🔔 Permission notification changée:", permissionStatus?.state);
+            console.log(
+              "🔔 Permission notification changée:",
+              permissionStatus?.state,
+            );
 
             // Si l'utilisateur vient d'accepter les notifications
             if (permissionStatus?.state === "granted") {
@@ -153,30 +159,6 @@ const AppContent = () => {
               }
             />
             <Route
-              path="/calendar"
-              element={
-                <ProtectedRoute>
-                  <Calendar />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/projects"
-              element={
-                <ProtectedRoute>
-                  <Projects />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/stats"
-              element={
-                <ProtectedRoute>
-                  <Stats />
-                </ProtectedRoute>
-              }
-            />
-            <Route
               path="/routine/:routineId"
               element={
                 <ProtectedRoute>
@@ -185,10 +167,51 @@ const AppContent = () => {
               }
             />
             <Route
+              path="/routines/all"
+              element={
+                <ProtectedRoute>
+                  <AllRoutines />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/timer/:routineId"
               element={
                 <ProtectedRoute>
                   <TimerView />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/calendar"
+              element={
+                <ProtectedRoute>
+                  <Calendar />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/tasks"
+              element={
+                <ProtectedRoute>
+                  <Tasks />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/folder/:id"
+              element={
+                <ProtectedRoute>
+                  <FolderDetails />
+                </ProtectedRoute>
+              }
+            />
+            ;
+            <Route
+              path="/stats"
+              element={
+                <ProtectedRoute>
+                  <Stats />
                 </ProtectedRoute>
               }
             />
@@ -217,10 +240,18 @@ const AppContent = () => {
               }
             />
             <Route
-              path="/admin/projects"
+              path="/admin/folders"
               element={
                 <ProtectedRoute requireAdmin>
                   <AdminProjects />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/tasks"
+              element={
+                <ProtectedRoute requireAdmin>
+                  <AdminTasks />
                 </ProtectedRoute>
               }
             />

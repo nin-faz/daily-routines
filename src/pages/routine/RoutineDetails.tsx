@@ -2,6 +2,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { getTodayString } from "@/integrations/supabase/routines";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
@@ -37,7 +38,7 @@ import useRoutineStatuses from "@/hooks/useRoutineStatuses";
 import { calculateStatStreak, calculateLongestStreak } from "@/lib/streak";
 import { getDatesBetween, getDatesOfCurrentMonth } from "@/lib/date";
 
-const RoutineHistory = () => {
+const RoutineDetails = () => {
   const { routineId } = useParams<{ routineId: string }>();
   const navigate = useNavigate();
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
@@ -63,14 +64,6 @@ const RoutineHistory = () => {
   } = useRoutineStatuses(routineId);
 
   const allStatuses = routineStatuses;
-
-  if (!routine) {
-    // Si les requêtes sont encore en chargement, éviter un redirection brutale — ne rien afficher tant que c'est chargé
-    if (isLoading || isLoadingStats || isLoadingRoutineStatuses) return null;
-    navigate("/");
-    return null;
-  }
-
   // Memo pour éviter recalculs inutiles
   const completedStatuses = allStatuses.filter((s) => s.completed);
   const completedDates = completedStatuses.map((s) => s.date).sort();
@@ -81,6 +74,29 @@ const RoutineHistory = () => {
       return d.getMonth() === selectedMonth && d.getFullYear() === selectedYear;
     });
   }, [completedDates, selectedMonth, selectedYear]);
+
+  // Prépare les données du graphique pour le mois sélectionné
+  const chartData = useMemo(() => {
+    const monthDates = getDatesOfCurrentMonth(
+      new Date(selectedYear, selectedMonth),
+    );
+    return monthDates.map((day) => {
+      const dateStr = format(day, "yyyy-MM-dd");
+      const isCompleted = completedDates.includes(dateStr);
+      return {
+        date: format(day, "dd/MM"),
+        fullDate: dateStr,
+        completed: isCompleted ? 1 : 0,
+      };
+    });
+  }, [completedDates, selectedMonth, selectedYear]);
+
+  if (!routine) {
+    // Si les requêtes sont encore en chargement, éviter un redirection brutale — ne rien afficher tant que c'est chargé
+    if (isLoading || isLoadingStats || isLoadingRoutineStatuses) return null;
+    navigate("/");
+    return null;
+  }
 
   // Génère les années et mois disponibles depuis la création jusqu'à aujourd'hui
   const creationYear = parseISO(routine.createdAt).getFullYear();
@@ -129,21 +145,6 @@ const RoutineHistory = () => {
     allStatuses,
     allRoutineDates,
   );
-  // Prépare les données du graphique pour le mois sélectionné
-  const chartData = useMemo(() => {
-    const monthDates = getDatesOfCurrentMonth(
-      new Date(selectedYear, selectedMonth),
-    );
-    return monthDates.map((day) => {
-      const dateStr = format(day, "yyyy-MM-dd");
-      const isCompleted = completedDates.includes(dateStr);
-      return {
-        date: format(day, "dd/MM"),
-        fullDate: dateStr,
-        completed: isCompleted ? 1 : 0,
-      };
-    });
-  }, [completedDates, selectedMonth, selectedYear]);
 
   // Compte le nombre de jours calendaires depuis la création
   const creationDate = format(parseISO(routine.createdAt), "yyyy-MM-dd");
@@ -168,18 +169,29 @@ const RoutineHistory = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
-      <div className="container mx-auto px-4 py-6 max-w-4xl">
-        {/* Header */}
+      <div className="container mx-auto px-4 py-8 max-w-2xl">
         <div className="mb-6">
-          <Button
-            variant="ghost"
-            onClick={() => navigate("/")}
-            className="mb-4 focus-visible:ring-2 focus-visible:ring-primary"
-            aria-label="Retour à l'accueil"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Retour
-          </Button>
+          <div className="flex justify-between items-center mb-4">
+            <div className="flex items-start gap-2">
+              <Button
+                variant="ghost"
+                onClick={() => navigate(-1)}
+                className="focus-visible:ring-2 focus-visible:ring-primary"
+                aria-label="Retour à l'accueil"
+              >
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Retour
+              </Button>
+            </div>
+            <div className="flex items-center gap-2">
+              <Sparkles className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
+              <h1 className="text-2xl sm:text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent">
+                Ma routine
+              </h1>
+            </div>
+          </div>
+
+          <hr className="border-border w-full mb-6" />
 
           <h1 className="text-3xl font-bold text-foreground">
             {routine.title}
@@ -195,40 +207,31 @@ const RoutineHistory = () => {
             <div className="flex flex-wrap gap-3 mt-6">
               {/* Badge Fréquence */}
               {routine.frequency && (
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-primary/10 text-primary border border-primary/20 shadow-sm transition-all hover:bg-primary/15">
+                <Badge className="px-3 py-1.5 text-xs font-bold uppercase tracking-wide inline-flex items-center gap-2">
                   <Calendar className="h-4 w-4" />
-                  <span className="text-xs font-bold uppercase tracking-wide">
-                    {getFrequencyLabel(routine.frequency)}
-                  </span>
-                </div>
+                  {getFrequencyLabel(routine.frequency)}
+                </Badge>
               )}
 
               {/* Badge Moment de la journée */}
-              <div
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border shadow-sm transition-all
-                ${
+              <Badge
+                className={`px-3 py-1.5 text-xs font-bold uppercase tracking-wide inline-flex items-center gap-2 ${
                   routine.timeOfDay
                     ? "bg-secondary/10 text-secondary-foreground border-secondary/20"
                     : "bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 border-indigo-100 dark:border-indigo-900/50"
                 }`}
               >
-                {/* Icone dynamique : Soit l'icône du moment, soit Sparkles si non-défini */}
                 {routine.timeOfDay ? (
                   <>
                     <Clock className="h-4 w-4" />
-                    <span className="text-xs font-bold uppercase tracking-wide">
-                      {getTimeOfDayLabel(routine.timeOfDay)?.label}
-                    </span>
+                    {getTimeOfDayLabel(routine.timeOfDay)?.label}
                   </>
                 ) : (
                   <>
-                    <Sparkles className="h-4 w-4" />
-                    <span className="text-xs font-bold uppercase tracking-wide">
-                      À votre rythme
-                    </span>
+                    <Sparkles className="h-4 w-4" />À votre rythme
                   </>
                 )}
-              </div>
+              </Badge>
             </div>
           )}
         </div>
@@ -444,4 +447,4 @@ const RoutineHistory = () => {
   );
 };
 
-export default RoutineHistory;
+export default RoutineDetails;

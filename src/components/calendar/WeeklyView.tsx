@@ -13,7 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { getWeekDays } from "@/lib/date";
 import { routineStorage } from "@/integrations/supabase/routines";
-import { projectStorage } from "@/integrations/supabase/projects";
+import { taskStorage } from "@/integrations/supabase/tasks";
 
 interface WeeklyViewProps {
   selectedDate: Date;
@@ -37,10 +37,19 @@ export function WeeklyView({ selectedDate, onDateSelect }: WeeklyViewProps) {
       const startDate = format(weekStart, "yyyy-MM-dd");
       const endDate = format(weekEnd, "yyyy-MM-dd");
 
-      const [completionRates, deadlines] = await Promise.all([
-        routineStorage.getCompletionRatesForWeek(startDate, endDate),
-        projectStorage.getDeadlinesForWeek(startDate, endDate),
-      ]);
+      const completionRates = await routineStorage.getCompletionRatesForWeek(
+        startDate,
+        endDate,
+      );
+
+      const tasks = await taskStorage.getTasks();
+      const deadlines = new Set<string>();
+      tasks.forEach((t) => {
+        if (!t.deadline) return;
+        if (t.deadline >= startDate && t.deadline <= endDate) {
+          deadlines.add(t.deadline);
+        }
+      });
 
       return { completionRates, deadlines };
     },
@@ -247,9 +256,9 @@ export function WeeklyView({ selectedDate, onDateSelect }: WeeklyViewProps) {
                 {hasDeadline && (
                   <Badge
                     variant="outline"
-                    className="text-xs w-full justify-center bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400"
+                    className="text-xs px-8 py-2 w-full justify-center bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400"
                   >
-                    📌 Deadline
+                    📌 <span>Deadline</span>
                   </Badge>
                 )}
               </CardContent>

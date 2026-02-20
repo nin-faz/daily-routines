@@ -14,6 +14,7 @@ export const useTheme = () => {
   return useContext(ThemeContext);
 };
 
+
 export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
   const { user } = useAuth();
   const { theme, setTheme } = useNextTheme();
@@ -22,6 +23,7 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
   );
   const [themeLoading, setThemeLoading] = useState(true);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [dbTheme, setDbTheme] = useState<string | null>(null); // pour comparer
 
   // Charger les préférences utilisateur depuis la DB
   useEffect(() => {
@@ -36,6 +38,7 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
       if (!user) {
         setThemeLoading(false);
         setIsInitialized(true);
+        setDbTheme(null);
         return;
       }
       const { data } = await supabase
@@ -54,6 +57,7 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
         if (mode_theme) {
           setTheme(mode_theme);
         }
+        setDbTheme(mode_theme || null); // stocke la valeur DB pour la comparer ensuite
 
         setThemeLoading(false);
         setIsInitialized(true);
@@ -65,28 +69,27 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
     };
   }, [user, setTheme]);
 
-  // Sauvegarder le mode theme (light/dark) en DB quand il change
+  // Sauvegarder le mode theme (light/dark) en DB quand il change, mais seulement si différent de la valeur DB initiale
   useEffect(() => {
     // Ne rien faire tant que l'initialisation n'est pas terminée
     if (!isInitialized || !user || !theme) return;
 
-    // next-themes gère déjà le localStorage automatiquement
-    // On sauvegarde juste en DB en arrière-plan
-    supabase
-      .from("profiles")
-      .update({ mode_theme: theme })
-      .eq("id", user.id)
-      .then(({ error }) => {
-        if (error) {
-          console.error(
-            "❌ Erreur lors de la sauvegarde du mode theme:",
-            error,
-          );
-        } else {
-          console.log("✅ Mode theme sauvegardé:", theme);
-        }
-      });
-  }, [theme, user, isInitialized]);
+    // Si la valeur du thème a changé par rapport à la DB, on sauvegarde
+    if (dbTheme !== null && theme !== dbTheme) {
+      supabase
+        .from("profiles")
+        .update({ mode_theme: theme })
+        .eq("id", user.id)
+        .then(({ error }) => {
+          if (error) {
+            console.error(
+              "❌ Erreur lors de la sauvegarde du mode theme:",
+              error,
+            );
+          }
+        });
+    }
+  }, [theme, user, isInitialized, dbTheme]);
 
   /** Appliquer les couleurs CSS quand la palette ou le dark/light mode change */
   useEffect(() => {

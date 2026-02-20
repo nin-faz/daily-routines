@@ -1,7 +1,7 @@
 {
   "name": "Daily Routines",
   "short_name": "Daily Routines",
-  "description": "Gérez vos routines et projets quotidiens",
+  "description": "Gérez vos routines et dossiers quotidiens",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

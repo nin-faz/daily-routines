@@ -10,6 +10,7 @@ import {
   ArrowLeft,
   LogOut,
   Shield,
+  CheckSquare,
 } from "lucide-react";
 import { ThemeToggle } from "../theme/ThemeToggle";
 import { ThemeSelector } from "../theme/ThemeSelector";
@@ -25,7 +26,8 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
   const navItems = [
     { path: "/admin", icon: LayoutDashboard, label: "Dashboard" },
     { path: "/admin/users", icon: Users, label: "Utilisateurs" },
-    { path: "/admin/projects", icon: FolderKanban, label: "Projets" },
+    { path: "/admin/folders", icon: FolderKanban, label: "Dossiers" },
+    { path: "/admin/tasks", icon: CheckSquare, label: "Tâches" },
   ];
 
   return (

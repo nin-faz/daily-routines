@@ -16,6 +16,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Loader2, Shield, ShieldOff, User, Trash2 } from "lucide-react";
+import AdminFilterBar from "@/components/admin/AdminFilterBar";
+import { useMemo, useState } from "react";
 import {
   AlertDialog,
   AlertDialogTrigger,
@@ -33,6 +35,26 @@ import { fr } from "date-fns/locale";
 const AdminUsers = () => {
   const { data: users = [], isLoading: loading, refetch } = useAdminUsers();
   const { toast } = useToast();
+  const [filters, setFilters] = useState<Record<string, string>>({});
+
+  const filteredUsers = useMemo(() => {
+    const q = (filters.q || "").toLowerCase();
+    return users.filter((u) => {
+      if (
+        q &&
+        !(
+          (u.display_name || "").toLowerCase().includes(q) ||
+          (u.email || "").toLowerCase().includes(q)
+        )
+      )
+        return false;
+      if (filters.role) {
+        const has = u.roles.includes(filters.role);
+        if (!has) return false;
+      }
+      return true;
+    });
+  }, [users, filters]);
 
   // Change le rôle admin et rafraîchit la liste via React Query
   const toggleAdminRole = async (userId: string, currentRoles: string[]) => {
@@ -84,15 +106,24 @@ const AdminUsers = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <User className="h-5 w-5" />
-              Liste des utilisateurs ({users.length})
+              Liste des utilisateurs ({filteredUsers.length})
             </CardTitle>
           </CardHeader>
+          <div className="px-6 mt-2">
+            <AdminFilterBar
+              roles={[
+                { value: "admin", label: "admin" },
+                { value: "user", label: "user" },
+              ]}
+              onChange={(f) => setFilters(f)}
+            />
+          </div>
           <CardContent>
             {loading ? (
               <div className="flex justify-center py-8">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
               </div>
-            ) : users.length === 0 ? (
+            ) : filteredUsers.length === 0 ? (
               <p className="text-center text-muted-foreground py-8">
                 Aucun utilisateur trouvé
               </p>
@@ -109,7 +140,7 @@ const AdminUsers = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {users.map((user) => {
+                    {filteredUsers.map((user) => {
                       const isAdmin = user.roles.includes("admin");
                       const initials = (user.display_name || user.email || "?")
                         .split(" ")

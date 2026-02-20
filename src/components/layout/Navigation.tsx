@@ -1,4 +1,4 @@
-import { Home, CalendarDays, FolderKanban, TrendingUp } from "lucide-react";
+import { Home, CalendarDays, ClipboardList, TrendingUp } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
@@ -7,7 +7,7 @@ const Navigation = () => {
 
   const links = [
     { path: "/", icon: Home, label: "Routines" },
-    { path: "/projects", icon: FolderKanban, label: "Projets" },
+    { path: "/tasks", icon: ClipboardList, label: "Tâches" },
     { path: "/calendar", icon: CalendarDays, label: "Calendrier" },
     { path: "/stats", icon: TrendingUp, label: "Stats" },
   ];

@@ -76,7 +76,7 @@ interface CreateRoutineDialogProps {
   onCreateRoutine?: (
     routine: Omit<Routine, "id" | "createdAt" | "userId" | "updatedAt">,
   ) => void;
-  onUpdateRoutine?: (routine: Routine) => void;
+  onUpdateRoutine?: (id: string, updates: Partial<Routine>) => void;
 }
 
 const CreateRoutineDialog = ({
@@ -87,6 +87,7 @@ const CreateRoutineDialog = ({
   onUpdateRoutine,
 }: CreateRoutineDialogProps) => {
   const [internalOpen, setInternalOpen] = useState(false);
+
   const [title, setTitle] = useState("");
   const [durationHours, setDurationHours] = useState<string>("");
   const [durationMinutes, setDurationMinutes] = useState<string>("");
@@ -150,15 +151,12 @@ const CreateRoutineDialog = ({
     }
   }, [routine, open]);
 
-  // À l'intérieur de CreateRoutineDialog
+  /** Vérifie les notifications global, une fois le formulaire de la routine ouvert */
   useEffect(() => {
-    // On ne vérifie que si le formulaire est ouvert et qu'on est en mode édition
     if (open && isEditMode && routine?.notificationTime) {
       if (Notification.permission !== "granted") {
-        // On désactive le switch visuellement car la permission est absente
         setEnableNotification(false);
 
-        // On prévient l'utilisateur avec un message clair
         toast.error(
           "Les notifications sont bloquées par votre navigateur. Le rappel a été désactivé.",
           {
@@ -212,8 +210,7 @@ const CreateRoutineDialog = ({
     }
 
     if (isEditMode && onUpdateRoutine && routine) {
-      onUpdateRoutine({
-        ...routine,
+      onUpdateRoutine(routine.id, {
         title: title.trim(),
         duration: durationNum,
         hasTimer: !!durationNum,
@@ -270,7 +267,7 @@ const CreateRoutineDialog = ({
         <form onSubmit={handleSubmit} className="space-y-4 mt-4">
           <div className="space-y-2">
             <Label htmlFor="title" className="after:content-['*'] after:ml-0.5">
-              Titre de la routine{" "}
+              Titre
             </Label>
             <Input
               id="title"
@@ -282,7 +279,7 @@ const CreateRoutineDialog = ({
           </div>
 
           <div className="space-y-2">
-            <Label>Durée</Label>
+            <Label htmlFor="durationHours">Durée</Label>
             <div className="flex items-center gap-2">
               <div className="flex-1">
                 <Input
@@ -504,7 +501,11 @@ const CreateRoutineDialog = ({
             >
               Annuler
             </Button>
-            <Button type="submit" className="flex-1 bg-gradient-primary">
+            <Button
+              type="submit"
+              disabled={!title.trim()}
+              className="flex-1 bg-gradient-primary"
+            >
               {isEditMode ? "Modifier" : "Créer"}
             </Button>
           </div>
