@@ -14,7 +14,6 @@ export const useTheme = () => {
   return useContext(ThemeContext);
 };
 
-
 export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
   const { user } = useAuth();
   const { theme, setTheme } = useNextTheme();

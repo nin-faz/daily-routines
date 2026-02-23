@@ -10,8 +10,7 @@ entrypoint = "./functions/welcome-email/index.ts"
 enabled = true
 verify_jwt = true
 
-[functions.send-routine-notifications]
+[functions.send-scheduled-notifications]
 enabled = true
 verify_jwt = false
 # Le cron est configuré via pg_cron dans la migration 06_cron_notifications.sql
-
