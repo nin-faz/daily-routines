@@ -35,6 +35,7 @@ export const routineStorage = {
       weekDays: (row.week_days as DayOfWeek[]) ?? undefined,
       createdAt: row.created_at,
       updatedAt: row.updated_at ?? row.created_at,
+      isArchived: row.is_archived ?? false,
     }));
   },
 
@@ -71,17 +72,18 @@ export const routineStorage = {
     if (!user) throw new Error("User not authenticated");
 
     const row: TablesUpdate<"routines"> = {};
-    if ("title" in updates) row.title = updates.title;
-    if ("duration" in updates) row.duration = updates.duration ?? null;
-    if ("hasTimer" in updates) row.has_timer = updates.hasTimer;
-    if ("notificationTime" in updates)
-      row.notification_time = updates.notificationTime ?? null;
-    if ("timeOfDay" in updates)
-      row.time_of_day = updates.timeOfDay ?? null;
-    if ("frequency" in updates)
-      row.frequency = updates.frequency ?? RoutineFrequency.DAILY;
-    if ("weekDays" in updates)
-      row.week_days = updates.weekDays ?? null;
+      if ("title" in updates) row.title = updates.title;
+      if ("duration" in updates) row.duration = updates.duration ?? null;
+      if ("hasTimer" in updates) row.has_timer = updates.hasTimer;
+      if ("notificationTime" in updates)
+        row.notification_time = updates.notificationTime ?? null;
+      if ("timeOfDay" in updates)
+        row.time_of_day = updates.timeOfDay ?? null;
+      if ("frequency" in updates)
+        row.frequency = updates.frequency ?? RoutineFrequency.DAILY;
+      if ("weekDays" in updates)
+        row.week_days = updates.weekDays ?? null;
+      if ("isArchived" in updates) row.is_archived = updates.isArchived;
 
     const { error } = await supabase
       .from("routines")

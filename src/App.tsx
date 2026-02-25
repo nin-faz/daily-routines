@@ -21,6 +21,7 @@ const Routines = lazy(() => import("./pages/routine/Routines"));
 const Calendar = lazy(() => import("./pages/Calendar"));
 const Tasks = lazy(() => import("./pages/Tasks"));
 const RoutineDetails = lazy(() => import("./pages/routine/RoutineDetails"));
+const ArchivedRoutines = lazy(() => import("./pages/routine/RoutineArchived"));
 const AllRoutines = lazy(() => import("./pages/routine/AllRoutines"));
 const TimerView = lazy(() => import("./pages/routine/TimerView"));
 const FolderDetails = lazy(() => import("./pages/FolderDetails"));
@@ -163,6 +164,14 @@ const AppContent = () => {
               element={
                 <ProtectedRoute>
                   <RoutineDetails />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/routines/archive"
+              element={
+                <ProtectedRoute>
+                  <ArchivedRoutines />
                 </ProtectedRoute>
               }
             />

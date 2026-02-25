@@ -9,7 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { User, LogOut, Shield, Settings } from "lucide-react";
+import { User, LogOut, Shield, Settings, Archive } from "lucide-react";
 
 const UserMenu = () => {
   const { user, signOut } = useAuth();
@@ -54,6 +54,16 @@ const UserMenu = () => {
           >
             <Settings className="h-4 w-4" />
             Mon Profil
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link
+            to="/routines/archive"
+            className="flex items-center gap-2 cursor-pointer"
+            aria-label="Voir les routines archivées"
+          >
+            <Archive className="h-4 w-4" />
+            Routines archivées
           </Link>
         </DropdownMenuItem>
         {isAdmin && (

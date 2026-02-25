@@ -64,15 +64,21 @@ const Stats = () => {
   const [taskFolderFilter, setTaskFolderFilter] = React.useState<string>("all");
   const [taskStatusFilter] = useState<"all" | "todo" | "done">("all");
 
-  // Filtrage routines selon le type sélectionné
+  // Filtrage routines actives (non archivées) puis selon le type sélectionné
+  const activeRoutines = React.useMemo(
+    () => routines.filter((r) => !r.isArchived),
+    [routines],
+  );
   const filteredRoutines = React.useMemo(() => {
-    if (routineType === "all") return routines;
+    if (routineType === "all") return activeRoutines;
     if (routineType === "daily")
-      return routines.filter((r) => !r.frequency || r.frequency === "daily");
+      return activeRoutines.filter(
+        (r) => !r.frequency || r.frequency === "daily",
+      );
     if (routineType === "weekly")
-      return routines.filter((r) => r.frequency === "weekly");
-    return routines;
-  }, [routines, routineType]);
+      return activeRoutines.filter((r) => r.frequency === "weekly");
+    return activeRoutines;
+  }, [activeRoutines, routineType]);
 
   // Calculs pour les routines
   const today = new Date();

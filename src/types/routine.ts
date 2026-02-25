@@ -28,7 +28,8 @@ export interface Routine {
   notificationTime?: string; // HH:MM format
   timeOfDay?: TimeOfDay;
   frequency: RoutineFrequency;
-  weekDays?: DayOfWeek[]; // Requis si frequency === 'weekly'
+  weekDays?: DayOfWeek[];
+  isArchived: boolean;
   createdAt: string;
   updatedAt: string;
 }

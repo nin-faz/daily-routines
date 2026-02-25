@@ -16,7 +16,7 @@ const Timer = ({ duration, onComplete, routineId }: TimerProps) => {
   // Initialize from saved state or default
   const savedState = timerStorage.getTimerState(routineId);
   const [timeLeft, setTimeLeft] = useState(
-    savedState?.timeLeft ?? duration * 60
+    savedState?.timeLeft ?? duration * 60,
   );
   const [isRunning, setIsRunning] = useState(savedState?.isRunning ?? false);
   const intervalRef = useRef<number | null>(null);
@@ -82,7 +82,7 @@ const Timer = ({ duration, onComplete, routineId }: TimerProps) => {
   const progress = ((duration * 60 - timeLeft) / (duration * 60)) * 100;
 
   return (
-    <div className="flex items-center gap-1.5 bg-muted/50 rounded-full px-2 py-1">
+    <div className="flex items-center gap-1.5 bg-primary/50 rounded-full px-2 py-1">
       <div className="relative">
         <svg className="w-8 h-8 transform -rotate-90">
           <circle

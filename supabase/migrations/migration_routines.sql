@@ -40,6 +40,14 @@ BEGIN
         ALTER TABLE public.routines ADD COLUMN frequency TEXT DEFAULT 'daily';
     END IF;
 
+    -- Ajouter is_archived
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_name = 'routines' AND column_name = 'is_archived'
+    ) THEN
+        ALTER TABLE public.routines ADD COLUMN is_archived BOOLEAN DEFAULT FALSE;
+    END IF;
+
     -- Ajouter week_days
     IF NOT EXISTS (
         SELECT 1 FROM information_schema.columns

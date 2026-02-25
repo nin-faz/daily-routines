@@ -18,11 +18,14 @@ const Calendar = () => {
   const [viewMode, setViewMode] = useState<ViewMode>("monthly");
 
   // Routines avec cache React Query
-  const { data: routines = [] } = useQuery({
+  const { data: routinesRaw = [] } = useQuery({
     queryKey: ["routines"],
     queryFn: () => routineStorage.getRoutines(),
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
+
+  // Ne garder que les routines actives (non archivées)
+  const routines = routinesRaw.filter((r: any) => !r.isArchived);
 
   // Statuts du jour sélectionné avec cache React Query
   const { data: statusesForDate = [] } = useQuery({

@@ -1,3 +1,5 @@
+import { Button } from "@/components/ui/button";
+import { Archive } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogTrigger,
@@ -9,49 +11,39 @@ import {
   AlertDialogCancel,
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
-import { Trash2 } from "lucide-react";
 
-interface ConfirmDeleteButtonProps {
+interface ConfirmArchiveButtonProps {
   onConfirm: () => void;
-  label?: string;
   description?: string;
   iconSize?: number;
   buttonClassName?: string;
   actionLabel?: string;
-  labelView?: string;
 }
 
-const ConfirmDeleteButton = ({
+const ConfirmArchiveButton = ({
   onConfirm,
-  label = "Supprimer ?",
-  description = "Cette action est irréversible.",
+  description,
   iconSize = 16,
   buttonClassName = "h-8 w-8 shrink-0 text-destructive",
-  actionLabel = "Supprimer",
-  labelView,
-}: ConfirmDeleteButtonProps) => (
+  actionLabel = "Archiver",
+}: ConfirmArchiveButtonProps) => (
   <AlertDialog>
     <AlertDialogTrigger asChild>
       <Button
         variant="ghost"
         size="icon"
         className={
-          buttonClassName +
-          " hover:text-destructive hover:bg-destructive/10 p-0"
+          buttonClassName + " hover:text-orange-600 hover:bg-orange-500/10 p-0"
         }
-        title={label}
         onClick={(e) => e.stopPropagation()}
       >
-        <Trash2 className={`h-${iconSize} w-${iconSize}`} />
-        {labelView ? (
-          <span className="ml-2 inline-block">{labelView}</span>
-        ) : null}
+        <Archive className={`h-${iconSize} w-${iconSize}`} />
+        <span>{actionLabel} la routine</span>
       </Button>
     </AlertDialogTrigger>
     <AlertDialogContent>
       <AlertDialogHeader>
-        <AlertDialogTitle>{label}</AlertDialogTitle>
+        <AlertDialogTitle>{actionLabel} définitivement ?</AlertDialogTitle>
         <AlertDialogDescription>{description}</AlertDialogDescription>
       </AlertDialogHeader>
       <AlertDialogFooter>
@@ -66,7 +58,7 @@ const ConfirmDeleteButton = ({
             e.stopPropagation();
             onConfirm();
           }}
-          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+          className="bg-orange-700 text-destructive-foreground hover:bg-orange-700/90"
         >
           {actionLabel}
         </AlertDialogAction>
@@ -75,4 +67,4 @@ const ConfirmDeleteButton = ({
   </AlertDialog>
 );
 
-export default ConfirmDeleteButton;
+export default ConfirmArchiveButton;

@@ -30,7 +30,7 @@ import { useRoutines } from "@/hooks/useRoutines";
 
 const Routines = () => {
   const {
-    routines,
+    activeRoutines,
     statuses,
     isLoading,
     addRoutine,
@@ -91,9 +91,15 @@ const Routines = () => {
     );
   };
 
-  // Supprime une routine
   const handleDeleteRoutine = (routineId: string) => {
     deleteRoutine.mutate(routineId);
+  };
+
+  const handleArchiveRoutine = (routine: Routine) => {
+    updateRoutine.mutate({
+      id: routine.id,
+      updates: { isArchived: !routine.isArchived },
+    });
   };
 
   // Stocke le nombre de routines complétées aujourd'hui
@@ -109,7 +115,7 @@ const Routines = () => {
 
   const todayDayOfWeek = JS_DAY_TO_DAY_OF_WEEK[new Date().getDay()];
   const todaysRoutines = getTodaysRoutines(
-    [...routines].sort(
+    [...activeRoutines].sort(
       (a, b) =>
         new Date(b.createdAt || 0).getTime() -
         new Date(a.createdAt || 0).getTime(),
@@ -202,6 +208,7 @@ const Routines = () => {
                       onSkipToday={() => handleSkipToday(routine.id)}
                       onEdit={() => handleEditRoutine(routine)}
                       onDelete={() => handleDeleteRoutine(routine.id)}
+                      onArchive={() => handleArchiveRoutine(routine)}
                     />
                   );
                 })}
@@ -236,7 +243,7 @@ const Routines = () => {
                 Voir toutes les routines
               </Link>
             </div>
-            {routines.length > 0 && (
+            {activeRoutines.length > 0 && (
               <p className="text-xs sm:text-sm text-muted-foreground mt-1">
                 {completedCount} / {todaysRoutines.length} complétées
                 aujourd'hui
@@ -247,7 +254,7 @@ const Routines = () => {
         <main className="space-y-6">
           {isLoading ? (
             <RoutineListSkeleton />
-          ) : routines.length === 0 ? (
+          ) : activeRoutines.length === 0 ? (
             <EmptyState
               icon={Coffee}
               title="Aucune routine"

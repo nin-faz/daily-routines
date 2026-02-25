@@ -8,6 +8,7 @@ import RoutineCard from "@/components/routine/RoutineCard";
 import { useRoutines } from "@/hooks/useRoutines";
 import { getTodayString } from "@/integrations/supabase/routines";
 import { ArrowLeft } from "lucide-react";
+import { Routine } from "@/types/routine";
 
 const AllRoutines = () => {
   const {
@@ -15,8 +16,6 @@ const AllRoutines = () => {
     statuses,
     isLoading,
     addRoutine,
-    toggleComplete,
-    skipToday,
     updateRoutine,
     deleteRoutine,
   } = useRoutines();
@@ -25,13 +24,18 @@ const AllRoutines = () => {
   );
   const [editDialogOpen, setEditDialogOpen] = useState(false);
 
-  const handleEdit = (r: any) => {
-    setEditingRoutine(r);
+  const handleCreateRoutine = (
+    routineData: Omit<Routine, "id" | "createdAt" | "userId" | "updatedAt">,
+  ) => {
+    addRoutine.mutate(routineData);
+  };
+
+  const handleEdit = (routine: Routine) => {
+    setEditingRoutine(routine);
     setEditDialogOpen(true);
   };
 
-  const handleCreate = (data: any) => addRoutine.mutate(data);
-  const handleUpdate = (id: string, updates: any) =>
+  const handleUpdateRoutine = (id: string, updates: Partial<Routine>) => {
     updateRoutine.mutate(
       { id, updates },
       {
@@ -41,6 +45,14 @@ const AllRoutines = () => {
         },
       },
     );
+  };
+
+  const handleArchiveRoutine = (routine: Routine) => {
+    updateRoutine.mutate({
+      id: routine.id,
+      updates: { isArchived: !routine.isArchived },
+    });
+  };
 
   const navigate = useNavigate();
 
@@ -72,7 +84,7 @@ const AllRoutines = () => {
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <CreateRoutineDialog onCreateRoutine={handleCreate} />
+            <CreateRoutineDialog onCreateRoutine={handleCreateRoutine} />
           </div>
         </div>
 
@@ -93,10 +105,12 @@ const AllRoutines = () => {
                   key={r.id}
                   routine={r}
                   status={status}
-                  onToggleComplete={() => toggleComplete.mutate(r.id)}
-                  onSkipToday={() => skipToday.mutate(r.id)}
+                  // Désactivé dans AllRoutines
+                  onToggleComplete={() => {}}
+                  onSkipToday={() => {}}
                   onEdit={() => handleEdit(r)}
                   onDelete={() => deleteRoutine.mutate(r.id)}
+                  onArchive={() => handleArchiveRoutine(r)}
                 />
               );
             })
@@ -108,7 +122,7 @@ const AllRoutines = () => {
         routine={editingRoutine}
         open={editDialogOpen}
         onOpenChange={setEditDialogOpen}
-        onUpdateRoutine={handleUpdate}
+        onUpdateRoutine={handleUpdateRoutine}
       />
 
       <Navigation />

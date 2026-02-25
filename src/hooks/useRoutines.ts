@@ -15,6 +15,9 @@ export const useRoutines = () => {
     gcTime: 1000 * 60 * 10, // Garde en cache 10 minutes
   });
 
+  const activeRoutines = routines.filter(routine => !routine.isArchived);
+  const archivedRoutines = routines.filter(routine => routine.isArchived);
+
   // Récupère uniquement les statuts du jour pour afficher les checkboxes
   const { data: statuses = [] } = useQuery({
     queryKey: ["routine-statuses", today],
@@ -240,7 +243,9 @@ export const useRoutines = () => {
 
   return {
     routines,
-    statuses,// Statuts du jour pour chaque routine (complétée, sautée...)
+    activeRoutines,
+    archivedRoutines,
+    statuses, // Statuts du jour pour chaque routine (complétée, sautée...)
     isLoading,
     addRoutine,
     toggleComplete, // Marque une routine comme complétée ou annule la complétion
