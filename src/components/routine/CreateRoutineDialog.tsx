@@ -28,6 +28,7 @@ import { toast } from "sonner";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useNotifications } from "@/context/NotificationContext";
 import { cn } from "@/lib/utils";
+import { routineSchema } from "@/lib/validationSchemas";
 
 // Générer les options pour les heures (00-23)
 const HOURS = Array.from({ length: 24 }, (_, i) =>
@@ -176,27 +177,28 @@ const CreateRoutineDialog = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!title.trim()) {
-      toast.error("Le titre est requis");
-      return;
-    }
-
-    if (frequency === RoutineFrequency.WEEKLY && weekDays.length === 0) {
-      toast.error("Sélectionnez au moins un jour de la semaine");
-      return;
-    }
-
-    // Calculer la durée totale en minutes
+    // 1. Préparation de la donnée brute avant validation
     const hours = durationHours ? parseInt(durationHours) : 0;
     const minutes = durationMinutes ? parseInt(durationMinutes) : 0;
     const durationNum =
       hours > 0 || minutes > 0 ? hours * 60 + minutes : undefined;
 
-    if (
-      (durationHours || durationMinutes) &&
-      (!durationNum || durationNum <= 0)
-    ) {
-      toast.error("La durée doit être supérieure à 0");
+    // 2. 🔒 SÉCURITÉ : Validation Zod (Titre & Durée)
+    const validationResult = routineSchema.safeParse({
+      title: title,
+      duration: durationNum,
+    });
+
+    if (!validationResult.success) {
+      toast.error(validationResult.error.errors[0].message);
+      return;
+    }
+
+    const safeData = validationResult.data;
+
+    // 3. Validation "Métier" spécifique
+    if (frequency === RoutineFrequency.WEEKLY && weekDays.length === 0) {
+      toast.error("Sélectionnez au moins un jour de la semaine");
       return;
     }
 
@@ -211,9 +213,9 @@ const CreateRoutineDialog = ({
 
     if (isEditMode && onUpdateRoutine && routine) {
       onUpdateRoutine(routine.id, {
-        title: title.trim(),
-        duration: durationNum,
-        hasTimer: !!durationNum,
+        title: safeData.title,
+        duration: safeData.duration,
+        hasTimer: !!safeData.duration,
         notificationTime: finalNotificationTime,
         timeOfDay,
         frequency,
@@ -222,13 +224,14 @@ const CreateRoutineDialog = ({
       toast.success("Routine modifiée avec succès");
     } else if (onCreateRoutine) {
       onCreateRoutine({
-        title: title.trim(),
-        duration: durationNum,
-        hasTimer: !!durationNum,
+        title: safeData.title,
+        duration: safeData.duration,
+        hasTimer: !!safeData.duration,
         notificationTime: finalNotificationTime,
         timeOfDay,
         frequency,
         weekDays: frequency === RoutineFrequency.WEEKLY ? weekDays : undefined,
+        isArchived: false,
       });
       toast.success("Routine créée avec succès");
     }

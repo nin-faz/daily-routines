@@ -73,13 +73,28 @@ export async function fetchAdminUsers(): Promise<UserProfile[]> {
   }));
 }
 
-// Met à jour le rôle admin d'un utilisateur (ajoute ou retire le rôle admin)
+/**
+ * 🔒 SÉCURITÉ OPTIMALE : On utilise désormais un RPC (Remote Procedure Call).
+ * Le client ne modifie plus directement la table avec un .update() vulnérable.
+ */
+
 export async function updateAdminRole(userId: string, makeAdmin: boolean): Promise<string | null> {
-  const { error } = await supabase
-    .from('profiles')
-    .update({ role: makeAdmin ? 'admin' : 'user' })
-    .eq('id', userId);
-  return error ? error.message : null;
+  try {
+    const { error } = await supabase.rpc('set_user_role', {
+      target_user_id: userId,
+      new_role: makeAdmin ? 'admin' : 'user'
+    });
+
+    if (error) {
+       console.error("Erreur RPC lors de l'update du rôle:", error);
+       return error.message || "Erreur lors de la modification du rôle.";
+    }
+
+    return null; // Succès
+  } catch (err: any) {
+    console.error("Exception inattendue:", err);
+    return "Une erreur inattendue s'est produite.";
+  }
 }
 
 // Récupère la liste des dossiers avec infos propriétaires et nombre de tâches

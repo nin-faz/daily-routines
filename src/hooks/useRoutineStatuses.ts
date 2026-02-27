@@ -1,20 +1,19 @@
 import { useQuery } from "@tanstack/react-query";
 import { routineStorage } from "@/integrations/supabase/routines";
+import { useAuth } from "@/context/AuthContext";
 
-/**
- * Hook pour récupérer et mettre en cache les statuts d'une routine donnée.
- * Clé de cache: ["routine-statuses", routineId]
- */
 export const useRoutineStatuses = (routineId?: string) => {
+  const { user } = useAuth();
+
   const query = useQuery({
-    queryKey: ["routine-statuses", routineId],
+    queryKey: ["routine-statuses", user?.id, routineId],
     queryFn: async () => {
       if (!routineId) return [];
       const statuses = await routineStorage.getStatuses();
       return statuses.filter((s) => s.routineId === routineId);
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
-    enabled: !!routineId,
+    enabled: !!routineId && !!user?.id,
   });
 
   return {

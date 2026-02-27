@@ -1,5 +1,5 @@
 import type { Routine, RoutineStatus } from "@/types/routine";
-import { getDayCompletionRate } from "@/lib/utils";
+import { getDayCompletionRate } from "@/lib/routineRules";
 
 /**
  * Calcule le streak pour l'affichage calendar (basé sur un objet {date: taux})

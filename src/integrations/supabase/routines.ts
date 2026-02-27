@@ -1,5 +1,5 @@
 import { Routine, RoutineStatus, TimeOfDay, RoutineFrequency, DayOfWeek } from "@/types/routine";
-import { getActiveRoutinesAtDate } from "@/lib/utils";
+import { getActiveRoutinesAtDate } from "@/lib/routineRules";
 import { formatDateYMD } from "@/lib/date";
 import { supabase } from "@/integrations/supabase/client";
 import type { TablesInsert, TablesUpdate } from "@/integrations/supabase/types";
@@ -381,59 +381,5 @@ export const routineStorage = {
   },
 };
 
-export const getTodayString = (): string => {
-  const date = new Date();
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-};
 
-// État du timer — peut rester en localStorage car c'est temporaire/donné de session
-interface TimerState {
-  routineId: string;
-  timeLeft: number;
-  isRunning: boolean;
-  lastUpdate: number;
-  savedDate: string;
-}
 
-const TIMER_STATE_KEY = "active-timer-state";
-
-export const timerStorage = {
-  getTimerState: (routineId: string): TimerState | null => {
-    const data = localStorage.getItem(`${TIMER_STATE_KEY}-${routineId}`);
-    if (!data) return null;
-
-    const state: TimerState = JSON.parse(data);
-    const today = new Date().toISOString().split("T")[0];
-
-    if (state.savedDate !== today) {
-      timerStorage.clearTimerState(routineId);
-      return null;
-    }
-
-    // Si le timer était en cours, on recalcule le temps écoulé
-    if (state.isRunning) {
-      const elapsed = Math.floor((Date.now() - state.lastUpdate) / 1000);
-      state.timeLeft = Math.max(0, state.timeLeft - elapsed);
-      if (state.timeLeft === 0) {
-        state.isRunning = false;
-      }
-    }
-
-    return state;
-  },
-
-  saveTimerState: (state: TimerState) => {
-    const today = new Date().toISOString().split("T")[0];
-    localStorage.setItem(
-      `${TIMER_STATE_KEY}-${state.routineId}`,
-      JSON.stringify({ ...state, lastUpdate: Date.now(), savedDate: today })
-    );
-  },
-
-  clearTimerState: (routineId: string) => {
-    localStorage.removeItem(`${TIMER_STATE_KEY}-${routineId}`);
-  },
-};

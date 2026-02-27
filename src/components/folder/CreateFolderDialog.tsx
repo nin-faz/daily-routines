@@ -15,6 +15,7 @@ import { FOLDER_ICONS, FOLDER_COLORS } from "@/lib/folderOptions";
 import { Folder } from "@/types/folder";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { folderSchema } from "@/lib/validationSchemas";
 
 interface CreateFolderDialogProps {
   folder?: Folder;
@@ -60,22 +61,27 @@ const CreateFolderDialog = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!name.trim()) {
-      toast.error("Le nom du dossier est requis");
+    // 🔒 SÉCURITÉ : Validation stricte des données
+    const validationResult = folderSchema.safeParse({ name: name });
+
+    if (!validationResult.success) {
+      toast.error(validationResult.error.errors[0].message);
       return;
     }
+
+    const safeData = validationResult.data;
 
     if (isEditMode && onUpdateFolder && folder) {
       onUpdateFolder(folder.id, {
         ...folder,
-        name: name.trim(),
+        name: safeData.name,
         icon: selectedIcon,
         color: selectedColor,
       });
       toast.success("Dossier modifié avec succès");
     } else if (onCreateFolder) {
       onCreateFolder({
-        name: name.trim(),
+        name: safeData.name,
         icon: selectedIcon,
         color: selectedColor,
       });

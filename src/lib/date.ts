@@ -2,13 +2,13 @@
 
 import { startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, subDays } from "date-fns";
 import type { Locale } from "date-fns";
+import {format} from "date-fns";
 
 /**
  * Formate une date JS en 'YYYY-MM-DD' (date locale, sans fuseau horaire)
  */
 export function formatDateYMD(date: Date): string {
-  const pad = (n: number) => n.toString().padStart(2, "0");
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+  return format(date, 'yyyy-MM-dd');
 }
 
 /** 
@@ -53,4 +53,12 @@ export function getLastNDates(n: number, fromDate = new Date()): string[] {
 export function getDatesBetween(startDate: Date, endDate: Date): string[] {
   if (startDate > endDate) return [];
   return eachDayOfInterval({ start: startDate, end: endDate }).map(formatDateYMD);
+}
+
+/**
+ * Retourne la date du jour au format 'YYYY-MM-DD' (date locale, sans fuseau horaire).
+ * @returns Date du jour au format 'YYYY-MM-DD'
+ */
+export function getTodayString(): string {
+  return formatDateYMD(new Date());
 }

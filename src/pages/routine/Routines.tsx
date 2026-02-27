@@ -7,7 +7,7 @@ import {
   groupByTimeOfDay,
 } from "@/lib/days";
 import { formatFrenchDate } from "@/lib/date";
-import { getTodayString } from "@/integrations/supabase/routines";
+import { getTodayString } from "@/lib/date";
 import RoutineCard from "@/components/routine/RoutineCard";
 import CreateRoutineDialog from "@/components/routine/CreateRoutineDialog";
 import {

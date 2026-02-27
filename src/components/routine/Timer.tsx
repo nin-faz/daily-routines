@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Play, Pause, RotateCcw, Maximize2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { timerStorage } from "@/integrations/supabase/routines";
+import { timerStorage } from "@/integrations/supabase/timer";
 
 interface TimerProps {
   duration: number; // in minutes

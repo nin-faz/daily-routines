@@ -29,7 +29,7 @@ SELECT cron.schedule(
       url := 'https://gaytlowwebmmycswnshu.supabase.co/functions/v1/send-scheduled-notifications',
       headers := jsonb_build_object(
         'Content-Type', 'application/json',
-        'Authorization', 'Bearer REMOVED_SERVICE_ROLE_KEY'
+        'Authorization', 'Bearer 0KvCkHD+f5Cute/d6wYDYIFD60ygoK5kHGd2DbMP610='
       ),
       body := '{}'::jsonb
     ) as request_id;

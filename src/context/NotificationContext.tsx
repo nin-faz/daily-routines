@@ -52,6 +52,11 @@ export const NotificationProvider = ({
     // 2. Utiliser l'API Permissions pour détecter les changements de permission (si supportée)
     let permissionStatus: PermissionStatus | null = null;
 
+    const handlePermissionChange = () => {
+      console.log("Permission notification changée:", permissionStatus?.state);
+      checkStatus();
+    };
+
     const setupPermissionListener = async () => {
       try {
         // Tentative d'utiliser l'API Permissions (pas supportée partout)
@@ -61,17 +66,9 @@ export const NotificationProvider = ({
           });
 
           // Écouter les changements de permission
-          permissionStatus.onchange = () => {
-            console.log(
-              "Permission notification changée:",
-              permissionStatus?.state,
-            );
-            checkStatus();
-          };
+          permissionStatus.addEventListener("change", handlePermissionChange);
         }
       } catch (error) {
-        // L'API Permissions n'est pas supportée sur ce navigateur
-        // Ce n'est pas grave, on se fie au focus et à l'interval de secours
         console.log("Permissions API non supportée, utilisation du fallback");
       }
     };
@@ -83,12 +80,11 @@ export const NotificationProvider = ({
 
     return () => {
       window.removeEventListener("focus", checkStatus);
+      clearInterval(fallbackInterval);
 
       if (permissionStatus) {
-        permissionStatus.onchange = null;
+        permissionStatus.removeEventListener("change", handlePermissionChange);
       }
-
-      clearInterval(fallbackInterval);
     };
   }, []);
 

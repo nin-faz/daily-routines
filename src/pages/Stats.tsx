@@ -45,7 +45,7 @@ import {
 } from "date-fns";
 import { getFrequencyLabel } from "@/lib/days";
 import { formatDateYMD, getDatesOfCurrentMonth, getWeekDays } from "@/lib/date";
-import { getActiveRoutinesAtDate } from "@/lib/utils";
+import { getActiveRoutinesAtDate } from "@/lib/routineRules";
 import { fr } from "date-fns/locale";
 import type { Routine } from "@/types/routine";
 import { calculateStatStreak, calculateLongestStreak } from "@/lib/streak";

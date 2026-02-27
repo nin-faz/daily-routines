@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import CreateRoutineDialog from "@/components/routine/CreateRoutineDialog";
 import RoutineCard from "@/components/routine/RoutineCard";
 import { useRoutines } from "@/hooks/useRoutines";
-import { getTodayString } from "@/integrations/supabase/routines";
+import { getTodayString } from "@/lib/date";
 import { ArrowLeft } from "lucide-react";
 import { Routine } from "@/types/routine";
 

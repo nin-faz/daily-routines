@@ -7,6 +7,20 @@ serve(async (req) => {
   try {
     console.log('⏰ [CRON] send-scheduled-notifications déclenchée')
 
+    // 🔒 SÉCURITÉ : Vérification de l'autorisation Machine-to-Machine
+    const authHeader = req.headers.get('Authorization')
+    const expectedSecret = Deno.env.get('CRON_SECRET')
+
+    // Si le header Authorization ne correspond pas exactement à notre secret
+    if (!expectedSecret || authHeader !== `Bearer ${expectedSecret}`) {
+      console.error('❌ Tentative d\'accès non autorisée au Cron')
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }), 
+        { status: 401, headers: { 'Content-Type': 'application/json' } }
+      )
+    }
+    console.log('✅ Autorisation validée')
+
     // Créer le client Supabase avec service_role pour accéder à toutes les données
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',

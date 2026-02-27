@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { getTodayString } from "@/integrations/supabase/routines";
+import { getTodayString } from "@/lib/date";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";

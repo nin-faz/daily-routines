@@ -76,6 +76,23 @@ const AppContent = () => {
     // Écouter les changements de permission en temps réel
     let permissionStatus: PermissionStatus | null = null;
 
+    const handlePermissionChange = async () => {
+      console.log(
+        "🔔 Permission notification changée:",
+        permissionStatus?.state,
+      );
+
+      // Si l'utilisateur vient d'accepter les notifications
+      if (permissionStatus?.state === "granted") {
+        console.log("✅ Création automatique de la subscription...");
+        await registerServiceWorker();
+        refreshStatus();
+      } else {
+        // Si refusé ou révoqué, juste rafraîchir le statut
+        refreshStatus();
+      }
+    };
+
     const setupPermissionListener = async () => {
       try {
         if ("permissions" in navigator && user && !user.loading) {
@@ -84,22 +101,7 @@ const AppContent = () => {
           });
 
           // Détecter quand la permission change (ex: de "default" à "granted")
-          permissionStatus.onchange = async () => {
-            console.log(
-              "🔔 Permission notification changée:",
-              permissionStatus?.state,
-            );
-
-            // Si l'utilisateur vient d'accepter les notifications
-            if (permissionStatus?.state === "granted") {
-              console.log("✅ Création automatique de la subscription...");
-              await registerServiceWorker();
-              refreshStatus();
-            } else {
-              // Si refusé ou révoqué, juste rafraîchir le statut
-              refreshStatus();
-            }
-          };
+          permissionStatus.addEventListener("change", handlePermissionChange);
         }
       } catch (error) {
         console.log("Permissions API non supportée");
@@ -112,10 +114,10 @@ const AppContent = () => {
       window.removeEventListener("focus", initNotifications);
 
       if (permissionStatus) {
-        permissionStatus.onchange = null;
+        permissionStatus.removeEventListener("change", handlePermissionChange);
       }
     };
-  }, [user]);
+  }, [user, refreshStatus]);
 
   if (!user || !theme || user.loading || theme.loading) {
     return (
@@ -215,7 +217,6 @@ const AppContent = () => {
                 </ProtectedRoute>
               }
             />
-            ;
             <Route
               path="/stats"
               element={

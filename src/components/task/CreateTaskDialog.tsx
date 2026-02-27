@@ -31,6 +31,7 @@ import { fr } from "date-fns/locale";
 import { formatDateYMD } from "@/lib/date";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { taskSchema } from "@/lib/validationSchemas";
 
 interface CreateTaskDialogProps {
   folders: Folder[];
@@ -86,23 +87,33 @@ const CreateTaskDialog = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!title.trim()) {
-      toast.error("Le titre est requis");
+    // 🔒 SÉCURITÉ : Validation stricte des données avant tout traitement
+    const validationResult = taskSchema.safeParse({
+      title: title,
+      description: description || undefined,
+    });
+
+    if (!validationResult.success) {
+      // Afficher la première erreur rencontrée
+      toast.error(validationResult.error.errors[0].message);
       return;
     }
 
+    // On utilise les données nettoyées et validées par Zod
+    const safeData = validationResult.data;
+
     if (isEditMode && onUpdateTask && task) {
       onUpdateTask(task.id, {
-        title: title.trim(),
-        description: description.trim() || undefined,
+        title: safeData.title,
+        description: safeData.description || undefined,
         folderId: folderId || undefined,
         deadline: deadline ? formatDateYMD(deadline) : undefined,
       });
       toast.success("Tâche modifiée avec succès");
     } else if (onCreateTask) {
       onCreateTask({
-        title: title.trim(),
-        description: description.trim() || undefined,
+        title: safeData.title,
+        description: safeData.description || undefined,
         folderId: folderId || undefined,
         deadline: deadline ? formatDateYMD(deadline) : undefined,
       });

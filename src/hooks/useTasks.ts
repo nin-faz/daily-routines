@@ -1,14 +1,23 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { taskStorage } from "@/integrations/supabase/tasks";
 import { Status, Task } from "@/types/task";
-
+import { useAuth } from "@/context/AuthContext";
 
 export const useTasks = () => {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
+
+  /**
+  * Utiliser une clé de requête spécifique à l'utilisateur pour éviter les conflits entre les utilisateurs
+  * qui se connectent sur le même appareil ou dans des onglets différents. 
+  */
+  const queryKey = ["tasks", user?.id];
 
   const { data: tasks = [], isLoading: isLoadingTasks } = useQuery({
-    queryKey: ["tasks"],
+    queryKey: queryKey,
     queryFn: () => taskStorage.getTasks(),
+    // On ne lance la requête QUE si l'utilisateur est connu
+    enabled: !!user?.id, 
     staleTime: 1000 * 60 * 5,
     gcTime: 1000 * 60 * 10,
   });
@@ -18,7 +27,7 @@ export const useTasks = () => {
       const newTask: Task = {
         ...taskData,
         id: crypto.randomUUID(),
-        userId: "", // Sera remplacé par le trigger de la base de données
+        userId: user?.id || "",
         status: Status.TODO,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
@@ -26,71 +35,71 @@ export const useTasks = () => {
       return taskStorage.addTask(newTask);
     },
     onMutate: async (taskData: Omit<Task, "id" | "createdAt" | "userId" | "updatedAt" | "status">) => {
-      await queryClient.cancelQueries({ queryKey: ["tasks"] });
-      const previousTasks = queryClient.getQueryData<Task[]>(["tasks"]);
+      await queryClient.cancelQueries({ queryKey: queryKey });
+      const previousTasks = queryClient.getQueryData<Task[]>(queryKey);
       const newTask: Task = {
         ...taskData,
         id: crypto.randomUUID(),
-        userId: "", // Sera remplacé par le trigger de la base de données
+        userId: user?.id || "",
         status: Status.TODO,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
-      queryClient.setQueryData<Task[]>(["tasks"], (old = []) => [...old, newTask]);
+      queryClient.setQueryData<Task[]>(queryKey, (old = []) => [...old, newTask]);
       return { previousTasks };
     },
     onError: (_err, _taskData, context) => {
       if (context?.previousTasks) {
-        queryClient.setQueryData(["tasks"], context.previousTasks);
+        queryClient.setQueryData(queryKey, context.previousTasks);
       }
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["tasks"] });
+      queryClient.invalidateQueries({ queryKey: queryKey });
     },
   });
 
   const updateTask = useMutation({
     mutationFn: ({ id, updates }: { id: string; updates: Partial<Task> }) => taskStorage.updateTask(id, updates),
     onMutate: async ({ id, updates }) => {
-      await queryClient.cancelQueries({ queryKey: ["tasks"] });
-      const previousTasks = queryClient.getQueryData<Task[]>(["tasks"]);
-      queryClient.setQueryData<Task[]>(["tasks"], (old = []) =>
+      await queryClient.cancelQueries({ queryKey: queryKey });
+      const previousTasks = queryClient.getQueryData<Task[]>(queryKey);
+      queryClient.setQueryData<Task[]>(queryKey, (old = []) =>
         old.map(task => task.id === id ? { ...task, ...updates } : task)
       );
       return { previousTasks };
     },
     onError: (_err, _variables, context) => {
       if (context?.previousTasks) {
-        queryClient.setQueryData(["tasks"], context.previousTasks);
+        queryClient.setQueryData(queryKey, context.previousTasks);
       }
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["tasks"] });
+      queryClient.invalidateQueries({ queryKey: queryKey });
     },
   });
 
   const deleteTask = useMutation({
     mutationFn: (taskId: string) => taskStorage.deleteTask(taskId),
     onMutate: async (taskId: string) => {
-      await queryClient.cancelQueries({ queryKey: ["tasks"] });
-      const previousTasks = queryClient.getQueryData<Task[]>(["tasks"]);
-      queryClient.setQueryData<Task[]>(["tasks"], (old = []) =>
+      await queryClient.cancelQueries({ queryKey: queryKey });
+      const previousTasks = queryClient.getQueryData<Task[]>(queryKey);
+      queryClient.setQueryData<Task[]>(queryKey, (old = []) =>
         old.filter(task => task.id !== taskId)
       );
       return { previousTasks };
     },
     onError: (_err, _taskId, context) => {
       if (context?.previousTasks) {
-        queryClient.setQueryData(["tasks"], context.previousTasks);
+        queryClient.setQueryData(queryKey, context.previousTasks);
       }
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["tasks"] });
+      queryClient.invalidateQueries({ queryKey: queryKey });
     },
   });
 
   const invalidateTasks = () => {
-    queryClient.invalidateQueries({ queryKey: ["tasks"] });
+    queryClient.invalidateQueries({ queryKey: queryKey });
   };
 
   return {

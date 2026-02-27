@@ -1,13 +1,23 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { folderStorage } from "@/integrations/supabase/folders";
 import { Folder } from "@/types/folder";
+import { useAuth } from "@/context/AuthContext";
 
 export const useFolders = () => {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
+
+  /**
+  * Utiliser une clé de requête spécifique à l'utilisateur pour éviter les conflits entre les utilisateurs
+  * qui se connectent sur le même appareil ou dans des onglets différents. 
+  */
+  const queryKey = ["folders", user?.id];
 
   const { data: folders = [], isLoading: isLoadingFolders } = useQuery({
-    queryKey: ["folders"],
+    queryKey: queryKey,
     queryFn: () => folderStorage.getFolders(),
+    // On ne lance la requête QUE si l'utilisateur est connu
+    enabled: !!user?.id, 
     staleTime: 1000 * 60 * 5,
     gcTime: 1000 * 60 * 10,
   });
@@ -17,35 +27,35 @@ export const useFolders = () => {
         const newFolder: Folder = {
           ...folderData,
           id: crypto.randomUUID(),
-          userId: "", // Sera remplacé par le trigger de la base de données
+          userId: user?.id || "",
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         };
         return folderStorage.addFolder(newFolder);
       },
       onMutate: async (folderData: Omit<Folder, "id" | "createdAt" | "userId" | "updatedAt">) => {
-        await queryClient.cancelQueries({ queryKey: ["folders"] });
-        const previousFolders = queryClient.getQueryData<Folder[]>(["folders"]);
+        await queryClient.cancelQueries({ queryKey: queryKey });
+        const previousFolders = queryClient.getQueryData<Folder[]>(queryKey);
   
         const newFolder: Folder = {
           ...folderData,
           id: crypto.randomUUID(),
-          userId: "", // Sera remplacé par le trigger de la base de données
+          userId: user?.id || "",
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         };
     
-        queryClient.setQueryData<Folder[]>(["folders"], (old = []) => [...old, newFolder]);
+        queryClient.setQueryData<Folder[]>(queryKey, (old = []) => [...old, newFolder]);
         
         return {previousFolders};
       },
       onError: (_err, _folderData, context) => {
         if (context?.previousFolders) {
-          queryClient.setQueryData(["folders"], context.previousFolders);
+          queryClient.setQueryData(queryKey, context.previousFolders);
         }
       },
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["folders"] });
+        queryClient.invalidateQueries({ queryKey: queryKey });
       },
     });
   
@@ -53,20 +63,20 @@ export const useFolders = () => {
       mutationFn: ({ id, updates }: { id: string; updates: Partial<Folder> }) => folderStorage.updateFolder(id, updates),
       
       onMutate: async ({ id, updates }) => {
-        await queryClient.cancelQueries({ queryKey: ["folders"] });
-        const previousFolders = queryClient.getQueryData<Folder[]>(["folders"]);
-        queryClient.setQueryData<Folder[]>(["folders"], (old = []) =>
+        await queryClient.cancelQueries({ queryKey: queryKey });
+        const previousFolders = queryClient.getQueryData<Folder[]>(queryKey);
+        queryClient.setQueryData<Folder[]>(queryKey, (old = []) =>
           old.map(folder => folder.id === id ? { ...folder, ...updates } : folder)
         );
         return { previousFolders };
       },
       onError: (_err, _variables, context) => {
         if (context?.previousFolders) {
-          queryClient.setQueryData(["folders"], context.previousFolders);
+          queryClient.setQueryData(queryKey, context.previousFolders);
         }
       },
       onSettled: () => {
-        queryClient.invalidateQueries({ queryKey: ["folders"] });
+        queryClient.invalidateQueries({ queryKey: queryKey });
       },
     });
 
@@ -74,21 +84,21 @@ export const useFolders = () => {
       mutationFn: (folderId: string) => folderStorage.deleteFolder(folderId),
 
       onMutate: async (folderId: string) => {
-        await queryClient.cancelQueries({ queryKey: ["folders"] });
-        const previousFolders = queryClient.getQueryData<Folder[]>(["folders"]);
-        queryClient.setQueryData<Folder[]>(["folders"], (old = []) =>
+        await queryClient.cancelQueries({ queryKey: queryKey });
+        const previousFolders = queryClient.getQueryData<Folder[]>(queryKey);
+        queryClient.setQueryData<Folder[]>(queryKey, (old = []) =>
           old.filter(folder => folder.id !== folderId)
         );
         return { previousFolders };
       },
       onError: (_err, _folderId, context) => {
         if (context?.previousFolders) {
-          queryClient.setQueryData(["folders"], context.previousFolders);
+          queryClient.setQueryData(queryKey, context.previousFolders);
         }
       },
       onSettled: () => {
-        queryClient.invalidateQueries({ queryKey: ["folders"] });
-        queryClient.invalidateQueries({ queryKey: ["tasks"] });
+        queryClient.invalidateQueries({ queryKey: queryKey });
+        queryClient.invalidateQueries({ queryKey: ["tasks", user?.id] });
       },
     });
 

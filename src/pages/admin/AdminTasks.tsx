@@ -1,6 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
+import { Loader2, ClipboardList } from "lucide-react";
 import AdminLayout from "@/components/admin/AdminLayout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import AdminFilterBar from "@/components/admin/AdminFilterBar";
 import {
   Table,
   TableBody,
@@ -9,39 +12,51 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
-import { format } from "date-fns";
-import { fr } from "date-fns/locale";
-import { Loader2 } from "lucide-react";
-import { Link } from "react-router-dom";
-import AdminFilterBar from "@/components/admin/AdminFilterBar";
-import { useMemo } from "react";
+import { Database } from "@/integrations/supabase/types";
+import { toast } from "sonner";
+
+/**
+ * Type d'affichage enrichi pour les tâches en administration.
+ * Utilise les types générés de Supabase pour garantir la synchronisation avec la BDD.
+ */
+type AdminTaskDisplay = Database["public"]["Tables"]["tasks"]["Row"] & {
+  folder_name: string | null;
+  owner_email: string | null;
+};
 
 const AdminTasks = () => {
-  const [tasks, setTasks] = useState<any[]>([]);
+  const [tasks, setTasks] = useState<AdminTaskDisplay[]>([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState<Record<string, string>>({});
 
   useEffect(() => {
     let mounted = true;
-    (async () => {
+
+    const fetchAdminData = async () => {
       try {
+        setLoading(true);
+
+        // Récupération atomique des données nécessaires
         const [tasksRes, foldersRes, profilesRes] = await Promise.all([
           supabase
             .from("tasks")
-            .select("id, title, status, folder_id, user_id, created_at")
+            .select("*")
             .order("created_at", { ascending: false }),
           supabase.from("folders").select("id, name"),
           supabase.from("profiles").select("id, email"),
         ]);
 
-        const tasksData = tasksRes.data || [];
-        const folders = (foldersRes.data || []) as any[];
-        const profiles = (profilesRes.data || []) as any[];
+        if (tasksRes.error) throw tasksRes.error;
 
-        // Enrich tasks with folder name and owner email for clearer display
-        const enriched = tasksData.map((t: any) => ({
+        const tasksData = tasksRes.data || [];
+        const folders = foldersRes.data || [];
+        const profiles = profilesRes.data || [];
+
+        // On enrichit l'objet tâche avec les métadonnées de dossiers et profils
+        const enriched: AdminTaskDisplay[] = tasksData.map((t) => ({
           ...t,
           folder_name: folders.find((f) => f.id === t.folder_id)?.name || null,
           owner_email: profiles.find((p) => p.id === t.user_id)?.email || null,
@@ -49,134 +64,167 @@ const AdminTasks = () => {
 
         if (!mounted) return;
         setTasks(enriched);
-      } catch (err) {
-        console.error("Error loading admin tasks:", err);
+      } catch (err: unknown) {
+        console.error("Audit Admin Tasks Failure:", err);
+        toast.error("Impossible de charger les données administratives.");
       } finally {
         if (mounted) setLoading(false);
       }
-    })();
+    };
+
+    fetchAdminData();
     return () => {
       mounted = false;
     };
   }, []);
 
-  const owners = useMemo(() => {
-    const uniq: Record<string, string> = {};
-    tasks.forEach((t) => {
-      if (t.owner_email) uniq[t.owner_email] = t.owner_email;
-    });
-    return Object.keys(uniq).map((k) => ({ value: k, label: k }));
+  // Dérivations mémoïsées pour optimiser les performances (Pattern DRY)
+  const ownersOptions = useMemo(() => {
+    const emails = Array.from(
+      new Set(tasks.map((t) => t.owner_email).filter(Boolean)),
+    );
+    return emails.sort().map((email) => ({ value: email!, label: email! }));
   }, [tasks]);
 
-  const folders = useMemo(() => {
-    const uniq: Record<string, string> = {};
+  const foldersOptions = useMemo(() => {
+    const uniqFolders = new Map<string, string>();
     tasks.forEach((t) => {
-      if (t.folder_id) uniq[t.folder_id] = t.folder_name || t.folder_id;
+      if (t.folder_id)
+        uniqFolders.set(t.folder_id, t.folder_name || t.folder_id);
     });
-    return Object.keys(uniq).map((k) => ({ value: k, label: uniq[k] }));
+    return Array.from(uniqFolders.entries()).map(([id, name]) => ({
+      value: id,
+      label: name,
+    }));
   }, [tasks]);
 
-  const statuses = useMemo(() => {
-    const uniq: Record<string, string> = {};
-    tasks.forEach((t) => {
-      if (t.status) uniq[t.status] = t.status;
-    });
-    return Object.keys(uniq).map((k) => ({ value: k, label: k }));
+  const statusOptions = useMemo(() => {
+    const uniqStatuses = Array.from(new Set(tasks.map((t) => t.status)));
+    return uniqStatuses.map((s) => ({
+      value: s,
+      label: s === "todo" ? "À faire" : s === "done" ? "Terminé" : s,
+    }));
   }, [tasks]);
 
   const filteredTasks = useMemo(() => {
-    if (!tasks) return [];
-    const q = (filters.q || "").toLowerCase();
+    const searchQuery = (filters.q || "").toLowerCase();
     return tasks.filter((t) => {
-      if (
-        q &&
-        !(t.title || "").toLowerCase().includes(q) &&
-        !(t.owner_email || "").toLowerCase().includes(q)
-      )
-        return false;
-      if (filters.owner && t.owner_email !== filters.owner) return false;
-      if (filters.folder && t.folder_id !== filters.folder) return false;
-      if (filters.status && t.status !== filters.status) return false;
-      return true;
+      const matchQ =
+        !searchQuery ||
+        t.title.toLowerCase().includes(searchQuery) ||
+        (t.owner_email || "").toLowerCase().includes(searchQuery);
+
+      const matchOwner = !filters.owner || t.owner_email === filters.owner;
+      const matchFolder = !filters.folder || t.folder_id === filters.folder;
+      const matchStatus = !filters.status || t.status === filters.status;
+
+      return matchQ && matchOwner && matchFolder && matchStatus;
     });
   }, [tasks, filters]);
 
   return (
     <AdminLayout>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold">Tâches</h1>
-          <p className="text-muted-foreground">Liste des tâches (admin)</p>
-        </div>
+        <header className="flex flex-col gap-1">
+          <h1 className="text-3xl font-extrabold tracking-tight">
+            Tâches Utilisateurs
+          </h1>
+          <p className="text-muted-foreground">
+            Audit et supervision du flux de productivité global.
+          </p>
+        </header>
 
-        <Card>
+        <Card className="border-border/50 shadow-lg">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              Liste des tâches
-            </CardTitle>
-            <div className="mt-3">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <ClipboardList className="h-5 w-5 text-primary" />
+                Index des tâches ({filteredTasks.length})
+              </CardTitle>
               <AdminFilterBar
-                owners={owners}
-                folders={folders}
-                statuses={statuses}
-                onChange={(f) => setFilters(f)}
+                owners={ownersOptions}
+                folders={foldersOptions}
+                statuses={statusOptions}
+                onChange={setFilters}
               />
             </div>
           </CardHeader>
           <CardContent>
             {loading ? (
-              <div className="flex justify-center py-8">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              <div className="flex flex-col items-center justify-center py-20 gap-4">
+                <Loader2 className="h-10 w-10 animate-spin text-primary" />
+                <p className="text-sm text-muted-foreground animate-pulse">
+                  Synchronisation avec Supabase...
+                </p>
               </div>
             ) : filteredTasks.length === 0 ? (
-              <p className="text-center text-muted-foreground py-8">
-                Aucune tâche trouvée
-              </p>
+              <div className="text-center py-20 border-2 border-dashed rounded-xl flex flex-col items-center gap-2">
+                <p className="text-muted-foreground font-medium">
+                  Aucune donnée correspondante.
+                </p>
+                <span className="text-xs text-muted-foreground/60">
+                  Essayez d'ajuster vos filtres de recherche.
+                </span>
+              </div>
             ) : (
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto border rounded-lg">
                 <Table>
-                  <TableHeader>
+                  <TableHeader className="bg-muted/30">
                     <TableRow>
-                      <TableHead>Titre</TableHead>
-                      <TableHead>Statut</TableHead>
+                      <TableHead className="font-bold text-foreground">
+                        Titre
+                      </TableHead>
+                      <TableHead className="text-center">Statut</TableHead>
                       <TableHead>Dossier</TableHead>
                       <TableHead>Propriétaire</TableHead>
-                      <TableHead>Créé le</TableHead>
+                      <TableHead className="text-right">
+                        Date de création
+                      </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {filteredTasks.map((t) => (
                       <TableRow
                         key={t.id}
-                        className="transition-colors hover:bg-primary/5"
+                        className="hover:bg-accent/50 transition-colors"
                       >
-                        <TableCell className="font-medium">{t.title}</TableCell>
-                        <TableCell>
-                          <Badge className="capitalize">
-                            {t.status || "unknown"}
+                        <TableCell className="font-medium max-w-[200px]">
+                          <div className="truncate" title={t.title}>
+                            {t.title}
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <Badge
+                            variant={
+                              t.status === "done" ? "default" : "outline"
+                            }
+                            className={
+                              t.status === "done"
+                                ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20"
+                                : ""
+                            }
+                          >
+                            {t.status === "todo" ? "À faire" : "Terminé"}
                           </Badge>
                         </TableCell>
                         <TableCell>
                           {t.folder_id ? (
-                            <Link
-                              to={`/folder/${t.folder_id}`}
-                              className="text-primary hover:underline"
-                            >
-                              {t.folder_name || t.folder_id}
-                            </Link>
+                            <span className="text-muted-foreground font-medium text-xs">
+                              {t.folder_name}
+                            </span>
                           ) : (
-                            <span className="text-muted-foreground">—</span>
+                            <span className="text-muted-foreground/30 text-[10px] uppercase font-bold tracking-widest italic">
+                              Inbox
+                            </span>
                           )}
                         </TableCell>
-                        <TableCell className="text-muted-foreground">
-                          {t.owner_email || "-"}
+                        <TableCell className="text-muted-foreground text-xs font-mono">
+                          {t.owner_email || "N/A"}
                         </TableCell>
-                        <TableCell>
-                          {t.created_at
-                            ? format(new Date(t.created_at), "dd MMM yyyy", {
-                                locale: fr,
-                              })
-                            : "-"}
+                        <TableCell className="text-right text-xs tabular-nums text-muted-foreground">
+                          {format(new Date(t.created_at), "dd MMM yyyy", {
+                            locale: fr,
+                          })}
                         </TableCell>
                       </TableRow>
                     ))}

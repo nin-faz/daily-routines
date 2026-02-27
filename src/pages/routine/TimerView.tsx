@@ -2,7 +2,8 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Play, Pause, X, RotateCcw } from "lucide-react";
-import { routineStorage, timerStorage } from "@/integrations/supabase/routines";
+import { routineStorage } from "@/integrations/supabase/routines";
+import { timerStorage } from "@/integrations/supabase/timer";
 import { Routine } from "@/types/routine";
 
 const TimerView = () => {

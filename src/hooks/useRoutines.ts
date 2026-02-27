@@ -1,15 +1,25 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { routineStorage, getTodayString } from "@/integrations/supabase/routines";
+import { routineStorage } from "@/integrations/supabase/routines";
 import { Routine, RoutineStatus } from "@/types/routine";
 import { toast } from "sonner";
+import { getTodayString } from "@/lib/date";
+import { useAuth } from "@/context/AuthContext";
 
 export const useRoutines = () => {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
   const today = getTodayString();
+
+  /**
+  * Utiliser une clé de requête spécifique à l'utilisateur pour éviter les conflits entre les utilisateurs
+  * qui se connectent sur le même appareil ou dans des onglets différents. 
+  */
+  const queryKey = ["routines", user?.id];
+  const statusesQueryKey = ["routine-statuses", user?.id, today];
 
   // Récupère toutes les routines
   const { data: routines = [], isLoading } = useQuery({
-    queryKey: ["routines"],
+    queryKey: queryKey,
     queryFn: () => routineStorage.getRoutines(),
     staleTime: 1000 * 60 * 5, // 5 minutes de cache
     gcTime: 1000 * 60 * 10, // Garde en cache 10 minutes
@@ -20,8 +30,10 @@ export const useRoutines = () => {
 
   // Récupère uniquement les statuts du jour pour afficher les checkboxes
   const { data: statuses = [] } = useQuery({
-    queryKey: ["routine-statuses", today],
+    queryKey: statusesQueryKey,
     queryFn: () => routineStorage.getStatusesForDate(today),
+    // On ne lance la requête QUE si l'utilisateur est connu
+    enabled: !!user?.id, 
     staleTime: 1000 * 60 * 1, // 1 minute de cache (on veut que ce soit frais)
   });
 
@@ -30,7 +42,7 @@ export const useRoutines = () => {
       const newRoutine: Routine = {
         ...routineData,
         id: crypto.randomUUID(),
-        userId: "", // Sera remplacé par le trigger de la base de données
+        userId: user?.id || "",
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -38,32 +50,32 @@ export const useRoutines = () => {
     },
     onMutate: async (routineData: Omit<Routine, "id" | "createdAt" | "userId" | "updatedAt">) => {
       // Annule les requêtes en cours
-      await queryClient.cancelQueries({ queryKey: ["routines"] });
+      await queryClient.cancelQueries({ queryKey: queryKey });
 
       // Snapshot de l'état actuel
-      const previousRoutines = queryClient.getQueryData<Routine[]>(["routines"]);
+      const previousRoutines = queryClient.getQueryData<Routine[]>(queryKey);
 
       // Update optimiste : ajoute la nouvelle routine immédiatement
       const newRoutine: Routine = {
         ...routineData,
         id: crypto.randomUUID(),
-        userId: "", // Sera remplacé par le trigger de la base de données
+        userId: user?.id || "",
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
 
-      queryClient.setQueryData<Routine[]>(["routines"], (old = []) => [...old, newRoutine]);
+      queryClient.setQueryData<Routine[]>(queryKey, (old = []) => [...old, newRoutine]);
 
       return { previousRoutines };
     },
     onError: (_err, _routineData, context) => {
       // En cas d'erreur, rollback
       if (context?.previousRoutines) {
-        queryClient.setQueryData(["routines"], context.previousRoutines);
+        queryClient.setQueryData(queryKey, context.previousRoutines);
       }
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["routines"] });
+      queryClient.invalidateQueries({ queryKey: queryKey });
     },
   });
 
@@ -73,13 +85,13 @@ export const useRoutines = () => {
     // Optimistic update pour un feedback instantané
     onMutate: async (routineId: string) => {
       // Annule les requêtes en cours pour éviter qu'elles écrasent notre update optimiste
-      await queryClient.cancelQueries({ queryKey: ["routine-statuses", today] });
+      await queryClient.cancelQueries({ queryKey: statusesQueryKey });
       
       // Snapshot de l'état actuel pour pouvoir rollback en cas d'erreur
-      const previousStatuses = queryClient.getQueryData<typeof statuses>(["routine-statuses", today]);
+      const previousStatuses = queryClient.getQueryData<typeof statuses>(statusesQueryKey);
       
       // Update optimiste : met à jour immédiatement l'UI
-      queryClient.setQueryData<RoutineStatus[]>(["routine-statuses", today], (old = []) => {
+      queryClient.setQueryData<RoutineStatus[]>(statusesQueryKey, (old = []) => {
         const existingStatus = old.find(s => s.routineId === routineId);
 
         if (existingStatus) {
@@ -105,7 +117,7 @@ export const useRoutines = () => {
               completed: true,
               skipped: false,
               completedAt: new Date().toISOString(),
-              userId: "", // Valeur par défaut ou à ajuster selon votre logique
+              userId: user?.id || "",
               createdAt: new Date().toISOString(),
               updatedAt: new Date().toISOString(),
             } as RoutineStatus,
@@ -118,13 +130,13 @@ export const useRoutines = () => {
     // En cas d'erreur, rollback vers l'état précédent
     onError: (_err, _routineId, context) => {
       if (context?.previousStatuses) {
-        queryClient.setQueryData(["routine-statuses", today], context.previousStatuses);
+        queryClient.setQueryData(statusesQueryKey, context.previousStatuses);
       }
       toast.error("Impossible de modifier le statut. Veuillez réessayer.");
     },
     // Dans tous les cas, refetch pour synchroniser avec le serveur
     onSettled: () => {
-      queryClient.refetchQueries({ queryKey: ["routine-statuses", today] });
+      queryClient.refetchQueries({ queryKey: statusesQueryKey });
       queryClient.invalidateQueries({ queryKey: ["routine-statuses"] });
     },
   });
@@ -134,11 +146,11 @@ export const useRoutines = () => {
       routineStorage.skipRoutineToday(routineId, getTodayString()),
     // Optimistic update pour un feedback instantané
     onMutate: async (routineId: string) => {
-      await queryClient.cancelQueries({ queryKey: ["routine-statuses", today] });
+      await queryClient.cancelQueries({ queryKey: statusesQueryKey });
       
-      const previousStatuses = queryClient.getQueryData<typeof statuses>(["routine-statuses", today]);
+      const previousStatuses = queryClient.getQueryData<typeof statuses>(statusesQueryKey);
       
-      queryClient.setQueryData<typeof statuses>(["routine-statuses", today], (old = []) => {
+      queryClient.setQueryData<typeof statuses>(statusesQueryKey, (old = []) => {
         const existingStatus = old.find(s => s.routineId === routineId);
         
         if (existingStatus) {
@@ -158,7 +170,7 @@ export const useRoutines = () => {
               date: today,
               completed: false,
               skipped: true,
-              userId: "", // Valeur par défaut ou à ajuster selon votre logique
+              userId: user?.id || "",
               createdAt: new Date().toISOString(),
               updatedAt: new Date().toISOString(),
             } as RoutineStatus,
@@ -170,12 +182,12 @@ export const useRoutines = () => {
     },
     onError: (_err, _routineId, context) => {
       if (context?.previousStatuses) {
-        queryClient.setQueryData(["routine-statuses", today], context.previousStatuses);
+        queryClient.setQueryData(statusesQueryKey, context.previousStatuses);
       }
       toast.error("Impossible de modifier le statut. Veuillez réessayer.");
     },
     onSettled: () => {
-      queryClient.refetchQueries({ queryKey: ["routine-statuses", today] });
+      queryClient.refetchQueries({ queryKey: statusesQueryKey });
       queryClient.invalidateQueries({ queryKey: ["routine-statuses"] });
     },
   });
@@ -186,13 +198,13 @@ export const useRoutines = () => {
     // Optimistic update : modification instantanée dans l'UI
     onMutate: async ({ id, updates }) => {
       // Annule les requêtes en cours
-      await queryClient.cancelQueries({ queryKey: ["routines"] });
+      await queryClient.cancelQueries({ queryKey: queryKey });
       
       // Snapshot pour rollback
-      const previousRoutines = queryClient.getQueryData<Routine[]>(["routines"]);
+      const previousRoutines = queryClient.getQueryData<Routine[]>(queryKey);
       
       // Met à jour immédiatement la routine dans l'UI
-      queryClient.setQueryData<Routine[]>(["routines"], (old = []) =>
+      queryClient.setQueryData<Routine[]>(queryKey, (old = []) =>
         old.map(routine => routine.id === id ? { ...routine, ...updates } : routine)
       );
       
@@ -201,13 +213,13 @@ export const useRoutines = () => {
     // En cas d'erreur, restaure l'état précédent
     onError: (_err, _variables, context) => {
       if (context?.previousRoutines) {
-        queryClient.setQueryData(["routines"], context.previousRoutines);
+        queryClient.setQueryData(queryKey, context.previousRoutines);
       }
       toast.error("Impossible de modifier la routine. Veuillez réessayer.");
     },
     // Resynchronise avec le serveur
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["routines"] });
+      queryClient.invalidateQueries({ queryKey: queryKey });
     },
   });
 
@@ -216,13 +228,13 @@ export const useRoutines = () => {
     // Optimistic update : suppression instantanée de l'UI
     onMutate: async (routineId: string) => {
       // Annule les requêtes en cours
-      await queryClient.cancelQueries({ queryKey: ["routines"] });
+      await queryClient.cancelQueries({ queryKey: queryKey });
       
       // Snapshot pour rollback
-      const previousRoutines = queryClient.getQueryData<Routine[]>(["routines"]);
+      const previousRoutines = queryClient.getQueryData<Routine[]>(queryKey);
       
       // Supprime immédiatement la routine de l'UI
-      queryClient.setQueryData<Routine[]>(["routines"], (old = []) => 
+      queryClient.setQueryData<Routine[]>(queryKey, (old = []) => 
         old.filter(routine => routine.id !== routineId)
       );
       
@@ -231,13 +243,14 @@ export const useRoutines = () => {
     // En cas d'erreur, restaure la liste et affiche une notification
     onError: (_err, _routineId, context) => {
       if (context?.previousRoutines) {
-        queryClient.setQueryData(["routines"], context.previousRoutines);
+        queryClient.setQueryData(queryKey, context.previousRoutines);
       }
       toast.error("Impossible de supprimer la routine. Veuillez réessayer.");
     },
     // Resynchronise avec le serveur
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["routines"] });
+      queryClient.invalidateQueries({ queryKey: queryKey });
+      queryClient.invalidateQueries({ queryKey: ["routine-statuses"] });
     },
   });
 

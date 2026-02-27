@@ -2,7 +2,11 @@ import { Routine, RoutineStatus } from "@/types/routine";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, CheckCircle2, Circle } from "lucide-react";
-import { getRoutineCompletionRate, cn, getRoutinesAtDate } from "@/lib/utils";
+import { cn } from "@/lib/utils";
+import {
+  getRoutineCompletionRate,
+  getRoutinesAtDate,
+} from "@/lib/routineRules";
 import { formatDateYMD } from "@/lib/date";
 import { getFrequencyLabel, getTimeOfDayLabel, getDayLabel } from "@/lib/days";
 
@@ -136,7 +140,6 @@ const DayRoutinesList = ({
                 const timeInfo = routine.timeOfDay
                   ? getTimeOfDayLabel(routine.timeOfDay)
                   : null;
-                // const TimeIcon = timeInfo?.icon;
 
                 return (
                   <div
