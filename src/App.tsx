@@ -1,40 +1,48 @@
 import { Suspense, lazy, useEffect } from "react";
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
+import { Toaster } from "@/shared/components/ui/toaster";
+import { Toaster as Sonner } from "@/shared/components/ui/sonner";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
-import { AuthProvider } from "@/context/AuthContext";
-import { UserProvider, useUser } from "@/context/UserContext";
-import { ThemeProvider as CustomThemeProvider } from "@/context/ThemeContext";
-import { useTheme } from "@/context/ThemeContext";
-import ProtectedRoute from "@/routes/ProtectedRoute";
-import GuestRoute from "@/routes/GuestRoute";
-import Loader from "@/components/shared/Loader";
+import { AuthProvider } from "@/application/context/AuthContext";
+import { UserProvider, useUser } from "@/application/context/UserContext";
+import { ThemeProvider as CustomThemeProvider } from "@/application/context/ThemeContext";
+import { useTheme } from "@/application/context/ThemeContext";
+import ProtectedRoute from "@/application/routes/ProtectedRoute";
+import GuestRoute from "@/application/routes/GuestRoute";
+import Loader from "@/shared/components/Loader";
 import {
   NotificationProvider,
   useNotifications,
-} from "./context/NotificationContext";
-import { registerServiceWorker } from "./lib/notifications";
+} from "@/application/context/NotificationContext";
+import { registerServiceWorker } from "@/application/services/notifications";
 
-const Routines = lazy(() => import("./pages/routine/Routines"));
-const Calendar = lazy(() => import("./pages/Calendar"));
-const Tasks = lazy(() => import("./pages/Tasks"));
-const RoutineDetails = lazy(() => import("./pages/routine/RoutineDetails"));
-const ArchivedRoutines = lazy(() => import("./pages/routine/RoutineArchived"));
-const AllRoutines = lazy(() => import("./pages/routine/AllRoutines"));
-const TimerView = lazy(() => import("./pages/routine/TimerView"));
-const FolderDetails = lazy(() => import("./pages/FolderDetails"));
-const Stats = lazy(() => import("./pages/Stats"));
-const Auth = lazy(() => import("./pages/Auth"));
-const ForgotPassword = lazy(() => import("./pages/password/ForgotPassword"));
-const ResetPassword = lazy(() => import("./pages/password/ResetPassword"));
-const Profile = lazy(() => import("./pages/Profile"));
-const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
-const AdminUsers = lazy(() => import("./pages/admin/AdminUsers"));
-const AdminProjects = lazy(() => import("./pages/admin/AdminFolders"));
-const AdminTasks = lazy(() => import("./pages/admin/AdminTasks"));
-const NotFound = lazy(() => import("./pages/NotFound"));
+const Routines = lazy(() => import("@/views/pages/routine/Routines"));
+const Calendar = lazy(() => import("@/views/pages/Calendar"));
+const Tasks = lazy(() => import("@/views/pages/Tasks"));
+const RoutineDetails = lazy(
+  () => import("@/views/pages/routine/RoutineDetails"),
+);
+const ArchivedRoutines = lazy(
+  () => import("@/views/pages/routine/RoutineArchived"),
+);
+const AllRoutines = lazy(() => import("@/views/pages/routine/AllRoutines"));
+const TimerView = lazy(() => import("@/views/pages/routine/TimerView"));
+const FolderDetails = lazy(() => import("@/views/pages/FolderDetails"));
+const Stats = lazy(() => import("@/views/pages/Stats"));
+const Auth = lazy(() => import("@/views/pages/Auth"));
+const ForgotPassword = lazy(
+  () => import("@/views/pages/password/ForgotPassword"),
+);
+const ResetPassword = lazy(
+  () => import("@/views/pages/password/ResetPassword"),
+);
+const Profile = lazy(() => import("@/views/pages/Profile"));
+const AdminDashboard = lazy(() => import("@/views/pages/admin/AdminDashboard"));
+const AdminUsers = lazy(() => import("@/views/pages/admin/AdminUsers"));
+const AdminProjects = lazy(() => import("@/views/pages/admin/AdminFolders"));
+const AdminTasks = lazy(() => import("@/views/pages/admin/AdminTasks"));
+const NotFound = lazy(() => import("@/views/pages/NotFound"));
 
 const queryClient = new QueryClient();
 
