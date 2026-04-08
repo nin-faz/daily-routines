@@ -15,8 +15,10 @@ import {
 } from "@/shared/components/ui/card";
 import { useToast } from "@/application/hooks/use-toast";
 import { Loader2, Lock, CheckCircle } from "lucide-react";
+import { usePageTitle } from "@/application/hooks/usePageTitle";
 
 const ResetPassword = () => {
+  usePageTitle("Réinitialiser le mot de passe");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);

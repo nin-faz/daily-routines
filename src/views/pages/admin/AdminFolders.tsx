@@ -13,11 +13,13 @@ import {
 } from "@/shared/components/ui/table";
 import { Loader2, FolderKanban } from "lucide-react";
 import AdminFilterBar from "@/views/components/admin/AdminFilterBar";
+import { usePageTitle } from "@/application/hooks/usePageTitle";
 import { useMemo, useState } from "react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 
 const AdminFolders = () => {
+  usePageTitle("Admin — Dossiers");
   const { data: folders = [], isLoading: loading } = useAdminFolders();
 
   const [filters, setFilters] = useState<Record<string, string>>({});
@@ -57,7 +59,7 @@ const AdminFolders = () => {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <FolderKanban className="h-5 w-5" />
+              <FolderKanban className="h-5 w-5" aria-hidden="true" />
               Liste des dossiers ({folders.length})
             </CardTitle>
             <div className="mt-3">
@@ -66,8 +68,8 @@ const AdminFolders = () => {
           </CardHeader>
           <CardContent>
             {loading ? (
-              <div className="flex justify-center py-8">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              <div className="flex justify-center py-8" role="status" aria-label="Chargement en cours">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" aria-hidden="true" />
               </div>
             ) : filteredFolders.length === 0 ? (
               <p className="text-center text-muted-foreground py-8">

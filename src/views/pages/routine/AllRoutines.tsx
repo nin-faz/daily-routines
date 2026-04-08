@@ -9,8 +9,10 @@ import { useRoutines } from "@/application/hooks/useRoutines";
 import { getTodayString } from "@/shared/lib/date";
 import { ArrowLeft } from "lucide-react";
 import { Routine } from "@/shared/types/routine";
+import { usePageTitle } from "@/application/hooks/usePageTitle";
 
 const AllRoutines = () => {
+  usePageTitle("Toutes les routines");
   const {
     routines,
     statuses,

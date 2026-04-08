@@ -52,6 +52,7 @@ import {
   getRoutineDateRange,
 } from "@/application/services/statsService";
 import React, { useState } from "react";
+import { usePageTitle } from "@/application/hooks/usePageTitle";
 
 const CustomBarShape = (props: RectangleProps & { isTop: boolean }) => {
   const { isTop, ...rest } = props;
@@ -59,6 +60,7 @@ const CustomBarShape = (props: RectangleProps & { isTop: boolean }) => {
 };
 
 const Stats = () => {
+  usePageTitle("Statistiques");
   const { routines, statuses, folders, tasks, isLoading } = useStats();
   const [routineType, setRoutineType] = React.useState<
     "all" | "daily" | "weekly"
@@ -166,7 +168,7 @@ const Stats = () => {
         <header className="mb-6 sm:mb-8">
           <Header />
           <div className="flex items-center justify-center gap-2 mb-4">
-            <TrendingUp className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
+            <TrendingUp className="h-6 w-6 sm:h-8 sm:w-8 text-primary" aria-hidden="true" />
             <h1 className="text-2xl sm:text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent">
               Mes Statistiques
             </h1>
@@ -179,6 +181,7 @@ const Stats = () => {
               <Select
                 value={routineType}
                 onValueChange={(v) => setRoutineType(v as any)}
+                aria-label="Filtrer par type de routine"
               >
                 <SelectTrigger className="w-48">
                   <SelectValue />
@@ -207,7 +210,7 @@ const Stats = () => {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4 mb-6 sm:mb-8">
               <Card className="transition-all duration-200 hover:scale-[1.04] hover:shadow-lg hover:border-primary/60 hover:bg-primary/5">
                 <CardContent className="p-3 sm:p-4 text-center flex flex-col justify-center h-full">
-                  <CheckCircle className="h-5 w-5 sm:h-6 sm:w-6 text-primary mx-auto mb-1 sm:mb-2" />
+                  <CheckCircle className="h-5 w-5 sm:h-6 sm:w-6 text-primary mx-auto mb-1 sm:mb-2" aria-hidden="true" />
                   <p className="text-xl sm:text-2xl font-bold text-foreground">
                     {overallCompletionRate}%
                   </p>
@@ -219,7 +222,7 @@ const Stats = () => {
 
               <Card className="transition-all duration-200 hover:scale-[1.04] hover:shadow-lg hover:border-primary/60 hover:bg-primary/5">
                 <CardContent className="p-3 sm:p-4 text-center flex flex-col justify-center h-full">
-                  <Flame className="h-5 w-5 sm:h-6 sm:w-6 text-primary mx-auto mb-1 sm:mb-2" />
+                  <Flame className="h-5 w-5 sm:h-6 sm:w-6 text-primary mx-auto mb-1 sm:mb-2" aria-hidden="true" />
                   <p className="text-xl sm:text-2xl font-bold text-foreground">
                     {currentStreak}
                   </p>
@@ -228,7 +231,7 @@ const Stats = () => {
                       variant="outline"
                       className="flex items-center gap-1 text-[10px] sm:text-xs font-semibold bg-amber-50 dark:bg-amber-950/30 border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-300"
                     >
-                      <Award className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+                      <Award className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" aria-hidden="true" />
                       Record : {recordStreak}
                     </Badge>
                   </div>
@@ -240,7 +243,7 @@ const Stats = () => {
 
               <Card className="transition-all duration-200 hover:scale-[1.04] hover:shadow-lg hover:border-primary/60 hover:bg-primary/5">
                 <CardContent className="p-3 sm:p-4 text-center flex flex-col justify-center h-full">
-                  <FolderKanban className="h-5 w-5 sm:h-6 sm:w-6 text-primary mx-auto mb-1 sm:mb-2" />
+                  <FolderKanban className="h-5 w-5 sm:h-6 sm:w-6 text-primary mx-auto mb-1 sm:mb-2" aria-hidden="true" />
                   <p className="text-xl sm:text-2xl font-bold text-foreground">
                     {tasksCompletionRate}%
                   </p>
@@ -252,7 +255,7 @@ const Stats = () => {
 
               <Card className="transition-all duration-200 hover:scale-[1.04] hover:shadow-lg hover:border-primary/60 hover:bg-primary/5">
                 <CardContent className="p-3 sm:p-4 text-center flex flex-col justify-center h-full">
-                  <Calendar className="h-5 w-5 sm:h-6 sm:w-6 text-primary mx-auto mb-1 sm:mb-2" />
+                  <Calendar className="h-5 w-5 sm:h-6 sm:w-6 text-primary mx-auto mb-1 sm:mb-2" aria-hidden="true" />
                   <p className="text-xl sm:text-2xl font-bold text-foreground">
                     {upcomingDeadlines}
                   </p>
@@ -273,7 +276,11 @@ const Stats = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-2 sm:p-6 pt-0 sm:pt-0">
-                  <div className="h-40 sm:h-48">
+                  <div
+                    className="h-40 sm:h-48"
+                    role="img"
+                    aria-label={`Graphique en ligne : taux de réussite des routines sur ${firstToLastDate.length} jours`}
+                  >
                     <ResponsiveContainer width="100%" height="100%">
                       <LineChart data={completionsByDate}>
                         <XAxis
@@ -355,7 +362,11 @@ const Stats = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-2 sm:p-6 pt-0 sm:pt-0">
-                  <div className="h-40 sm:h-48">
+                  <div
+                    className="h-40 sm:h-48"
+                    role="img"
+                    aria-label="Graphique en barres : routines complétées et sautées cette semaine"
+                  >
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={weeklyData}>
                         <XAxis dataKey="jour" tick={{ fontSize: 9 }} />
@@ -440,7 +451,11 @@ const Stats = () => {
                 </div>
                 <CardContent>
                   <div className="flex items-center justify-center gap-8">
-                    <div className="h-40 w-40">
+                    <div
+                      className="h-40 w-40"
+                      role="img"
+                      aria-label={`Graphique circulaire : ${tasksByStatus.todo} tâche${tasksByStatus.todo > 1 ? "s" : ""} à faire, ${tasksByStatus.done} terminée${tasksByStatus.done > 1 ? "s" : ""}`}
+                    >
                       <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
                           <Pie

@@ -27,8 +27,10 @@ import { RoutineListSkeleton } from "@/views/components/routine/RoutineSkeleton"
 import EmptyState from "@/shared/components/EmptyState";
 import OnboardingDialog from "@/shared/components/OnboardingDialog";
 import { useRoutines } from "@/application/hooks/useRoutines";
+import { usePageTitle } from "@/application/hooks/usePageTitle";
 
 const Routines = () => {
+  usePageTitle("Mes Routines");
   const {
     activeRoutines,
     statuses,
@@ -194,7 +196,7 @@ const Routines = () => {
               </div>
 
               {/* Grille de routines */}
-              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
+              <div className="grid gap-3">
                 {data.map((routine) => {
                   const status = statuses.find(
                     (s) => s.routineId === routine.id && s.date === todayDate,

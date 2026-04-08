@@ -35,6 +35,7 @@ import { useState, useMemo } from "react";
 import { useStats } from "@/application/hooks/useStats";
 import { useRoutines } from "@/application/hooks/useRoutines";
 import useRoutineStatuses from "@/application/hooks/useRoutineStatuses";
+import { usePageTitle } from "@/application/hooks/usePageTitle";
 import { calculateStatStreak, calculateLongestStreak } from "@/domain/streak";
 import { getDatesBetween, getDatesOfCurrentMonth } from "@/shared/lib/date";
 
@@ -56,6 +57,7 @@ const RoutineDetails = () => {
 
   // Recherche la routine dans les données mises en cache
   const routine = routines.find((r) => r.id === routineId) ?? null;
+  usePageTitle(routine?.title ?? "Détail de la routine");
 
   // Utilise le hook dédié pour récupérer les statuts de la routine (mis en cache)
   const {

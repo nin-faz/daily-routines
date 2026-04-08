@@ -17,9 +17,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/components/ui
 import { useToast } from "@/application/hooks/use-toast";
 import { Loader2, LogIn, UserPlus, Timer } from "lucide-react";
 import Loader from "@/shared/components/Loader";
+import { usePageTitle } from "@/application/hooks/usePageTitle";
 import { emailSchema, passwordSchema } from "@/shared/lib/validationSchemas";
 
 const Auth = () => {
+  usePageTitle("Connexion");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
@@ -112,11 +114,11 @@ const Auth = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+    <main className="min-h-screen flex items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md shadow-lg">
         <CardHeader className="text-center space-y-2">
           <div className="mx-auto w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
-            <Timer className="h-6 w-6 text-primary" />
+            <Timer className="h-6 w-6 text-primary" aria-hidden="true" />
           </div>
           <CardTitle className="text-2xl font-bold">Daily Routine</CardTitle>
           <CardDescription>Gérez vos routines quotidiennes</CardDescription>
@@ -141,9 +143,12 @@ const Auth = () => {
                     onChange={(e) => setEmail(e.target.value)}
                     disabled={isLoading}
                     autoComplete="email"
+                    aria-required="true"
+                    aria-describedby={errors.email ? "signin-email-error" : undefined}
+                    aria-invalid={!!errors.email}
                   />
                   {errors.email && (
-                    <p className="text-sm text-destructive">{errors.email}</p>
+                    <p id="signin-email-error" className="text-sm text-destructive" role="alert">{errors.email}</p>
                   )}
                 </div>
                 <div className="space-y-2">
@@ -163,9 +168,12 @@ const Auth = () => {
                     onChange={(e) => setPassword(e.target.value)}
                     disabled={isLoading}
                     autoComplete="current-password"
+                    aria-required="true"
+                    aria-describedby={errors.password ? "signin-password-error" : undefined}
+                    aria-invalid={!!errors.password}
                   />
                   {errors.password && (
-                    <p className="text-sm text-destructive">
+                    <p id="signin-password-error" className="text-sm text-destructive" role="alert">
                       {errors.password}
                     </p>
                   )}
@@ -179,9 +187,9 @@ const Auth = () => {
                   disabled={isLoading}
                 >
                   {isLoading ? (
-                    <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                    <Loader2 className="h-5 w-5 animate-spin mr-2" aria-hidden="true" />
                   ) : (
-                    <LogIn className="h-5 w-5 mr-2" />
+                    <LogIn className="h-5 w-5 mr-2" aria-hidden="true" />
                   )}
                   Se connecter
                 </Button>
@@ -216,9 +224,12 @@ const Auth = () => {
                     onChange={(e) => setEmail(e.target.value)}
                     disabled={isLoading}
                     autoComplete="email"
+                    aria-required="true"
+                    aria-describedby={errors.email ? "signup-email-error" : undefined}
+                    aria-invalid={!!errors.email}
                   />
                   {errors.email && (
-                    <p className="text-sm text-destructive">{errors.email}</p>
+                    <p id="signup-email-error" className="text-sm text-destructive" role="alert">{errors.email}</p>
                   )}
                 </div>
                 <div className="space-y-2">
@@ -230,9 +241,12 @@ const Auth = () => {
                     onChange={(e) => setPassword(e.target.value)}
                     disabled={isLoading}
                     autoComplete="new-password"
+                    aria-required="true"
+                    aria-describedby={errors.password ? "signup-password-error" : undefined}
+                    aria-invalid={!!errors.password}
                   />
                   {errors.password && (
-                    <p className="text-sm text-destructive">
+                    <p id="signup-password-error" className="text-sm text-destructive" role="alert">
                       {errors.password}
                     </p>
                   )}
@@ -246,9 +260,9 @@ const Auth = () => {
                   disabled={isLoading}
                 >
                   {isLoading ? (
-                    <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                    <Loader2 className="h-5 w-5 animate-spin mr-2" aria-hidden="true" />
                   ) : (
-                    <UserPlus className="h-5 w-5 mr-2" />
+                    <UserPlus className="h-5 w-5 mr-2" aria-hidden="true" />
                   )}
                   S'inscrire
                 </Button>
@@ -257,7 +271,7 @@ const Auth = () => {
           </TabsContent>
         </Tabs>
       </Card>
-    </div>
+    </main>
   );
 };
 

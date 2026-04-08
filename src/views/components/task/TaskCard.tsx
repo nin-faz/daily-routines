@@ -46,6 +46,7 @@ const TaskCard = ({
         checked={task.status === Status.DONE}
         onCheckedChange={onToggleComplete}
         className="mt-1"
+        aria-label={`Marquer "${task.title}" comme terminée`}
       />
 
       <div className="flex-1 min-w-0">
@@ -67,7 +68,7 @@ const TaskCard = ({
         <div className="flex flex-wrap items-center gap-2 mt-2">
           {showFolder && folder && (
             <Badge variant="secondary" className="text-xs gap-1">
-              <FolderIcon className="h-3 w-3" />
+              <FolderIcon className="h-3 w-3" aria-hidden="true" />
               {folder.name}
             </Badge>
           )}
@@ -83,7 +84,7 @@ const TaskCard = ({
               }
               className="text-xs gap-1"
             >
-              <Calendar className="h-3 w-3" />
+              <Calendar className="h-3 w-3" aria-hidden="true" />
               {deadlineDate
                 ? format(deadlineDate, "d MMM", { locale: fr })
                 : ""}
@@ -98,9 +99,9 @@ const TaskCard = ({
           size="icon"
           className="h-8 w-8 shrink-0"
           onClick={onEdit}
-          title="Modifier"
+          aria-label={`Modifier la tâche "${task.title}"`}
         >
-          <Pencil className="h-4 w-4" />
+          <Pencil className="h-4 w-4" aria-hidden="true" />
         </Button>
         <ConfirmDeleteButton
           onConfirm={onDelete}

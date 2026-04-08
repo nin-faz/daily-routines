@@ -2,6 +2,7 @@ import { useEffect, useState, useMemo } from "react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Loader2, ClipboardList } from "lucide-react";
+import { usePageTitle } from "@/application/hooks/usePageTitle";
 import AdminLayout from "@/views/components/admin/AdminLayout";
 import AdminFilterBar from "@/views/components/admin/AdminFilterBar";
 import {
@@ -28,6 +29,7 @@ type AdminTaskDisplay = Database["public"]["Tables"]["tasks"]["Row"] & {
 };
 
 const AdminTasks = () => {
+  usePageTitle("Admin — Tâches");
   const [tasks, setTasks] = useState<AdminTaskDisplay[]>([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState<Record<string, string>>({});
@@ -138,7 +140,7 @@ const AdminTasks = () => {
           <CardHeader>
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <CardTitle className="flex items-center gap-2 text-lg">
-                <ClipboardList className="h-5 w-5 text-primary" />
+                <ClipboardList className="h-5 w-5 text-primary" aria-hidden="true" />
                 Index des tâches ({filteredTasks.length})
               </CardTitle>
               <AdminFilterBar
@@ -151,8 +153,8 @@ const AdminTasks = () => {
           </CardHeader>
           <CardContent>
             {loading ? (
-              <div className="flex flex-col items-center justify-center py-20 gap-4">
-                <Loader2 className="h-10 w-10 animate-spin text-primary" />
+              <div className="flex flex-col items-center justify-center py-20 gap-4" role="status" aria-label="Chargement en cours">
+                <Loader2 className="h-10 w-10 animate-spin text-primary" aria-hidden="true" />
                 <p className="text-sm text-muted-foreground animate-pulse">
                   Synchronisation avec Supabase...
                 </p>

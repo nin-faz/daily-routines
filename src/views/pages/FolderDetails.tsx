@@ -11,6 +11,7 @@ import {
   CheckCircle2,
   ClipboardList,
 } from "lucide-react";
+import { usePageTitle } from "@/application/hooks/usePageTitle";
 import CreateTaskDialog from "@/views/components/task/CreateTaskDialog";
 import EmptyState from "@/shared/components/EmptyState";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/shared/components/ui/tabs";
@@ -26,6 +27,7 @@ const FolderDetails = () => {
   const { folders } = useFolders();
 
   const folder = folders.find((f) => f.id === id);
+  usePageTitle(folder?.name ?? "Détails du dossier");
   const folderTasks = tasks
     .filter((t) => t.folderId === id)
     .sort(

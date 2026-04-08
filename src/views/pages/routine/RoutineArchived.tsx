@@ -5,8 +5,10 @@ import EmptyState from "@/shared/components/EmptyState";
 import { Archive, ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/shared/components/ui/button";
+import { usePageTitle } from "@/application/hooks/usePageTitle";
 
 const ArchivePage = () => {
+  usePageTitle("Routines archivées");
   const { archivedRoutines, statuses, isLoading, deleteRoutine } =
     useRoutines();
 

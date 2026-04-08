@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/application/context/AuthContext";
+import { usePageTitle } from "@/application/hooks/usePageTitle";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
@@ -19,6 +20,7 @@ import { z } from "zod";
 const emailSchema = z.string().email("Email invalide");
 
 const ForgotPassword = () => {
+  usePageTitle("Mot de passe oublié");
   const navigate = useNavigate();
   const { resetPassword } = useAuth();
   const [email, setEmail] = useState("");
@@ -61,11 +63,11 @@ const ForgotPassword = () => {
 
   if (isEmailSent) {
     return (
-      <div className="min-h-screen bg-gradient-bg flex items-center justify-center p-4">
+      <main className="min-h-screen bg-gradient-bg flex items-center justify-center p-4">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center space-y-4">
             <div className="mx-auto w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center">
-              <CheckCircle className="h-8 w-8 text-white" />
+              <CheckCircle className="h-8 w-8 text-white" aria-hidden="true" />
             </div>
             <CardTitle className="text-2xl sm:text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
               Email envoyé !
@@ -81,7 +83,7 @@ const ForgotPassword = () => {
               className="w-full bg-gradient-primary hover:opacity-90"
               onClick={() => setIsEmailSent(false)}
             >
-              <Mail className="h-4 w-4 mr-2" />
+              <Mail className="h-4 w-4 mr-2" aria-hidden="true" />
               Renvoyer l'email
             </Button>
             <Button
@@ -89,21 +91,21 @@ const ForgotPassword = () => {
               className="w-full"
               onClick={() => navigate("/auth")}
             >
-              <ArrowLeft className="h-4 w-4 mr-2" />
+              <ArrowLeft className="h-4 w-4 mr-2" aria-hidden="true" />
               Retour à la connexion
             </Button>
           </CardFooter>
         </Card>
-      </div>
+      </main>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-bg flex items-center justify-center p-4">
+    <main className="min-h-screen bg-gradient-bg flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center space-y-4">
           <div className="mx-auto w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center">
-            <Mail className="h-8 w-8 text-white" />
+            <Mail className="h-8 w-8 text-white" aria-hidden="true" />
           </div>
           <CardTitle className="text-2xl sm:text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
             Mot de passe oublié
@@ -125,8 +127,15 @@ const ForgotPassword = () => {
                 onChange={(e) => setEmail(e.target.value)}
                 disabled={isLoading}
                 autoComplete="email"
+                aria-required="true"
+                aria-describedby={error ? "email-error" : undefined}
+                aria-invalid={!!error}
               />
-              {error && <p className="text-sm text-destructive">{error}</p>}
+              {error && (
+                <p id="email-error" className="text-sm text-destructive" role="alert">
+                  {error}
+                </p>
+              )}
             </div>
           </CardContent>
           <CardFooter className="flex flex-col gap-3">
@@ -137,12 +146,12 @@ const ForgotPassword = () => {
             >
               {isLoading ? (
                 <>
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" aria-hidden="true" />
                   Envoi en cours...
                 </>
               ) : (
                 <>
-                  <Mail className="h-4 w-4 mr-2" />
+                  <Mail className="h-4 w-4 mr-2" aria-hidden="true" />
                   Envoyer le lien
                 </>
               )}
@@ -152,13 +161,13 @@ const ForgotPassword = () => {
               className="w-full"
               onClick={() => navigate("/auth")}
             >
-              <ArrowLeft className="h-4 w-4 mr-2" />
+              <ArrowLeft className="h-4 w-4 mr-2" aria-hidden="true" />
               Retour à la connexion
             </Button>
           </CardFooter>
         </form>
       </Card>
-    </div>
+    </main>
   );
 };
 

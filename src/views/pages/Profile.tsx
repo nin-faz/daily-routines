@@ -24,8 +24,10 @@ import {
   unsubscribeFromPushNotifications,
 } from "@/application/services/notifications";
 import { useNotifications } from "@/application/context/NotificationContext";
+import { usePageTitle } from "@/application/hooks/usePageTitle";
 
 const Profile = () => {
+  usePageTitle("Mon Profil");
   const navigate = useNavigate();
   const { user } = useAuth();
   const { isSubscribed, refreshStatus } = useNotifications();
@@ -154,8 +156,8 @@ const Profile = () => {
       <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8 max-w-xl">
         <header className="mb-6 sm:mb-8">
           <div className="flex items-center justify-between mb-4">
-            <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
-              <ArrowLeft className="h-5 w-5" />
+            <Button variant="ghost" size="icon" onClick={() => navigate(-1)} aria-label="Retour">
+              <ArrowLeft className="h-5 w-5" aria-hidden="true" />
             </Button>
             <div className="flex items-center gap-1 sm:gap-2">
               <ThemeToggle />
@@ -163,7 +165,7 @@ const Profile = () => {
             </div>
           </div>
           <div className="flex items-center justify-center gap-2 mb-2">
-            <User className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
+            <User className="h-6 w-6 sm:h-8 sm:w-8 text-primary" aria-hidden="true" />
             <h1 className="text-2xl sm:text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent">
               Mon Profil
             </h1>
@@ -174,8 +176,8 @@ const Profile = () => {
           <Card>
             <CardHeader className="text-center">
               <div className="mx-auto mb-4">
-                <Avatar className="h-24 w-24 border-4 border-primary/20">
-                  <AvatarFallback className="text-2xl bg-gradient-primary text-primary-foreground">
+                <Avatar className="h-24 w-24 border-4 border-primary/20" aria-label={`Avatar de ${pseudo || user?.email}`}>
+                  <AvatarFallback className="text-2xl bg-gradient-primary text-primary-foreground" aria-hidden="true">
                     {getInitials()}
                   </AvatarFallback>
                 </Avatar>
@@ -201,12 +203,12 @@ const Profile = () => {
               >
                 {isLoading ? (
                   <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" aria-hidden="true" />
                     Enregistrement...
                   </>
                 ) : (
                   <>
-                    <Save className="h-4 w-4 mr-2" />
+                    <Save className="h-4 w-4 mr-2" aria-hidden="true" />
                     Enregistrer
                   </>
                 )}
@@ -225,9 +227,9 @@ const Profile = () => {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   {localIsSubscribed ? (
-                    <Bell className="h-5 w-5 text-primary" />
+                    <Bell className="h-5 w-5 text-primary" aria-hidden="true" />
                   ) : (
-                    <BellOff className="h-5 w-5 text-muted-foreground" />
+                    <BellOff className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
                   )}
                   <span className="text-sm">
                     {localIsSubscribed
@@ -238,6 +240,7 @@ const Profile = () => {
                 <Switch
                   checked={localIsSubscribed}
                   onCheckedChange={handleNotificationToggle}
+                  aria-label={localIsSubscribed ? "Désactiver les notifications" : "Activer les notifications"}
                 />
               </div>
             </CardContent>

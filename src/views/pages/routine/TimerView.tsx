@@ -5,8 +5,10 @@ import { Play, Pause, X, RotateCcw } from "lucide-react";
 import { routineStorage } from "@/data/repositories/routines";
 import { timerStorage } from "@/data/repositories/timer";
 import { Routine } from "@/shared/types/routine";
+import { usePageTitle } from "@/application/hooks/usePageTitle";
 
 const TimerView = () => {
+  usePageTitle("Timer");
   const { routineId } = useParams();
   const navigate = useNavigate();
   const [routine, setRoutine] = useState<Routine | null>(null);

@@ -62,6 +62,19 @@ Une application web progressive (PWA) pour gérer vos routines quotidiennes, tâ
 - États vides illustrés
 - Toasts via Sonner
 
+### Accessibilité (WCAG 2.1 AA / RGAA)
+
+- `aria-label` sur tous les boutons icônes, éléments interactifs et graphiques
+- `aria-hidden="true"` sur les icônes décoratives (Lucide)
+- `aria-current="page"` sur le lien de navigation actif
+- `aria-pressed` sur les éléments toggle (ex : sélection de dossier)
+- `aria-required`, `aria-invalid`, `aria-describedby` + `role="alert"` sur les champs de formulaire avec validation
+- `role="img"` + `aria-label` descriptif sur les graphiques Recharts
+- `role="status"` sur les spinners de chargement
+- Titres de page dynamiques via `usePageTitle` (hook `application/hooks/usePageTitle.ts`)
+- Contraste WCAG AA respecté en light et dark : palettes de couleurs avec valeurs distinctes par mode (`themeColors.ts`)
+- Structure HTML sémantique : `<main>`, `<header>`, `<nav aria-label>`, `<button>` (pas de `<div onClick>`)
+
 ---
 
 ## Stack technique
@@ -179,7 +192,7 @@ L'architecture suit **Domain-Driven Design** avec séparation stricte des respon
 src/
 ├── application/                  ← Orchestration app-specific
 │   ├── context/                  ← Global state: Auth, User, Theme, Notifications
-│   ├── hooks/                    ← React Query bridges: useRoutines, useFolders, useTasks, etc.
+│   ├── hooks/                    ← React Query bridges + utilitaires: useRoutines, useFolders, useTasks, usePageTitle, etc.
 │   ├── services/                 ← statsService, notifications, userProfileService
 │   ├── routes/                   ← Route guards: ProtectedRoute, GuestRoute
 │   └── components/

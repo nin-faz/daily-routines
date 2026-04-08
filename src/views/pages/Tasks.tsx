@@ -11,6 +11,7 @@ import EmptyState from "@/shared/components/EmptyState";
 import Header from "@/application/components/layout/Header";
 import { Button } from "@/shared/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/components/ui/tabs";
+import { usePageTitle } from "@/application/hooks/usePageTitle";
 // import { FolderListSkeleton } from "@/views/components/tasks/FolderListSkeleton";
 import {
   ClipboardList,
@@ -25,6 +26,7 @@ import { useTasks } from "@/application/hooks/useTasks";
 import { useFolders } from "@/application/hooks/useFolders";
 
 const Tasks = () => {
+  usePageTitle("Mes Tâches");
   const { tasks, isLoading, addTask, updateTask, deleteTask } = useTasks();
 
   const { folders, addFolder, updateFolder, deleteFolder } = useFolders();

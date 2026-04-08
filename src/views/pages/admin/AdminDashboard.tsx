@@ -3,8 +3,10 @@ import { useAdminStats } from "@/application/hooks/useAdminQueries";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { Users, FolderKanban, CheckSquare, Shield } from "lucide-react";
 import AdminLayout from "@/views/components/admin/AdminLayout";
+import { usePageTitle } from "@/application/hooks/usePageTitle";
 
 const AdminDashboard = () => {
+  usePageTitle("Administration");
   const { data: stats, isLoading: loading } = useAdminStats();
 
   const statCards = [
@@ -61,7 +63,7 @@ const AdminDashboard = () => {
                     {stat.title}
                   </CardTitle>
                   <div className={`p-2 rounded-lg ${stat.bgColor}`}>
-                    <stat.icon className={`h-4 w-4 ${stat.color}`} />
+                    <stat.icon className={`h-4 w-4 ${stat.color}`} aria-hidden="true" />
                   </div>
                 </CardHeader>
                 <CardContent>

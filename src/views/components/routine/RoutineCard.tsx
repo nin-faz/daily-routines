@@ -74,11 +74,13 @@ const RoutineCard = ({
               onCheckedChange={onToggleComplete}
               disabled={isSkipped}
               className="flex-shrink-0"
+              aria-label={`Marquer "${routine.title}" comme complétée`}
             />
 
-            <div
-              className="flex-1 min-w-0 cursor-pointer"
+            <button
+              className="flex-1 min-w-0 text-left"
               onClick={() => navigate(`/routine/${routine.id}`)}
+              aria-label={`Voir les détails de "${routine.title}"`}
             >
               <div className="flex items-center gap-2 flex-wrap">
                 <h3
@@ -101,14 +103,14 @@ const RoutineCard = ({
                     variant="outline"
                     className="text-xs gap-1 py-0 h-5 border-primary/30 text-primary"
                   >
-                    <Calendar className="h-3 w-3" />
+                    <Calendar className="h-3 w-3" aria-hidden="true" />
                     {routine
                       .weekDays!.map((day: string) => getDayLabel(day))
                       .join(", ")}
                   </Badge>
                 )}
               </div>
-            </div>
+            </button>
           </div>
 
           {/* SECTION DROITE : Timer & Actions */}
@@ -121,9 +123,9 @@ const RoutineCard = ({
                 size="sm"
                 onClick={() => navigate(`/routine/${routine.id}`)}
                 className="h-7 w-7 sm:h-8 sm:w-8 p-0 hover:bg-background/50"
-                title="Voir les statistiques"
+                aria-label={`Voir les statistiques de "${routine.title}"`}
               >
-                <TrendingUp className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                <TrendingUp className="h-3.5 w-3.5 sm:h-4 sm:w-4" aria-hidden="true" />
               </Button>
 
               {!routine.isArchived ? (
@@ -139,9 +141,9 @@ const RoutineCard = ({
                       "h-7 w-7 sm:h-8 sm:w-8 p-0 hover:bg-background/50",
                       isSkipped && "text-primary bg-background shadow-sm",
                     )}
-                    title={isSkipped ? "Annuler le saut" : "Sauter aujourd'hui"}
+                    aria-label={isSkipped ? `Annuler le saut de "${routine.title}"` : `Sauter "${routine.title}" aujourd'hui`}
                   >
-                    <CalendarX className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                    <CalendarX className="h-3.5 w-3.5 sm:h-4 sm:w-4" aria-hidden="true" />
                   </Button>
 
                   <div className="w-px h-4 bg-muted mx-0.5" />
@@ -154,8 +156,8 @@ const RoutineCard = ({
                         size="icon"
                         className="h-8 w-8 rounded-full"
                       >
-                        <MoreVertical className="h-4 w-4" />
-                        <span className="sr-only">Options de routine</span>
+                        <MoreVertical className="h-4 w-4" aria-hidden="true" />
+                        <span className="sr-only">Options de {routine.title}</span>
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-48">
@@ -166,7 +168,7 @@ const RoutineCard = ({
                         }}
                         className="flex justify-center items-center cursor-pointer"
                       >
-                        <Pencil className="mr-2 h-4 w-4" /> Modifier la routine
+                        <Pencil className="mr-2 h-4 w-4" aria-hidden="true" /> Modifier la routine
                       </DropdownMenuItem>
 
                       <DropdownMenuSeparator />

@@ -31,8 +31,10 @@ import {
 } from "@/shared/components/ui/alert-dialog";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import { usePageTitle } from "@/application/hooks/usePageTitle";
 
 const AdminUsers = () => {
+  usePageTitle("Admin — Utilisateurs");
   const { data: users = [], isLoading: loading, refetch } = useAdminUsers();
   const { toast } = useToast();
   const [filters, setFilters] = useState<Record<string, string>>({});
@@ -105,7 +107,7 @@ const AdminUsers = () => {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <User className="h-5 w-5" />
+              <User className="h-5 w-5" aria-hidden="true" />
               Liste des utilisateurs ({filteredUsers.length})
             </CardTitle>
           </CardHeader>
@@ -120,8 +122,8 @@ const AdminUsers = () => {
           </div>
           <CardContent>
             {loading ? (
-              <div className="flex justify-center py-8">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              <div className="flex justify-center py-8" role="status" aria-label="Chargement en cours">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" aria-hidden="true" />
               </div>
             ) : filteredUsers.length === 0 ? (
               <p className="text-center text-muted-foreground py-8">
@@ -177,7 +179,7 @@ const AdminUsers = () => {
                                   }
                                 >
                                   {role === "admin" ? (
-                                    <Shield className="h-3 w-3 mr-1 inline" />
+                                    <Shield className="h-3 w-3 mr-1 inline" aria-hidden="true" />
                                   ) : null}
                                   {role}
                                 </Badge>
@@ -201,12 +203,12 @@ const AdminUsers = () => {
                                 >
                                   {isAdmin ? (
                                     <>
-                                      <ShieldOff className="h-4 w-4 mr-1" />
+                                      <ShieldOff className="h-4 w-4 mr-1" aria-hidden="true" />
                                       Retirer admin
                                     </>
                                   ) : (
                                     <>
-                                      <Shield className="h-4 w-4 mr-1" />
+                                      <Shield className="h-4 w-4 mr-1" aria-hidden="true" />
                                       Rendre admin
                                     </>
                                   )}
@@ -218,7 +220,7 @@ const AdminUsers = () => {
                                       size="sm"
                                       className="text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
                                     >
-                                      <Trash2 className="h-4 w-4 mr-1" />
+                                      <Trash2 className="h-4 w-4 mr-1" aria-hidden="true" />
                                       Supprimer
                                     </Button>
                                   </AlertDialogTrigger>

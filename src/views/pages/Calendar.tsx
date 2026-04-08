@@ -12,10 +12,12 @@ import Header from "@/application/components/layout/Header";
 import { Sparkles, Calendar as CalendarIcon, CalendarDays } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { formatDateYMD } from "@/shared/lib/date";
+import { usePageTitle } from "@/application/hooks/usePageTitle";
 
 type ViewMode = "monthly" | "weekly";
 
 const Calendar = () => {
+  usePageTitle("Calendrier");
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [viewMode, setViewMode] = useState<ViewMode>("monthly");
   const { user } = useAuth();
