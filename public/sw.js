@@ -58,8 +58,8 @@ self.addEventListener("push", (event) => {
 
   const options = {
     body: data.body,
-    icon: "/logo.webp",
-    badge: "/logo.webp",
+    icon: "/logo.svg",
+    badge: "/logo.svg",
     vibrate: [200, 100, 200],
     tag: data.tag || undefined,
     renotify: !!data.tag,

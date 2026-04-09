@@ -25,7 +25,7 @@ Une application web progressive (PWA) pour gérer vos routines quotidiennes, tâ
 
 ### Tâches & Dossiers
 
-- Tableau Kanban avec drag & drop (To-Do, En cours, Terminé)
+- Vue tâches avec onglets À faire / Terminé et filtres par dossier
 - Dossiers avec deadlines et intégration calendrier
 - Vue d'ensemble des dossiers avec compteurs de tâches
 
@@ -93,8 +93,8 @@ Une application web progressive (PWA) pour gérer vos routines quotidiennes, tâ
 | Dates         | date-fns                                    |
 | Icônes        | lucide-react                                |
 | Toasts        | Sonner                                      |
-| Emails        | Resend (via Edge Function)                  |
-| PWA           | Service Worker custom + Web Push API        |
+| Emails        | Resend (via Edge Function Supabase)         |
+| PWA           | vite-plugin-pwa + Service Worker + Web Push |
 | Feedbacks     | Netlify Forms                               |
 
 ---
@@ -180,7 +180,8 @@ L'application est installable sur mobile et desktop :
 - **Installation** : "Ajouter à l'écran d'accueil" depuis le navigateur
 - **Notifications push** : Rappels planifiés pour vos routines
 - **Mode hors-ligne** : Accès aux données en cache via Service Worker
-- **Manifest** : `public/manifest.json` (icônes 192px et 512px)
+- **Manifest** : `public/manifest.json` (icônes SVG + PNG 192px et 512px)
+- **Logo** : `public/logo.svg` (vectoriel, généré automatiquement en `icon-192.png` et `icon-512.png`)
 
 ---
 
@@ -192,7 +193,7 @@ L'architecture suit **Domain-Driven Design** avec séparation stricte des respon
 src/
 ├── application/                  ← Orchestration app-specific
 │   ├── context/                  ← Global state: Auth, User, Theme, Notifications
-│   ├── hooks/                    ← React Query bridges + utilitaires: useRoutines, useFolders, useTasks, usePageTitle, etc.
+│   ├── hooks/                    ← React Query bridges + utilitaires: useRoutines, useFolders, useTasks, useStats, useAdminQueries, usePageTitle, etc.
 │   ├── services/                 ← statsService, notifications, userProfileService
 │   ├── routes/                   ← Route guards: ProtectedRoute, GuestRoute
 │   └── components/
@@ -250,6 +251,12 @@ supabase/
 public/
 ├── sw.js                         # Service Worker custom
 ├── manifest.json                 # PWA manifest
+├── logo.svg                      # Logo vectoriel (source)
+├── logo.webp                     # Logo WebP (fallback)
+├── icon-192.png                  # Icône PWA 192x192
+├── icon-512.png                  # Icône PWA 512x512
+├── placeholder.svg               # Placeholder image générique
+├── _redirects                    # Règles de redirection Netlify
 └── robots.txt
 ```
 

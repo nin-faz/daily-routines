@@ -1,0 +1,35 @@
+<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Gradient diagonal top-right → bottom-left, comme le logo de référence -->
+    <linearGradient id="bgGrad" x1="100" y1="0" x2="0" y2="100" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#ffaa30"/>
+      <stop offset="100%" stop-color="#f03018"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Fond carré arrondi -->
+  <rect width="100" height="100" rx="22" fill="url(#bgGrad)"/>
+
+  <!-- Trace grisée (anneau complet, contexte 100%) -->
+  <circle cx="50" cy="50" r="32" stroke="rgba(255,255,255,0.2)" stroke-width="6"/>
+
+  <!-- Anneau de progression 270° (gap en bas-gauche) -->
+  <!-- r=32 → circonférence ≈ 201.1 | 270° → 150.8 | 90° → 50.3 -->
+  <circle
+    cx="50" cy="50" r="32"
+    stroke="white"
+    stroke-width="6"
+    stroke-linecap="round"
+    stroke-dasharray="150.8 50.3"
+    transform="rotate(-90, 50, 50)"
+  />
+
+  <!-- Checkmark -->
+  <path
+    d="M34 51 L44 62 L67 37"
+    stroke="white"
+    stroke-width="6.5"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+</svg>

@@ -13,9 +13,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/shared/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/components/ui/tabs";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/shared/components/ui/tabs";
 import { useToast } from "@/application/hooks/use-toast";
-import { Loader2, LogIn, UserPlus, Timer } from "lucide-react";
+import { Loader2, LogIn, UserPlus } from "lucide-react";
 import Loader from "@/shared/components/Loader";
 import { usePageTitle } from "@/application/hooks/usePageTitle";
 import { emailSchema, passwordSchema } from "@/shared/lib/validationSchemas";
@@ -118,7 +123,12 @@ const Auth = () => {
       <Card className="w-full max-w-md shadow-lg">
         <CardHeader className="text-center space-y-2">
           <div className="mx-auto w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
-            <Timer className="h-6 w-6 text-primary" aria-hidden="true" />
+            <img
+              src="/logo.svg"
+              alt="Logo"
+              className="h-10 w-10 text-primary"
+              aria-hidden="true"
+            />
           </div>
           <CardTitle className="text-2xl font-bold">Daily Routine</CardTitle>
           <CardDescription>Gérez vos routines quotidiennes</CardDescription>
@@ -144,11 +154,19 @@ const Auth = () => {
                     disabled={isLoading}
                     autoComplete="email"
                     aria-required="true"
-                    aria-describedby={errors.email ? "signin-email-error" : undefined}
+                    aria-describedby={
+                      errors.email ? "signin-email-error" : undefined
+                    }
                     aria-invalid={!!errors.email}
                   />
                   {errors.email && (
-                    <p id="signin-email-error" className="text-sm text-destructive" role="alert">{errors.email}</p>
+                    <p
+                      id="signin-email-error"
+                      className="text-sm text-destructive"
+                      role="alert"
+                    >
+                      {errors.email}
+                    </p>
                   )}
                 </div>
                 <div className="space-y-2">
@@ -169,11 +187,17 @@ const Auth = () => {
                     disabled={isLoading}
                     autoComplete="current-password"
                     aria-required="true"
-                    aria-describedby={errors.password ? "signin-password-error" : undefined}
+                    aria-describedby={
+                      errors.password ? "signin-password-error" : undefined
+                    }
                     aria-invalid={!!errors.password}
                   />
                   {errors.password && (
-                    <p id="signin-password-error" className="text-sm text-destructive" role="alert">
+                    <p
+                      id="signin-password-error"
+                      className="text-sm text-destructive"
+                      role="alert"
+                    >
                       {errors.password}
                     </p>
                   )}
@@ -187,7 +211,10 @@ const Auth = () => {
                   disabled={isLoading}
                 >
                   {isLoading ? (
-                    <Loader2 className="h-5 w-5 animate-spin mr-2" aria-hidden="true" />
+                    <Loader2
+                      className="h-5 w-5 animate-spin mr-2"
+                      aria-hidden="true"
+                    />
                   ) : (
                     <LogIn className="h-5 w-5 mr-2" aria-hidden="true" />
                   )}
@@ -225,11 +252,19 @@ const Auth = () => {
                     disabled={isLoading}
                     autoComplete="email"
                     aria-required="true"
-                    aria-describedby={errors.email ? "signup-email-error" : undefined}
+                    aria-describedby={
+                      errors.email ? "signup-email-error" : undefined
+                    }
                     aria-invalid={!!errors.email}
                   />
                   {errors.email && (
-                    <p id="signup-email-error" className="text-sm text-destructive" role="alert">{errors.email}</p>
+                    <p
+                      id="signup-email-error"
+                      className="text-sm text-destructive"
+                      role="alert"
+                    >
+                      {errors.email}
+                    </p>
                   )}
                 </div>
                 <div className="space-y-2">
@@ -242,11 +277,17 @@ const Auth = () => {
                     disabled={isLoading}
                     autoComplete="new-password"
                     aria-required="true"
-                    aria-describedby={errors.password ? "signup-password-error" : undefined}
+                    aria-describedby={
+                      errors.password ? "signup-password-error" : undefined
+                    }
                     aria-invalid={!!errors.password}
                   />
                   {errors.password && (
-                    <p id="signup-password-error" className="text-sm text-destructive" role="alert">
+                    <p
+                      id="signup-password-error"
+                      className="text-sm text-destructive"
+                      role="alert"
+                    >
                       {errors.password}
                     </p>
                   )}
@@ -260,7 +301,10 @@ const Auth = () => {
                   disabled={isLoading}
                 >
                   {isLoading ? (
-                    <Loader2 className="h-5 w-5 animate-spin mr-2" aria-hidden="true" />
+                    <Loader2
+                      className="h-5 w-5 animate-spin mr-2"
+                      aria-hidden="true"
+                    />
                   ) : (
                     <UserPlus className="h-5 w-5 mr-2" aria-hidden="true" />
                   )}
