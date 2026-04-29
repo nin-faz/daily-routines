@@ -100,20 +100,13 @@ const Routines = () => {
   const handleArchiveRoutine = (routine: Routine) => {
     updateRoutine.mutate({
       id: routine.id,
-      updates: { isArchived: !routine.isArchived },
+      updates: { isArchived: true },
     });
   };
 
-  // Stocke le nombre de routines complétées aujourd'hui
-  const [completedCount, setCompletedCount] = useState(0);
-
-  // Met à jour le nombre de routines complétées à chaque changement de statuts ou de date
-  useEffect(() => {
-    const count = statuses.filter(
-      (s) => s.date === todayDate && s.completed,
-    ).length;
-    setCompletedCount(count);
-  }, [statuses, todayDate]);
+  const completedCount = statuses.filter(
+    (s) => s.date === todayDate && s.completed,
+  ).length;
 
   const todayDayOfWeek = JS_DAY_TO_DAY_OF_WEEK[new Date().getDay()];
   const todaysRoutines = getTodaysRoutines(

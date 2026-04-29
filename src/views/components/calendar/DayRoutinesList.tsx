@@ -222,7 +222,7 @@ const DayRoutinesList = ({
                     {/* Indicateur de statut discret à droite */}
                     {isSkipped && (
                       <Badge variant="secondary" className="text-xs py-0 h-5">
-                        Sautée aujourd'hui
+                        Jour de repos
                       </Badge>
                     )}
                   </div>

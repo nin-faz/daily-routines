@@ -93,7 +93,7 @@ const RoutineCard = ({
                 </h3>
                 {isSkipped && (
                   <Badge variant="secondary" className="text-xs py-0 h-5">
-                    Sautée aujourd'hui
+                    Jour de repos
                   </Badge>
                 )}
               </div>
@@ -141,7 +141,7 @@ const RoutineCard = ({
                       "h-7 w-7 sm:h-8 sm:w-8 p-0 hover:bg-background/50",
                       isSkipped && "text-primary bg-background shadow-sm",
                     )}
-                    aria-label={isSkipped ? `Annuler le saut de "${routine.title}"` : `Sauter "${routine.title}" aujourd'hui`}
+                    aria-label={isSkipped ? `Reprendre "${routine.title}"` : `Marquer "${routine.title}" comme jour de repos`}
                   >
                     <CalendarX className="h-3.5 w-3.5 sm:h-4 sm:w-4" aria-hidden="true" />
                   </Button>

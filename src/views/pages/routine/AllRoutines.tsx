@@ -52,7 +52,7 @@ const AllRoutines = () => {
   const handleArchiveRoutine = (routine: Routine) => {
     updateRoutine.mutate({
       id: routine.id,
-      updates: { isArchived: !routine.isArchived },
+      updates: { isArchived: true },
     });
   };
 

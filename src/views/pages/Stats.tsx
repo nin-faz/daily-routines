@@ -365,7 +365,7 @@ const Stats = () => {
                   <div
                     className="h-40 sm:h-48"
                     role="img"
-                    aria-label="Graphique en barres : routines complétées et sautées cette semaine"
+                    aria-label="Graphique en barres : routines complétées et jours de repos cette semaine"
                   >
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={weeklyData}>
@@ -379,7 +379,7 @@ const Stats = () => {
                           formatter={(value, name) => {
                             if (name === "complétées")
                               return [value, "Complétées"];
-                            if (name === "sautees") return [value, "Sautées"];
+                            if (name === "sautees") return [value, "Jours de repos"];
                             if (name === "ratees") return [value, "Ratées"];
                             return [value, name];
                           }}

@@ -11,7 +11,7 @@ Une application web progressive (PWA) pour gérer vos routines quotidiennes, tâ
 - Création avec titre, durée optionnelle et créneau horaire (Matin, Après-midi, Soir)
 - Fréquence : quotidienne ou hebdomadaire (jours personnalisés)
 - Timer plein écran avec progression circulaire
-- Skip aujourd'hui sans casser le streak
+- Marquer une routine comme jour de repos
 - Réinitialisation automatique chaque jour à minuit
 - Archivage de routines (consultation sans pollution de la vue principale)
 - Vue "Toutes les routines" avec filtres
