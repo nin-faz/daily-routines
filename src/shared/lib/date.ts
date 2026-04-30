@@ -62,3 +62,7 @@ export function getDatesBetween(startDate: Date, endDate: Date): string[] {
 export function getTodayString(): string {
   return formatDateYMD(new Date());
 }
+
+export function getYesterdayString(): string {
+  return formatDateYMD(subDays(new Date(), 1));
+}

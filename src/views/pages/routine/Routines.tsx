@@ -6,8 +6,11 @@ import {
   getTodaysRoutines,
   groupByTimeOfDay,
 } from "@/shared/lib/days";
-import { formatFrenchDate } from "@/shared/lib/date";
-import { getTodayString } from "@/shared/lib/date";
+import {
+  formatFrenchDate,
+  getTodayString,
+  getYesterdayString,
+} from "@/shared/lib/date";
 import RoutineCard from "@/views/components/routine/RoutineCard";
 import CreateRoutineDialog from "@/views/components/routine/CreateRoutineDialog";
 import {
@@ -24,6 +27,7 @@ import { Link } from "react-router-dom";
 import Header from "@/application/components/layout/Header";
 import { requestNotificationPermission } from "@/application/services/notifications";
 import { RoutineListSkeleton } from "@/views/components/routine/RoutineSkeleton";
+import WelcomeBackModal from "@/views/components/routine/WelcomeBackModal";
 import EmptyState from "@/shared/components/EmptyState";
 import OnboardingDialog from "@/shared/components/OnboardingDialog";
 import { useRoutines } from "@/application/hooks/useRoutines";
@@ -50,6 +54,17 @@ const Routines = () => {
   );
   // Contrôle l'ouverture du dialogue d'édition
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+
+  const welcomeBackSessionKey = `welcome-back-dismissed-${getTodayString()}`;
+  const lastActive = localStorage.getItem("daily-routines-last-active");
+  const [welcomeBackDismissed, setWelcomeBackDismissed] = useState(
+    () => !!sessionStorage.getItem(welcomeBackSessionKey),
+  );
+
+  const handleDismissWelcomeBack = () => {
+    sessionStorage.setItem(welcomeBackSessionKey, "1");
+    setWelcomeBackDismissed(true);
+  };
 
   // Au montage du composant : demande la permission de notification et met à jour la date du jour
   useEffect(() => {
@@ -107,6 +122,14 @@ const Routines = () => {
   const completedCount = statuses.filter(
     (s) => s.date === todayDate && s.completed,
   ).length;
+
+  const showWelcomeBack =
+    !welcomeBackDismissed &&
+    !isLoading &&
+    activeRoutines.length > 0 &&
+    completedCount === 0 &&
+    lastActive !== null &&
+    lastActive < getYesterdayString();
 
   const todayDayOfWeek = JS_DAY_TO_DAY_OF_WEEK[new Date().getDay()];
   const todaysRoutines = getTodaysRoutines(
@@ -247,6 +270,10 @@ const Routines = () => {
           </div>
         </header>
         <main className="space-y-6">
+          <WelcomeBackModal
+            open={showWelcomeBack}
+            onDismiss={handleDismissWelcomeBack}
+          />
           {isLoading ? (
             <RoutineListSkeleton />
           ) : activeRoutines.length === 0 ? (
