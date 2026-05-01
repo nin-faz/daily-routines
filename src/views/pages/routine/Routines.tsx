@@ -28,6 +28,7 @@ import Header from "@/application/components/layout/Header";
 import { requestNotificationPermission } from "@/application/services/notifications";
 import { RoutineListSkeleton } from "@/views/components/routine/RoutineSkeleton";
 import WelcomeBackModal from "@/views/components/routine/WelcomeBackModal";
+import PersonalBestBanner from "@/views/components/routine/PersonalBestBanner";
 import EmptyState from "@/shared/components/EmptyState";
 import OnboardingDialog from "@/shared/components/OnboardingDialog";
 import { useRoutines } from "@/application/hooks/useRoutines";
@@ -274,6 +275,7 @@ const Routines = () => {
             open={showWelcomeBack}
             onDismiss={handleDismissWelcomeBack}
           />
+          {!isLoading && <PersonalBestBanner />}
           {isLoading ? (
             <RoutineListSkeleton />
           ) : activeRoutines.length === 0 ? (

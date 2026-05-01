@@ -1,13 +1,15 @@
+import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { routineStorage } from "@/data/repositories/routines";
 import { folderStorage } from "@/data/repositories/folders";
 import { taskStorage } from "@/data/repositories/tasks";
+import { computeStreaks, getRoutineDateRange } from "@/application/services/statsService";
 
 export const useStats = () => {
   const { data: routines = [], isLoading: isLoadingRoutines } = useQuery({
     queryKey: ["routines"],
     queryFn: () => routineStorage.getRoutines(),
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 1000 * 60 * 5,
     gcTime: 1000 * 60 * 10,
   });
 
@@ -32,12 +34,20 @@ export const useStats = () => {
     gcTime: 1000 * 60 * 10,
   });
 
+  const allDates = useMemo(() => getRoutineDateRange(routines, new Date()), [routines]);
+
+  const { currentStreak, recordStreak } = useMemo(
+    () => computeStreaks(routines, statuses, allDates),
+    [routines, statuses, allDates],
+  );
+
   return {
     routines,
     statuses,
     folders,
     tasks,
-    isLoading:
-      isLoadingRoutines || isLoadingStatuses || isLoadingFolders || isLoadingTasks,
+    currentStreak,
+    recordStreak,
+    isLoading: isLoadingRoutines || isLoadingStatuses || isLoadingFolders || isLoadingTasks,
   };
 };

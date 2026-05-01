@@ -45,11 +45,9 @@ import {
   computeCompletionsByDate,
   computeOverallCompletionRate,
   computeWeeklyData,
-  computeStreaks,
   computeTasksByStatus,
   computeTasksCompletionRate,
   computeUpcomingDeadlines,
-  getRoutineDateRange,
 } from "@/application/services/statsService";
 import React, { useState } from "react";
 import { usePageTitle } from "@/application/hooks/usePageTitle";
@@ -61,7 +59,7 @@ const CustomBarShape = (props: RectangleProps & { isTop: boolean }) => {
 
 const Stats = () => {
   usePageTitle("Statistiques");
-  const { routines, statuses, folders, tasks, isLoading } = useStats();
+  const { routines, statuses, folders, tasks, currentStreak, recordStreak, isLoading } = useStats();
   const [routineType, setRoutineType] = React.useState<
     "all" | "daily" | "weekly"
   >("all");
@@ -99,15 +97,6 @@ const Stats = () => {
     [filteredRoutines, statuses, datesUpToToday]
   );
 
-  const allRoutineDates = React.useMemo(
-    () => getRoutineDateRange(filteredRoutines, today),
-    [filteredRoutines]
-  );
-
-  const { currentStreak, recordStreak } = React.useMemo(
-    () => computeStreaks(routines, statuses, allRoutineDates),
-    [routines, statuses, allRoutineDates]
-  );
 
   const upcomingDeadlines = React.useMemo(
     () => computeUpcomingDeadlines(tasks, today),
