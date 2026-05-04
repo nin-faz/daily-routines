@@ -12,9 +12,9 @@ export const useRoutines = () => {
   const today = getTodayString();
 
   /**
-  * Utiliser une clé de requête spécifique à l'utilisateur pour éviter les conflits entre les utilisateurs
-  * qui se connectent sur le même appareil ou dans des onglets différents. 
-  */
+   * Utiliser une clé de requête spécifique à l'utilisateur pour éviter les conflits entre les utilisateurs
+   * qui se connectent sur le même appareil ou dans des onglets différents.
+   */
   const queryKey = ["routines", user?.id];
   const statusesQueryKey = ["routine-statuses", user?.id, today];
 
@@ -26,22 +26,25 @@ export const useRoutines = () => {
     gcTime: 1000 * 60 * 10, // Garde en cache 10 minutes
   });
 
-  const activeRoutines = routines.filter(routine => !routine.isArchived);
-  const archivedRoutines = routines.filter(routine => routine.isArchived);
+  const activeRoutines = routines.filter((routine) => !routine.isArchived);
+  const archivedRoutines = routines.filter((routine) => routine.isArchived);
 
   // Récupère uniquement les statuts du jour pour afficher les checkboxes
   const { data: statuses = [] } = useQuery({
     queryKey: statusesQueryKey,
     queryFn: () => routineStorage.getStatusesForDate(today),
     // On ne lance la requête QUE si l'utilisateur est connu
-    enabled: !!user?.id, 
+    enabled: !!user?.id,
     staleTime: 1000 * 60 * 1, // 1 minute de cache (on veut que ce soit frais)
   });
 
   const addRoutine = useMutation({
-    mutationFn: (routineData: Omit<Routine, "id" | "createdAt" | "userId" | "updatedAt">) =>
-      routineStorage.addRoutine(buildRoutine(routineData, user?.id || "")),
-    onMutate: async (routineData: Omit<Routine, "id" | "createdAt" | "userId" | "updatedAt">) => {
+    mutationFn: (
+      routineData: Omit<Routine, "id" | "createdAt" | "userId" | "updatedAt">,
+    ) => routineStorage.addRoutine(buildRoutine(routineData, user?.id || "")),
+    onMutate: async (
+      routineData: Omit<Routine, "id" | "createdAt" | "userId" | "updatedAt">,
+    ) => {
       await queryClient.cancelQueries({ queryKey: queryKey });
       const previousRoutines = queryClient.getQueryData<Routine[]>(queryKey);
       queryClient.setQueryData<Routine[]>(queryKey, (old = []) => [
@@ -68,45 +71,51 @@ export const useRoutines = () => {
     onMutate: async (routineId: string) => {
       // Annule les requêtes en cours pour éviter qu'elles écrasent notre update optimiste
       await queryClient.cancelQueries({ queryKey: statusesQueryKey });
-      
-      // Snapshot de l'état actuel pour pouvoir rollback en cas d'erreur
-      const previousStatuses = queryClient.getQueryData<typeof statuses>(statusesQueryKey);
-      
-      // Update optimiste : met à jour immédiatement l'UI
-      queryClient.setQueryData<RoutineStatus[]>(statusesQueryKey, (old = []) => {
-        const existingStatus = old.find(s => s.routineId === routineId);
 
-        if (existingStatus) {
-          // Si le statut existe, toggle la complétion ET force skipped à false
-          return old.map(s =>
-            s.routineId === routineId
-              ? {
-                  ...s,
-                  completed: !s.completed,
-                  skipped: false,
-                  completedAt: !s.completed ? new Date().toISOString() : undefined,
-                }
-              : s
-          );
-        } else {
-          // Si pas de statut, crée un nouveau statut complété
-          return [
-            ...old,
-            {
-              id: crypto.randomUUID(),
-              routineId,
-              date: today,
-              completed: true,
-              skipped: false,
-              completedAt: new Date().toISOString(),
-              userId: user?.id || "",
-              createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString(),
-            } as RoutineStatus,
-          ];
-        }
-      });
-      
+      // Snapshot de l'état actuel pour pouvoir rollback en cas d'erreur
+      const previousStatuses =
+        queryClient.getQueryData<typeof statuses>(statusesQueryKey);
+
+      // Update optimiste : met à jour immédiatement l'UI
+      queryClient.setQueryData<RoutineStatus[]>(
+        statusesQueryKey,
+        (old = []) => {
+          const existingStatus = old.find((s) => s.routineId === routineId);
+
+          if (existingStatus) {
+            // Si le statut existe, toggle la complétion ET force skipped à false
+            return old.map((s) =>
+              s.routineId === routineId
+                ? {
+                    ...s,
+                    completed: !s.completed,
+                    skipped: false,
+                    completedAt: !s.completed
+                      ? new Date().toISOString()
+                      : undefined,
+                  }
+                : s,
+            );
+          } else {
+            // Si pas de statut, crée un nouveau statut complété
+            return [
+              ...old,
+              {
+                id: crypto.randomUUID(),
+                routineId,
+                date: today,
+                completed: true,
+                skipped: false,
+                completedAt: new Date().toISOString(),
+                userId: user?.id || "",
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+              } as RoutineStatus,
+            ];
+          }
+        },
+      );
+
       return { previousStatuses };
     },
     // En cas d'erreur, rollback vers l'état précédent
@@ -123,6 +132,7 @@ export const useRoutines = () => {
     onSettled: () => {
       queryClient.refetchQueries({ queryKey: statusesQueryKey });
       queryClient.invalidateQueries({ queryKey: ["routine-statuses"] });
+      queryClient.invalidateQueries({ queryKey: ["completion-rates"] });
     },
   });
 
@@ -132,37 +142,46 @@ export const useRoutines = () => {
     // Optimistic update pour un feedback instantané
     onMutate: async (routineId: string) => {
       await queryClient.cancelQueries({ queryKey: statusesQueryKey });
-      
-      const previousStatuses = queryClient.getQueryData<typeof statuses>(statusesQueryKey);
-      
-      queryClient.setQueryData<typeof statuses>(statusesQueryKey, (old = []) => {
-        const existingStatus = old.find(s => s.routineId === routineId);
-        
-        if (existingStatus) {
-          // Toggle le statut "skipped" ET force completed à false + supprime completedAt
-          return old.map(s => 
-            s.routineId === routineId 
-              ? { ...s, skipped: !s.skipped, completed: false, completedAt: undefined }
-              : s
-          );
-        } else {
-          // Crée un nouveau statut "skipped"
-          return [
-            ...old,
-            {
-              id: crypto.randomUUID(),
-              routineId,
-              date: today,
-              completed: false,
-              skipped: true,
-              userId: user?.id || "",
-              createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString(),
-            } as RoutineStatus,
-          ];
-        }
-      });
-      
+
+      const previousStatuses =
+        queryClient.getQueryData<typeof statuses>(statusesQueryKey);
+
+      queryClient.setQueryData<typeof statuses>(
+        statusesQueryKey,
+        (old = []) => {
+          const existingStatus = old.find((s) => s.routineId === routineId);
+
+          if (existingStatus) {
+            // Toggle le statut "skipped" ET force completed à false + supprime completedAt
+            return old.map((s) =>
+              s.routineId === routineId
+                ? {
+                    ...s,
+                    skipped: !s.skipped,
+                    completed: false,
+                    completedAt: undefined,
+                  }
+                : s,
+            );
+          } else {
+            // Crée un nouveau statut "skipped"
+            return [
+              ...old,
+              {
+                id: crypto.randomUUID(),
+                routineId,
+                date: today,
+                completed: false,
+                skipped: true,
+                userId: user?.id || "",
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+              } as RoutineStatus,
+            ];
+          }
+        },
+      );
+
       return { previousStatuses };
     },
     onError: (_err, _routineId, context) => {
@@ -174,25 +193,28 @@ export const useRoutines = () => {
     onSettled: () => {
       queryClient.refetchQueries({ queryKey: statusesQueryKey });
       queryClient.invalidateQueries({ queryKey: ["routine-statuses"] });
+      // queryClient.invalidateQueries({ queryKey: ["completion-rates"] });
     },
   });
 
   const updateRoutine = useMutation({
-     mutationFn: ({ id, updates }: { id: string; updates: Partial<Routine> }) =>
+    mutationFn: ({ id, updates }: { id: string; updates: Partial<Routine> }) =>
       routineStorage.updateRoutine(id, updates),
     // Optimistic update : modification instantanée dans l'UI
     onMutate: async ({ id, updates }) => {
       // Annule les requêtes en cours
       await queryClient.cancelQueries({ queryKey: queryKey });
-      
+
       // Snapshot pour rollback
       const previousRoutines = queryClient.getQueryData<Routine[]>(queryKey);
-      
+
       // Met à jour immédiatement la routine dans l'UI
       queryClient.setQueryData<Routine[]>(queryKey, (old = []) =>
-        old.map(routine => routine.id === id ? { ...routine, ...updates } : routine)
+        old.map((routine) =>
+          routine.id === id ? { ...routine, ...updates } : routine,
+        ),
       );
-      
+
       return { previousRoutines };
     },
     // En cas d'erreur, restaure l'état précédent
@@ -214,15 +236,15 @@ export const useRoutines = () => {
     onMutate: async (routineId: string) => {
       // Annule les requêtes en cours
       await queryClient.cancelQueries({ queryKey: queryKey });
-      
+
       // Snapshot pour rollback
       const previousRoutines = queryClient.getQueryData<Routine[]>(queryKey);
-      
+
       // Supprime immédiatement la routine de l'UI
-      queryClient.setQueryData<Routine[]>(queryKey, (old = []) => 
-        old.filter(routine => routine.id !== routineId)
+      queryClient.setQueryData<Routine[]>(queryKey, (old = []) =>
+        old.filter((routine) => routine.id !== routineId),
       );
-      
+
       return { previousRoutines };
     },
     // En cas d'erreur, restaure la liste et affiche une notification

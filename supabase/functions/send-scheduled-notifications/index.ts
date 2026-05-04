@@ -74,6 +74,7 @@ serve(async (req) => {
       .select('id, title, user_id, notification_time, frequency, week_days')
       .eq('notification_time', utcTimeForDB) // Si c'est égale à l'heure actuelle (UTC)
       .not('notification_time', 'is', null) // S'assurer que notification_time n'est pas null
+      .eq('is_archived', false) // Exclure les routines archivées
 
     if (routinesError) {
       console.error('❌ ERREUR recherche routines:', routinesError)

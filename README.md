@@ -21,6 +21,8 @@ Une application web progressive (PWA) pour gérer vos routines quotidiennes, tâ
 - Calendrier heatmap (% de complétion par date)
 - Historique par routine (taux, streak actuel, streak max)
 - Dashboard global : KPIs (taux de complétion, série, record, deadlines) et graphiques d'évolution
+- Streak freeze : protection de streak consommable (`BrokenStreakCard`, `StreakFreezeDialog`)
+- Record de streak : bannière animée (`NewStreakRecordCard`)
 - Skeletons animés pendant le chargement
 
 ### Tâches & Dossiers
@@ -42,6 +44,7 @@ Une application web progressive (PWA) pour gérer vos routines quotidiennes, tâ
 - Service Worker personnalisé (`public/sw.js`)
 - Abonnement sauvegardé en base via Edge Function
 - Envoi planifié de notifications via cron Supabase
+- Résumé hebdomadaire automatique (`send-weekly-summary`)
 - Synchronisation automatique à la reconnexion et au focus
 
 ### Administration
@@ -54,6 +57,7 @@ Une application web progressive (PWA) pour gérer vos routines quotidiennes, tâ
 ### Expérience Utilisateur
 
 - Onboarding interactif pour les nouveaux utilisateurs
+- Dialog de retour (`WelcomeBackDialog`) avec animation Lottie pour les utilisateurs revenant après une absence
 - Chatbot de feedback utilisateur (FeedbackChat + Netlify Forms)
 - Bouton d'aide contextuelle
 - 6 thèmes de couleur : Orange, Bleu, Vert, Violet, Rose, Cyan
@@ -157,6 +161,7 @@ npx supabase start
 | `welcome-email`                | Email de bienvenue à l'inscription (via Resend) |
 | `save-subscription`            | Sauvegarde l'abonnement push en base            |
 | `send-scheduled-notifications` | Envoi planifié des notifications (cron)         |
+| `send-weekly-summary`          | Résumé hebdomadaire envoyé par notification     |
 
 ### Migrations
 
@@ -193,7 +198,7 @@ L'architecture suit **Domain-Driven Design** avec séparation stricte des respon
 src/
 ├── application/                  ← Orchestration app-specific
 │   ├── context/                  ← Global state: Auth, User, Theme, Notifications
-│   ├── hooks/                    ← React Query bridges + utilitaires: useRoutines, useFolders, useTasks, useStats, useAdminQueries, usePageTitle, etc.
+│   ├── hooks/                    ← React Query bridges + utilitaires: useRoutines, useFolders, useTasks, useStats, useStreakFreeze, useAdminQueries, usePageTitle, etc.
 │   ├── services/                 ← statsService, notifications, userProfileService
 │   ├── routes/                   ← Route guards: ProtectedRoute, GuestRoute
 │   └── components/
@@ -217,7 +222,7 @@ src/
 │   └── builders.ts               ← Constructeurs d'entités (Routine, Folder, Task)
 │
 ├── data/                         ← Data access layer
-│   ├── repositories/             ← DB abstraction: routines, folders, tasks, timer, admin, user
+│   ├── repositories/             ← DB abstraction: routines, folders, tasks, timer, admin, user, freeze
 │   └── integrations/supabase/    ← Supabase SDK: client.ts, types.ts
 │
 ├── views/                        ← React rendering layer
@@ -236,8 +241,9 @@ src/
 │       ├── admin/                # AdminFilterBar, AdminLayout
 │       ├── calendar/             # CalendarHeatmap, WeeklyView, DayRoutinesList, DayDeadlinesList
 │       ├── folder/               # FolderCard, CreateFolderDialog
-│       ├── routine/              # RoutineCard, Timer, CreateRoutineDialog, RoutineSkeleton
+│       ├── routine/              # RoutineCard, Timer, CreateRoutineDialog, RoutineSkeleton, WelcomeBackDialog
 │       ├── stats/                # StatsSkeleton
+│       ├── streak/               # BrokenStreakCard, NewStreakRecordCard, StreakFreezeDialog
 │       ├── task/                 # TaskCard, CreateTaskDialog, TaskSkeleton
 │       └── theme/                # ThemeSelector, ThemeToggle
 │

@@ -235,7 +235,8 @@ export const routineStorage = {
   },
 
   async getCompletionRatesForMonth(year: number, month: number): Promise<Record<string, number>> {
-    const routines = await this.getRoutines();
+    const allRoutines = await this.getRoutines();
+    const routines = allRoutines.filter(r => !r.isArchived);
     if (routines.length === 0) return {};
 
     const start = new Date(year, month, 1);
@@ -261,7 +262,8 @@ export const routineStorage = {
   },
 
   async getCompletionRatesForWeek(startDate: string, endDate: string): Promise<Record<string, number>> {
-    const routines = await this.getRoutines();
+    const allRoutines = await this.getRoutines();
+    const routines = allRoutines.filter(r => !r.isArchived);
     if (routines.length === 0) return {};
 
     const start = new Date(startDate);

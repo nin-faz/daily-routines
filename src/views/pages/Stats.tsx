@@ -22,7 +22,12 @@ import {
   BarChart3,
   Award,
 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/shared/components/ui/card";
 import {
   Select,
   SelectTrigger,
@@ -38,7 +43,11 @@ import EmptyState from "@/shared/components/EmptyState";
 import { useStats } from "@/application/hooks/useStats";
 import { format } from "date-fns";
 import { getFrequencyLabel } from "@/shared/lib/days";
-import { formatDateYMD, getDatesOfCurrentMonth, getWeekDays } from "@/shared/lib/date";
+import {
+  formatDateYMD,
+  getDatesOfCurrentMonth,
+  getWeekDays,
+} from "@/shared/lib/date";
 import { getActiveRoutinesAtDate } from "@/domain/routineRules";
 import { fr } from "date-fns/locale";
 import {
@@ -59,7 +68,15 @@ const CustomBarShape = (props: RectangleProps & { isTop: boolean }) => {
 
 const Stats = () => {
   usePageTitle("Statistiques");
-  const { routines, statuses, folders, tasks, currentStreak, recordStreak, isLoading } = useStats();
+  const {
+    routines,
+    statuses,
+    folders,
+    tasks,
+    currentStreak,
+    recordStreak,
+    isLoading,
+  } = useStats();
   const [routineType, setRoutineType] = React.useState<
     "all" | "daily" | "weekly"
   >("all");
@@ -84,23 +101,25 @@ const Stats = () => {
 
   const today = new Date();
   const firstToLastDate = getDatesOfCurrentMonth(today);
-  const datesUpToToday = firstToLastDate.filter((date) => date <= formatDateYMD(today));
+  const datesUpToToday = firstToLastDate.filter(
+    (date) => date <= formatDateYMD(today),
+  );
   const weekDays = getWeekDays(today, { weekStartsOn: 1 });
 
   const completionsByDate = React.useMemo(
     () => computeCompletionsByDate(filteredRoutines, statuses, firstToLastDate),
-    [filteredRoutines, statuses, firstToLastDate]
+    [filteredRoutines, statuses, firstToLastDate],
   );
 
   const overallCompletionRate = React.useMemo(
-    () => computeOverallCompletionRate(filteredRoutines, statuses, datesUpToToday),
-    [filteredRoutines, statuses, datesUpToToday]
+    () =>
+      computeOverallCompletionRate(filteredRoutines, statuses, datesUpToToday),
+    [filteredRoutines, statuses, datesUpToToday],
   );
-
 
   const upcomingDeadlines = React.useMemo(
     () => computeUpcomingDeadlines(tasks, today),
-    [tasks]
+    [tasks],
   );
 
   const filteredTasks = React.useMemo(() => {
@@ -118,24 +137,25 @@ const Stats = () => {
   }, [tasks, taskFolderFilter, taskStatusFilter]);
 
   const weeklyData = React.useMemo(
-    () => computeWeeklyData(filteredRoutines, statuses, weekDays, (day) =>
-      format(day, "EEE", { locale: fr })
-    ),
-    [filteredRoutines, statuses, weekDays]
+    () =>
+      computeWeeklyData(filteredRoutines, statuses, weekDays, (day) =>
+        format(day, "EEE", { locale: fr }),
+      ),
+    [filteredRoutines, statuses, weekDays],
   );
 
   const maxRoutinesThisWeek = Math.max(...weeklyData.map((d) => d.total), 1);
 
   const tasksByStatus = React.useMemo(
     () => computeTasksByStatus(filteredTasks),
-    [filteredTasks]
+    [filteredTasks],
   );
 
   const totalTasks = tasks.length;
 
   const tasksCompletionRate = React.useMemo(
     () => computeTasksCompletionRate(tasks),
-    [tasks]
+    [tasks],
   );
 
   const pieData = [
@@ -157,7 +177,10 @@ const Stats = () => {
         <header className="mb-6 sm:mb-8">
           <Header />
           <div className="flex items-center justify-center gap-2 mb-4">
-            <TrendingUp className="h-6 w-6 sm:h-8 sm:w-8 text-primary" aria-hidden="true" />
+            <TrendingUp
+              className="h-6 w-6 sm:h-8 sm:w-8 text-primary"
+              aria-hidden="true"
+            />
             <h1 className="text-2xl sm:text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent">
               Mes Statistiques
             </h1>
@@ -199,7 +222,10 @@ const Stats = () => {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4 mb-6 sm:mb-8">
               <Card className="transition-all duration-200 hover:scale-[1.04] hover:shadow-lg hover:border-primary/60 hover:bg-primary/5">
                 <CardContent className="p-3 sm:p-4 text-center flex flex-col justify-center h-full">
-                  <CheckCircle className="h-5 w-5 sm:h-6 sm:w-6 text-primary mx-auto mb-1 sm:mb-2" aria-hidden="true" />
+                  <CheckCircle
+                    className="h-5 w-5 sm:h-6 sm:w-6 text-primary mx-auto mb-1 sm:mb-2"
+                    aria-hidden="true"
+                  />
                   <p className="text-xl sm:text-2xl font-bold text-foreground">
                     {overallCompletionRate}%
                   </p>
@@ -211,7 +237,10 @@ const Stats = () => {
 
               <Card className="transition-all duration-200 hover:scale-[1.04] hover:shadow-lg hover:border-primary/60 hover:bg-primary/5">
                 <CardContent className="p-3 sm:p-4 text-center flex flex-col justify-center h-full">
-                  <Flame className="h-5 w-5 sm:h-6 sm:w-6 text-primary mx-auto mb-1 sm:mb-2" aria-hidden="true" />
+                  <Flame
+                    className="h-5 w-5 sm:h-6 sm:w-6 text-primary mx-auto mb-1 sm:mb-2"
+                    aria-hidden="true"
+                  />
                   <p className="text-xl sm:text-2xl font-bold text-foreground">
                     {currentStreak}
                   </p>
@@ -220,7 +249,10 @@ const Stats = () => {
                       variant="outline"
                       className="flex items-center gap-1 text-[10px] sm:text-xs font-semibold bg-amber-50 dark:bg-amber-950/30 border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-300"
                     >
-                      <Award className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" aria-hidden="true" />
+                      <Award
+                        className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400"
+                        aria-hidden="true"
+                      />
                       Record : {recordStreak}
                     </Badge>
                   </div>
@@ -232,7 +264,10 @@ const Stats = () => {
 
               <Card className="transition-all duration-200 hover:scale-[1.04] hover:shadow-lg hover:border-primary/60 hover:bg-primary/5">
                 <CardContent className="p-3 sm:p-4 text-center flex flex-col justify-center h-full">
-                  <FolderKanban className="h-5 w-5 sm:h-6 sm:w-6 text-primary mx-auto mb-1 sm:mb-2" aria-hidden="true" />
+                  <FolderKanban
+                    className="h-5 w-5 sm:h-6 sm:w-6 text-primary mx-auto mb-1 sm:mb-2"
+                    aria-hidden="true"
+                  />
                   <p className="text-xl sm:text-2xl font-bold text-foreground">
                     {tasksCompletionRate}%
                   </p>
@@ -244,7 +279,10 @@ const Stats = () => {
 
               <Card className="transition-all duration-200 hover:scale-[1.04] hover:shadow-lg hover:border-primary/60 hover:bg-primary/5">
                 <CardContent className="p-3 sm:p-4 text-center flex flex-col justify-center h-full">
-                  <Calendar className="h-5 w-5 sm:h-6 sm:w-6 text-primary mx-auto mb-1 sm:mb-2" aria-hidden="true" />
+                  <Calendar
+                    className="h-5 w-5 sm:h-6 sm:w-6 text-primary mx-auto mb-1 sm:mb-2"
+                    aria-hidden="true"
+                  />
                   <p className="text-xl sm:text-2xl font-bold text-foreground">
                     {upcomingDeadlines}
                   </p>
@@ -368,7 +406,8 @@ const Stats = () => {
                           formatter={(value, name) => {
                             if (name === "complétées")
                               return [value, "Complétées"];
-                            if (name === "sautees") return [value, "Jours de repos"];
+                            if (name === "sautees")
+                              return [value, "Jours de repos"];
                             if (name === "ratees") return [value, "Ratées"];
                             return [value, name];
                           }}

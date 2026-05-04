@@ -15,6 +15,7 @@ import {
   Calendar,
   ArchiveRestore,
   Palette,
+  Snowflake,
 } from "lucide-react";
 
 export default function HelpButton() {
@@ -86,6 +87,31 @@ export default function HelpButton() {
               </div>
             </section>
 
+            {/* Streak Freeze */}
+            <section className="flex gap-3 p-3 rounded-lg bg-muted/50 transition-all duration-200 hover:bg-muted/70 hover:scale-[1.02] hover:shadow-md cursor-default">
+              <div className="flex-shrink-0">
+                <div className="w-10 h-10 rounded-full bg-sky-500/10 flex items-center justify-center">
+                  <Snowflake className="h-5 w-5 text-sky-400" />
+                </div>
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold mb-1">
+                  Streak Freeze 🧊
+                  <span className="block mt-1 text-xs">
+                    <i>Routines</i>
+                  </span>
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  Protège ton streak si tu rates une journée. 1 freeze
+                  disponible par semaine, il se recharge chaque lundi.
+                  <span className="block mt-1 text-xs">
+                    Apparaît automatiquement dans Routines quand ton streak est
+                    en danger.
+                  </span>
+                </p>
+              </div>
+            </section>
+
             {/* Taux de réussite */}
             <section className="flex gap-3 p-3 rounded-lg bg-muted/50 transition-all duration-200 hover:bg-muted/70 hover:scale-[1.02] hover:shadow-md cursor-default">
               <div className="flex-shrink-0">
@@ -122,10 +148,11 @@ export default function HelpButton() {
                 </h3>
                 <p className="text-sm text-muted-foreground">
                   Si vous savez à l’avance que vous ne pourrez pas faire une
-                  routine un jour donné, vous pouvez la marquer comme jour de repos.
+                  routine un jour donné, vous pouvez la marquer comme jour de
+                  repos.
                   <span className="block mt-1 text-xs">
-                    Elle n’est pas comptabilisée dans les calculs et ne pénalise pas
-                    votre taux de réussite pour ce jour-là.
+                    Elle n’est pas comptabilisée dans les calculs et ne pénalise
+                    pas votre taux de réussite pour ce jour-là.
                   </span>
                 </p>
               </div>

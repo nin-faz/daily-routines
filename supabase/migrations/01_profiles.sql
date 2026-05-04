@@ -85,3 +85,10 @@ CREATE POLICY "Admins can view all profiles"
 ON public.profiles FOR SELECT
 TO authenticated
 USING (public.is_admin(auth.uid()));
+
+-- ==========================================
+-- 4. COLONNES ADDITIONNELLES
+-- ==========================================
+
+-- Freeze de streak : date de la dernière utilisation (1 freeze/semaine)
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS streak_freeze_used_at DATE;

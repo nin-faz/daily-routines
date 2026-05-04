@@ -6,8 +6,14 @@
  */
 
 import { addDays, endOfDay, isWithinInterval, startOfDay } from "date-fns";
-import { getActiveRoutinesAtDate } from "@/domain/routineRules";
-import { calculateStatStreak, calculateLongestStreak } from "@/domain/streak";
+import {
+  getActiveRoutinesAtDate,
+  getDayCompletionRate,
+} from "@/domain/routineRules";
+import {
+  calculateCalendarStreak,
+  calculateLongestStreak,
+} from "@/domain/streak";
 import { formatDateYMD } from "@/shared/lib/date";
 import type { Routine, RoutineStatus } from "@/shared/types/routine";
 import type { Task } from "@/shared/types/task";
@@ -17,7 +23,7 @@ import type { Task } from "@/shared/types/task";
 // ---------------------------------------------------------------------------
 
 export type DailyCompletionPoint = {
-  date: string;  // format dd/MM pour l'affichage
+  date: string; // format dd/MM pour l'affichage
   taux: number;
 };
 
@@ -57,7 +63,7 @@ export type TaskStats = {
 export function computeCompletionsByDate(
   routines: Routine[],
   statuses: RoutineStatus[],
-  dates: string[]
+  dates: string[],
 ): DailyCompletionPoint[] {
   return dates.map((date) => {
     const activeRoutines = getActiveRoutinesAtDate(routines, statuses, date);
@@ -67,9 +73,10 @@ export function computeCompletionsByDate(
     }).length;
     return {
       date: date.slice(8, 10) + "/" + date.slice(5, 7), // yyyy-MM-dd → dd/MM
-      taux: activeRoutines.length > 0
-        ? Math.round((completed / activeRoutines.length) * 100)
-        : 0,
+      taux:
+        activeRoutines.length > 0
+          ? Math.round((completed / activeRoutines.length) * 100)
+          : 0,
     };
   });
 }
@@ -80,7 +87,7 @@ export function computeCompletionsByDate(
 export function computeOverallCompletionRate(
   routines: Routine[],
   statuses: RoutineStatus[],
-  datesUpToToday: string[]
+  datesUpToToday: string[],
 ): number {
   let totalRoutines = 0;
   let totalCompleted = 0;
@@ -89,23 +96,31 @@ export function computeOverallCompletionRate(
     const activeRoutines = getActiveRoutinesAtDate(routines, statuses, date);
     for (const routine of activeRoutines) {
       totalRoutines++;
-      const s = statuses.find((s) => s.date === date && s.routineId === routine.id);
+      const s = statuses.find(
+        (s) => s.date === date && s.routineId === routine.id,
+      );
       if (s?.completed) totalCompleted++;
     }
   }
 
-  return totalRoutines > 0 ? Math.round((totalCompleted / totalRoutines) * 100) : 0;
+  return totalRoutines > 0
+    ? Math.round((totalCompleted / totalRoutines) * 100)
+    : 0;
 }
 
 /**
  * Génère toutes les dates depuis la création de la première routine jusqu'à aujourd'hui.
  * Utilisé pour calculer les streaks sur l'historique complet.
  */
-export function getRoutineDateRange(routines: Routine[], today: Date): string[] {
+export function getRoutineDateRange(
+  routines: Routine[],
+  today: Date,
+): string[] {
   if (routines.length === 0) return [];
 
   const firstDate = routines.reduce((min, r) => {
-    const d = typeof r.createdAt === "string" ? new Date(r.createdAt) : r.createdAt;
+    const d =
+      typeof r.createdAt === "string" ? new Date(r.createdAt) : r.createdAt;
     return d < min ? d : min;
   }, new Date());
 
@@ -130,12 +145,13 @@ export function computeWeeklyData(
   routines: Routine[],
   statuses: RoutineStatus[],
   weekDays: Date[],
-  dayLabel: (day: Date) => string
+  dayLabel: (day: Date) => string,
 ): WeeklyDataPoint[] {
   return weekDays.map((day) => {
     const formattedDate = formatDateYMD(day);
     const routinesAtDate = routines.filter((r) => {
-      const created = typeof r.createdAt === "string" ? new Date(r.createdAt) : r.createdAt;
+      const created =
+        typeof r.createdAt === "string" ? new Date(r.createdAt) : r.createdAt;
       return formatDateYMD(created) <= formattedDate;
     });
 
@@ -144,7 +160,7 @@ export function computeWeeklyData(
 
     for (const routine of routinesAtDate) {
       const s = statuses.find(
-        (s) => s.date === formattedDate && s.routineId === routine.id
+        (s) => s.date === formattedDate && s.routineId === routine.id,
       );
       if (s?.skipped) skipped++;
       else if (s?.completed) completed++;
@@ -159,16 +175,71 @@ export function computeWeeklyData(
   });
 }
 
+export type DayStatus = {
+  date: string;
+  status: "completed" | "missed" | "today";
+};
+
+/**
+ * Retourne le statut (completed/missed/today) des N derniers jours.
+ */
+export function computeLastNDaysStatus(
+  routines: Routine[],
+  statuses: RoutineStatus[],
+  today: string,
+  n: number,
+): DayStatus[] {
+  return Array.from({ length: n }, (_, i) => {
+    const d = new Date(today + "T00:00:00");
+    d.setDate(d.getDate() - (n - 1 - i));
+    const dateStr = formatDateYMD(d);
+    if (dateStr === today) return { date: dateStr, status: "today" as const };
+    const rate = getDayCompletionRate(routines, statuses, dateStr);
+    return {
+      date: dateStr,
+      status: rate === 100 ? ("completed" as const) : ("missed" as const),
+    };
+  });
+}
+
+/**
+ * Calcule completionRates pour une liste de dates — même algorithme que getCompletionRatesForMonth.
+ * Les jours sans routines actives (ou toutes skippées) sont absents du résultat.
+ */
+export function computeCompletionRates(
+  routines: Routine[],
+  statuses: RoutineStatus[],
+  dates: string[],
+): Record<string, number> {
+  const rates: Record<string, number> = {};
+  for (const date of dates) {
+    const active = getActiveRoutinesAtDate(routines, statuses, date);
+    if (active.length === 0) continue;
+    const completed = active.filter((r) => {
+      const s = statuses.find((s) => s.date === date && s.routineId === r.id);
+      return s?.completed;
+    }).length;
+    rates[date] = Math.round((completed / active.length) * 100);
+  }
+  return rates;
+}
+
 /**
  * Calcule le streak courant et le record depuis toutes les routines.
  */
 export function computeStreaks(
   routines: Routine[],
   statuses: RoutineStatus[],
-  allDates: string[]
+  allDates: string[],
+  freezeDates: string[] = [],
 ): { currentStreak: number; recordStreak: number } {
+  const completionRates = computeCompletionRates(routines, statuses, allDates);
   return {
-    currentStreak: calculateStatStreak(routines, statuses, allDates),
+    currentStreak: calculateCalendarStreak(
+      completionRates,
+      new Date(),
+      freezeDates,
+    ),
     recordStreak: calculateLongestStreak(routines, statuses, allDates),
   };
 }
@@ -202,7 +273,7 @@ export function computeTasksCompletionRate(tasks: Task[]): number {
 export function computeUpcomingDeadlines(
   tasks: Task[],
   today: Date,
-  daysAhead = 7
+  daysAhead = 7,
 ): number {
   const start = startOfDay(today);
   const end = endOfDay(addDays(today, daysAhead));

@@ -62,8 +62,14 @@ const steps: Array<{
   {
     icon: TrendingUp,
     title: "Statistiques & Archivage",
-    description:
-      "Consultez rapidement vos taux de réussite et vos séries. Archivez définitivement les routines obsolètes pour garder votre espace de travail épuré.",
+    description: (
+      <>
+        Consultez rapidement vos taux de réussite et vos séries. Archivez définitivement les routines obsolètes pour garder votre espace de travail épuré.
+        <span className="block mt-2 text-xs">
+          🧊 <strong>Streak Freeze</strong> — 1 protection par semaine visible dans vos Routines pour sauvegarder votre série si vous ratez un jour. Se recharge chaque lundi.
+        </span>
+      </>
+    ),
   },
   {
     icon: Rocket,

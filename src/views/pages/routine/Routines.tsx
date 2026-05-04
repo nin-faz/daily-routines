@@ -27,12 +27,15 @@ import { Link } from "react-router-dom";
 import Header from "@/application/components/layout/Header";
 import { requestNotificationPermission } from "@/application/services/notifications";
 import { RoutineListSkeleton } from "@/views/components/routine/RoutineSkeleton";
-import WelcomeBackModal from "@/views/components/routine/WelcomeBackModal";
-import PersonalBestBanner from "@/views/components/routine/PersonalBestBanner";
+import WelcomeBackModal from "@/views/components/routine/WelcomeBackDialog";
+import BrokenStreakCard from "@/views/components/streak/BrokenStreakCard";
+import NewStreakRecordCard from "@/views/components/streak/NewStreakRecordCard";
+import StreakFreezeCard from "@/views/components/streak/StreakFreezeDialog";
 import EmptyState from "@/shared/components/EmptyState";
 import OnboardingDialog from "@/shared/components/OnboardingDialog";
 import { useRoutines } from "@/application/hooks/useRoutines";
 import { usePageTitle } from "@/application/hooks/usePageTitle";
+import { useStats } from "@/application/hooks/useStats";
 
 const Routines = () => {
   usePageTitle("Mes Routines");
@@ -46,6 +49,7 @@ const Routines = () => {
     updateRoutine,
     deleteRoutine,
   } = useRoutines();
+  const { currentStreak } = useStats();
 
   // Stocke la date du jour au format AAAA-MM-JJ
   const [todayDate, setTodayDate] = useState(getTodayString());
@@ -57,10 +61,18 @@ const Routines = () => {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
 
   const welcomeBackSessionKey = `welcome-back-dismissed-${getTodayString()}`;
-  const lastActive = localStorage.getItem("daily-routines-last-active");
+  const lastActive = localStorage.getItem("last-active");
   const [welcomeBackDismissed, setWelcomeBackDismissed] = useState(
     () => !!sessionStorage.getItem(welcomeBackSessionKey),
   );
+
+  const daysAbsent = lastActive
+    ? Math.round(
+        (new Date(getTodayString()).getTime() -
+          new Date(lastActive).getTime()) /
+          (1000 * 60 * 60 * 24),
+      )
+    : 0;
 
   const handleDismissWelcomeBack = () => {
     sessionStorage.setItem(welcomeBackSessionKey, "1");
@@ -72,6 +84,12 @@ const Routines = () => {
     requestNotificationPermission();
     setTodayDate(getTodayString());
   }, []);
+
+  useEffect(() => {
+    if (!isLoading && currentStreak > 0) {
+      localStorage.setItem("prev-streak", currentStreak.toString());
+    }
+  }, [currentStreak, isLoading]);
 
   // Ajoute une nouvelle routine (appelé lors de la soumission du formulaire de création)
   const handleCreateRoutine = (
@@ -131,6 +149,12 @@ const Routines = () => {
     completedCount === 0 &&
     lastActive !== null &&
     lastActive < getYesterdayString();
+
+  const streakAtRisk =
+    !isLoading &&
+    currentStreak > 0 &&
+    completedCount === 0 &&
+    lastActive === getYesterdayString();
 
   const todayDayOfWeek = JS_DAY_TO_DAY_OF_WEEK[new Date().getDay()];
   const todaysRoutines = getTodaysRoutines(
@@ -274,8 +298,18 @@ const Routines = () => {
           <WelcomeBackModal
             open={showWelcomeBack}
             onDismiss={handleDismissWelcomeBack}
+            currentStreak={currentStreak}
+            daysAbsent={daysAbsent}
+            routinesCount={todaysRoutines.length}
           />
-          {!isLoading && <PersonalBestBanner />}
+          <BrokenStreakCard />
+          {!isLoading && <NewStreakRecordCard />}
+          {!isLoading && (
+            <StreakFreezeCard
+              currentStreak={currentStreak}
+              streakAtRisk={streakAtRisk}
+            />
+          )}
           {isLoading ? (
             <RoutineListSkeleton />
           ) : activeRoutines.length === 0 ? (
