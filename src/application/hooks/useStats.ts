@@ -56,7 +56,7 @@ export const useStats = () => {
   );
 
   const lastDaysStatus: DayStatus[] = useMemo(
-    () => computeLastNDaysStatus(activeRoutines, statuses, new Date().toISOString().slice(0, 10), 5),
+    () => computeLastNDaysStatus(activeRoutines, statuses, new Date().toISOString().slice(0, 10), 7),
     [activeRoutines, statuses],
   );
 

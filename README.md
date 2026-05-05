@@ -23,6 +23,7 @@ Une application web progressive (PWA) pour gérer vos routines quotidiennes, tâ
 - Dashboard global : KPIs (taux de complétion, série, record, deadlines) et graphiques d'évolution
 - Streak freeze : protection de streak consommable (`BrokenStreakCard`, `StreakFreezeDialog`)
 - Record de streak : bannière animée (`NewStreakRecordCard`)
+- Statut des 7 derniers jours affiché sur le dashboard d'accueil
 - Skeletons animés pendant le chargement
 
 ### Tâches & Dossiers
@@ -56,6 +57,7 @@ Une application web progressive (PWA) pour gérer vos routines quotidiennes, tâ
 
 ### Expérience Utilisateur
 
+- **Dashboard d'accueil contextuel** (`Home.tsx`) : salutation + prénom, message motivationnel adapté au streak/heure, streak 7 derniers jours, progression du jour, routines du créneau actuel cochables directement, compteur de tâches en attente
 - Onboarding interactif pour les nouveaux utilisateurs
 - Dialog de retour (`WelcomeBackDialog`) avec animation Lottie pour les utilisateurs revenant après une absence
 - Chatbot de feedback utilisateur (FeedbackChat + Netlify Forms)
@@ -227,6 +229,7 @@ src/
 │
 ├── views/                        ← React rendering layer
 │   ├── pages/                    ← Route pages
+│   │   ├── Home.tsx              # Dashboard d'accueil contextuel (/)
 │   │   ├── Auth.tsx              # Login / Signup
 │   │   ├── Calendar.tsx          # Calendrier + heatmap
 │   │   ├── Stats.tsx             # Dashboard statistiques
@@ -236,7 +239,7 @@ src/
 │   │   ├── NotFound.tsx          # 404
 │   │   ├── admin/                # AdminDashboard, AdminUsers, AdminFolders, AdminTasks
 │   │   ├── password/             # ForgotPassword, ResetPassword
-│   │   └── routine/              # Routines, RoutineDetails, RoutineArchived, AllRoutines, TimerView
+│   │   └── routine/              # Routines (/routines), RoutineDetails, RoutineArchived, AllRoutines, TimerView
 │   └── components/               ← Feature-specific components
 │       ├── admin/                # AdminFilterBar, AdminLayout
 │       ├── calendar/             # CalendarHeatmap, WeeklyView, DayRoutinesList, DayDeadlinesList

@@ -1,4 +1,4 @@
-import { Home, CalendarDays, ClipboardList, TrendingUp } from "lucide-react";
+import { Home, CalendarDays, ClipboardList, TrendingUp, ListChecks } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/shared/lib/utils";
 
@@ -6,7 +6,8 @@ const Navigation = () => {
   const location = useLocation();
 
   const links = [
-    { path: "/", icon: Home, label: "Routines" },
+    { path: "/", icon: Home, label: "Accueil" },
+    { path: "/routines", icon: ListChecks, label: "Routines" },
     { path: "/tasks", icon: ClipboardList, label: "Tâches" },
     { path: "/calendar", icon: CalendarDays, label: "Calendrier" },
     { path: "/stats", icon: TrendingUp, label: "Stats" },
@@ -17,7 +18,10 @@ const Navigation = () => {
       <div className="container mx-auto max-w-3xl">
         <div className="flex justify-around items-center pb-5 pt-2 md:py-2">
           {links.map(({ path, icon: Icon, label }) => {
-            const isActive = location.pathname === path;
+            const isActive =
+              path === "/"
+                ? location.pathname === "/"
+                : location.pathname === path || location.pathname.startsWith(path + "/");
             return (
               <Link
                 key={path}

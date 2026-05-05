@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { routineStorage } from "@/data/repositories/routines";
 import { useRoutines } from "@/application/hooks/useRoutines";
 import { useAuth } from "@/application/context/AuthContext";
@@ -26,12 +26,13 @@ const Calendar = () => {
   const { activeRoutines: routines } = useRoutines();
 
   // Statuts pour la date sélectionnée (pas forcément aujourd'hui)
-  const { data: statusesForDate = [] } = useQuery({
+  const { data: statusesForDate = [], isFetching: isStatusFetching } = useQuery({
     queryKey: ["routine-statuses", user?.id, formatDateYMD(selectedDate)],
     queryFn: () =>
       routineStorage.getStatusesForDate(formatDateYMD(selectedDate)),
     enabled: !!user?.id,
-    staleTime: 1 * 60 * 1000, // 1 minute
+    staleTime: 1 * 60 * 1000,
+    placeholderData: keepPreviousData,
   });
 
   const handleDateSelect = (date: Date) => {
@@ -87,6 +88,7 @@ const Calendar = () => {
             routines={routines}
             statuses={statusesForDate}
             date={selectedDate}
+            isLoading={isStatusFetching}
           />
         </main>
       </div>

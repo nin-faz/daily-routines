@@ -14,12 +14,14 @@ interface DayRoutinesListProps {
   routines: Routine[];
   statuses: RoutineStatus[];
   date: Date;
+  isLoading?: boolean;
 }
 
 const DayRoutinesList = ({
   routines,
   statuses,
   date,
+  isLoading = false,
 }: DayRoutinesListProps) => {
   /**
    *  Formate la date pour avoir par ex "lundi 1 janvier 2024"
@@ -71,7 +73,7 @@ const DayRoutinesList = ({
           <h3 className="text-lg font-semibold capitalize">
             {formatDate(date)}
           </h3>
-          <div className="flex items-center gap-2">
+          <div className={`flex items-center gap-2 transition-opacity duration-200 ${isLoading ? "opacity-0" : "opacity-100"}`}>
             <span className="text-sm text-muted-foreground">
               {completedCount} / {total}
             </span>
