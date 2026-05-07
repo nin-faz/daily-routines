@@ -50,10 +50,10 @@ export type Database = {
           created_at: string
           email: string
           id: string
+          last_streak_freeze: Json | null
           mode_theme: Database["public"]["Enums"]["theme_mode"]
           pseudo: string | null
           role: Database["public"]["Enums"]["app_role"]
-          streak_freeze_used_at: string | null
           updated_at: string
         }
         Insert: {
@@ -61,10 +61,10 @@ export type Database = {
           created_at?: string
           email: string
           id?: string
+          last_streak_freeze?: Json | null
           mode_theme?: Database["public"]["Enums"]["theme_mode"]
           pseudo?: string | null
           role?: Database["public"]["Enums"]["app_role"]
-          streak_freeze_used_at?: string | null
           updated_at?: string
         }
         Update: {
@@ -72,10 +72,10 @@ export type Database = {
           created_at?: string
           email?: string
           id?: string
+          last_streak_freeze?: Json | null
           mode_theme?: Database["public"]["Enums"]["theme_mode"]
           pseudo?: string | null
           role?: Database["public"]["Enums"]["app_role"]
-          streak_freeze_used_at?: string | null
           updated_at?: string
         }
         Relationships: []

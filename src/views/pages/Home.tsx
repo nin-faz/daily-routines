@@ -75,9 +75,11 @@ const getMotivationalMessage = (
   completedCount: number,
   totalCount: number,
   hour: number,
+  prevStreak: number,
 ): string => {
   if (totalCount > 0 && completedCount >= totalCount)
     return "Journée parfaite. Continue comme ça.";
+  if (streak === 0 && prevStreak > 1) return "T'as cassé ta série. Maintenant tu la reconstruis.";
   if (streak > 30) return "Un mois de régularité. C'est du sérieux.";
   if (streak > 14) return "Deux semaines sans lâcher. Belle discipline.";
   if (streak > 7) return "Belle lancée. Ne t'arrête pas là.";
@@ -85,7 +87,6 @@ const getMotivationalMessage = (
   if (completedCount > 0) return "Bien parti. Finis sur ta lancée.";
   if (hour >= 18) return "Dernière ligne droite pour aujourd'hui.";
   if (hour >= 12) return "L'après-midi est là, profites-en.";
-  if (streak === 0) return "Chaque jour est un nouveau départ.";
   return "La journée commence, c'est le bon moment.";
 };
 
@@ -169,7 +170,7 @@ const Home = () => {
   );
 
   const completedCount = statuses.filter(
-    (s) => s.date === todayDate && s.completed,
+    (s) => s.date === todayDate && (s.completed || s.skipped),
   ).length;
   const totalCount = todaysRoutines.length;
   const allDone = totalCount > 0 && completedCount >= totalCount;
@@ -186,11 +187,14 @@ const Home = () => {
     return todaysRoutines.filter((r) => r.timeOfDay === timeOfDay);
   }, [todaysRoutines, timeOfDay]);
 
+  const prevStreak = parseInt(localStorage.getItem("prev-streak") ?? "0", 10);
+
   const motivationalMessage = getMotivationalMessage(
     currentStreak,
     completedCount,
     totalCount,
     hour,
+    prevStreak,
   );
 
   return (

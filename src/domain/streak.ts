@@ -4,16 +4,32 @@
  */
 
 import type { Routine, RoutineStatus } from "@/shared/types/routine";
+import type { StreakFreezeEntry } from "@/shared/types/freeze";
 import { getDayCompletionRate, getRoutinesAtDate } from "@/domain/routineRules";
 
 /**
- * Calcule le streak pour l'affichage calendar (basé sur un objet {date: taux}).
- * Les freezeDates sont des jours "neutres" : ne comptent pas, ne cassent pas le streak.
+ * Calcule le streak global courant à partir d'un Record<date, taux> pré-calculé.
+ * Utilisée par computeStreaks (statsService) → useStats → Routines.tsx / Stats.tsx.
+ *
+ * Logique avec freezeEntry :
+ *   1. Si aujourd'hui n'est pas à 100% et n'est pas le jour du freeze → on part d'hier.
+ *   2. On remonte jour par jour :
+ *      - 100% → streak++
+ *      - date du freeze → STOP, on retourne streak + freezeEntry.streak (streak sauvegardé)
+ *      - autre (0%, undefined) → break
+ *
+ * Pourquoi "STOP + addition" au lieu de "passer à travers" :
+ *   Le freeze sauvegarde le streak exact au moment de l'activation. En s'arrêtant à cette
+ *   date et en ajoutant la valeur sauvegardée, on évite de devoir traverser tout l'historique
+ *   passé. Chaque nouveau freeze "absorbe" le précédent dans sa valeur streak.
+ *
+ * ⚠️ Limitation restante : un jour tout-skippé (undefined dans completionRates) est traité
+ * comme un jour manqué → break. À corriger dans computeCompletionRates.
  */
 export function calculateCalendarStreak(
   completionRates: Record<string, number>,
   today: Date = new Date(),
-  freezeDates: string[] = [],
+  freezeEntry: StreakFreezeEntry | null = null,
 ): number {
   const fmt = (d: Date) =>
     `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
@@ -22,7 +38,8 @@ export function calculateCalendarStreak(
   let currentDate = new Date(today);
   const todayStr = fmt(currentDate);
 
-  if (completionRates[todayStr] !== 100 && !freezeDates.includes(todayStr)) {
+  // Si aujourd'hui n'est pas à 100% et pas le jour du freeze → on démarre à partir d'hier.
+  if (completionRates[todayStr] !== 100 && freezeEntry?.date !== todayStr) {
     currentDate.setDate(currentDate.getDate() - 1);
   }
 
@@ -31,8 +48,12 @@ export function calculateCalendarStreak(
     if (completionRates[dateStr] === 100) {
       streak++;
       currentDate.setDate(currentDate.getDate() - 1);
-    } else if (freezeDates.includes(dateStr)) {
+    } else if (completionRates[dateStr] === -1) {
+      // Jour de repos (toutes routines skippées) → neutre, ne casse pas le streak.
       currentDate.setDate(currentDate.getDate() - 1);
+    } else if (freezeEntry && dateStr === freezeEntry.date) {
+      // Jour du freeze : on arrête et on ajoute le streak sauvegardé au moment de l'activation.
+      return streak + freezeEntry.streak;
     } else {
       break;
     }
@@ -41,8 +62,12 @@ export function calculateCalendarStreak(
 }
 
 /**
- * Calcule le streak actuel (jours consécutifs avec 100% de complétion).
- * Les jours présents dans freezeDates ne cassent pas le streak.
+ * Calcule le streak d'une routine individuelle (jours consécutifs à 100% pour cette routine).
+ * Utilisée uniquement par RoutineDetails.tsx — PAS pour le streak global.
+ *
+ * Contrairement à calculateCalendarStreak, utilise getDayCompletionRate qui retourne null
+ * pour les jours tout-skippés → traités comme jours de repos (continue, ne casse pas).
+ * C'est le comportement de référence correct pour les jours de repos.
  */
 export function calculateStatStreak(
   routines: Routine[],

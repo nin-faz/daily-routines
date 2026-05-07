@@ -83,7 +83,7 @@ const NewStreakRecordCard = () => {
       <div className="wrapper">
         <div
           role="status"
-          className="relative overflow-hidden rounded-2xl border border-yellow-400/30 bg-gradient-to-br from-yellow-950/70 via-amber-900/50 to-orange-950/60 px-5 py-4"
+          className="relative overflow-hidden rounded-2xl border border-yellow-400/30 bg-gradient-to-br from-yellow-950/70 via-amber-900/50 to-orange-950/60 px-5 py-4 transition-all duration-200 hover:brightness-[1.08] hover:scale-[1.005]"
         >
           <div className="shimmer pointer-events-none absolute inset-0 w-1/3 bg-gradient-to-r from-transparent via-yellow-300/15 to-transparent" />
 

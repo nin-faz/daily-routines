@@ -1,43 +1,54 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { freezeStorage } from "@/data/repositories/freeze";
-import { getTodayString } from "@/shared/lib/date";
+import {
+  freezeStorage,
+  type StreakFreezeEntry,
+} from "@/data/repositories/freeze";
+import {
+  isWithinInterval,
+  startOfWeek,
+  endOfWeek,
+  parseISO,
+  addWeeks,
+} from "date-fns";
 
+// Retourne true si la date appartient à la semaine courante (lundi–dimanche).
+// weekStartsOn: 1 = semaine qui commence le lundi (standard européen).
+// Le freeze se recharge chaque lundi matin.
 function isCurrentWeek(dateStr: string): boolean {
-  const date = new Date(dateStr + "T00:00:00");
   const today = new Date();
-  const monday = new Date(today);
-  monday.setDate(today.getDate() - ((today.getDay() + 6) % 7));
-  monday.setHours(0, 0, 0, 0);
-  const sunday = new Date(monday);
-  sunday.setDate(monday.getDate() + 6);
-  sunday.setHours(23, 59, 59, 999);
-  return date >= monday && date <= sunday;
+  return isWithinInterval(parseISO(dateStr), {
+    start: startOfWeek(today, { weekStartsOn: 1 }),
+    end: endOfWeek(today, { weekStartsOn: 1 }),
+  });
 }
 
+// Retourne le lundi suivant formaté en français (ex: "19 mai").
+// startOfWeek → lundi de cette semaine, addWeeks(..., 1) → lundi d'après.
 function getNextMonday(): string {
-  const today = new Date();
-  const daysUntilMonday = (8 - today.getDay()) % 7 || 7;
-  const monday = new Date(today);
-  monday.setDate(today.getDate() + daysUntilMonday);
-  return monday.toLocaleDateString("fr-FR", { day: "numeric", month: "long" });
+  const nextMonday = addWeeks(startOfWeek(new Date(), { weekStartsOn: 1 }), 1);
+  return nextMonday.toLocaleDateString("fr-FR", {
+    day: "numeric",
+    month: "long",
+  });
 }
 
 export const useStreakFreeze = () => {
   const queryClient = useQueryClient();
 
-  const { data: freezeUsedAt } = useQuery({
+  const { data: freezeEntry } = useQuery({
     queryKey: ["streak-freeze"],
-    queryFn: () => freezeStorage.getStreakFreezeUsedAt(),
+    queryFn: () => freezeStorage.getLastStreakFreeze(),
     staleTime: 1000 * 60 * 5,
   });
 
-  const freezeAvailable =
-    !freezeUsedAt || !isCurrentWeek(freezeUsedAt);
+  // freezeAvailable : true si aucun freeze utilisé cette semaine
+  const freezeAvailable = !freezeEntry || !isCurrentWeek(freezeEntry.date);
 
-  const freezeDates: string[] = freezeUsedAt ? [freezeUsedAt] : [];
-
+  // activateFreeze : prend la date à couvrir + le streak à sauvegarder.
+  // streak = currentStreak si préventif, prevStreak si rétroactif.
   const { mutate: activateFreeze, isPending } = useMutation({
-    mutationFn: () => freezeStorage.saveStreakFreezeUsedAt(getTodayString()),
+    mutationFn: ({ date, streak }: StreakFreezeEntry) =>
+      freezeStorage.saveLastStreakFreeze(date, streak),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["streak-freeze"] });
     },
@@ -45,8 +56,7 @@ export const useStreakFreeze = () => {
 
   return {
     freezeAvailable,
-    freezeUsedAt,
-    freezeDates,
+    freezeEntry: freezeEntry ?? null,
     activateFreeze,
     isActivating: isPending,
     nextRechargeLabel: freezeAvailable ? null : getNextMonday(),

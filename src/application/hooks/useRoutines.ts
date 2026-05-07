@@ -126,7 +126,7 @@ export const useRoutines = () => {
       toast.error("Impossible de modifier le statut. Veuillez réessayer.");
     },
     onSuccess: () => {
-      localStorage.setItem("daily-routines-last-active", today);
+      localStorage.setItem("last-active", today);
     },
     // Dans tous les cas, refetch pour synchroniser avec le serveur
     onSettled: () => {

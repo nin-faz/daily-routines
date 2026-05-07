@@ -90,5 +90,5 @@ USING (public.is_admin(auth.uid()));
 -- 4. COLONNES ADDITIONNELLES
 -- ==========================================
 
--- Freeze de streak : date de la dernière utilisation (1 freeze/semaine)
-ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS streak_freeze_used_at DATE;
+-- Freeze de streak : {date, streak} JSONB (1 freeze/semaine ISO)
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS last_streak_freeze JSONB;

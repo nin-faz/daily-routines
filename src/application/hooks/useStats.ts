@@ -35,9 +35,9 @@ export const useStats = () => {
     gcTime: 1000 * 60 * 10,
   });
 
-  const { data: freezeUsedAt } = useQuery({
+  const { data: freezeEntry = null } = useQuery({
     queryKey: ["streak-freeze"],
-    queryFn: () => freezeStorage.getStreakFreezeUsedAt(),
+    queryFn: () => freezeStorage.getLastStreakFreeze(),
     staleTime: 1000 * 60 * 5,
   });
 
@@ -45,14 +45,9 @@ export const useStats = () => {
 
   const allDates = useMemo(() => getRoutineDateRange(activeRoutines, new Date()), [activeRoutines]);
 
-  const freezeDates = useMemo(
-    () => (freezeUsedAt ? [freezeUsedAt] : []),
-    [freezeUsedAt],
-  );
-
   const { currentStreak, recordStreak } = useMemo(
-    () => computeStreaks(activeRoutines, statuses, allDates, freezeDates),
-    [activeRoutines, statuses, allDates, freezeDates],
+    () => computeStreaks(activeRoutines, statuses, allDates, freezeEntry),
+    [activeRoutines, statuses, allDates, freezeEntry],
   );
 
   const lastDaysStatus: DayStatus[] = useMemo(

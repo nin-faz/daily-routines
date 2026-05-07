@@ -38,6 +38,10 @@ export function getRoutinesAtDate(routines: Routine[], selectedDate: string): Ro
 
 /**
  * Retourne les routines actives à une date donnée, en excluant celles marquées "skipped".
+ *
+ * Retourne [] si toutes les routines du jour sont skippées.
+ * Ce cas est interprété comme "jour de repos" par getDayCompletionRate (retourne null),
+ * mais comme "jour manqué" par computeCompletionRates (omet la date) → bug dans calculateCalendarStreak.
  */
 export function getActiveRoutinesAtDate(
   routines: Routine[],

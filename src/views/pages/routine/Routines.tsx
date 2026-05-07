@@ -61,6 +61,9 @@ const Routines = () => {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
 
   const welcomeBackSessionKey = `welcome-back-dismissed-${getTodayString()}`;
+  // lastActive : date (YYYY-MM-DD) du dernier toggleComplete réussi, stockée en localStorage.
+  // Mis à jour dans useRoutines.ts onSuccess de toggleComplete.
+  // null si l'utilisateur n'a jamais complété de routine sur cet appareil.
   const lastActive = localStorage.getItem("last-active");
   const [welcomeBackDismissed, setWelcomeBackDismissed] = useState(
     () => !!sessionStorage.getItem(welcomeBackSessionKey),
@@ -150,11 +153,10 @@ const Routines = () => {
     lastActive !== null &&
     lastActive < getYesterdayString();
 
-  const streakAtRisk =
-    !isLoading &&
-    currentStreak > 0 &&
-    completedCount === 0 &&
-    lastActive === getYesterdayString();
+  // prevStreak : valeur du streak juste avant qu'il passe à 0, stockée en localStorage.
+  // Mis à jour dans le useEffect ci-dessus dès que currentStreak > 0.
+  // Permet d'afficher "tu avais X jours" dans BrokenStreakCard et de détecter la perte de streak.
+  const prevStreak = parseInt(localStorage.getItem("prev-streak") || "0", 10);
 
   const todayDayOfWeek = JS_DAY_TO_DAY_OF_WEEK[new Date().getDay()];
   const todaysRoutines = getTodaysRoutines(
@@ -165,6 +167,41 @@ const Routines = () => {
     ),
     todayDayOfWeek,
   );
+
+  // allSkippedToday : vrai si toutes les routines d'aujourd'hui sont explicitement skippées.
+  // Dans ce cas = jour de repos intentionnel → ne pas afficher "streak en danger".
+  const allSkippedToday =
+    todaysRoutines.length > 0 &&
+    todaysRoutines.every((r) => {
+      const s = statuses.find((s) => s.date === todayDate && s.routineId === r.id);
+      return s?.skipped;
+    });
+
+  // streakAtRisk : vrai si on doit proposer d'activer le freeze.
+  // Cas 1 (préventif) : streak intact mais rien complété aujourd'hui et dernière activité hier.
+  // Cas 2 (rétroactif) : streak déjà cassé mais on avait un streak avant.
+  // Exclu : jour de repos (allSkippedToday) → ne pas alarmer inutilement.
+  const streakAtRisk =
+    !isLoading &&
+    completedCount === 0 &&
+    !allSkippedToday &&
+    (
+      (currentStreak > 0 && lastActive === getYesterdayString()) ||
+      (currentStreak === 0 && prevStreak > 0)
+    );
+
+  // freezeDate : date à couvrir avec le freeze.
+  // Si le streak est déjà cassé → couvre hier (rétroactif).
+  // Sinon → couvre aujourd'hui (préventif).
+  const freezeDate =
+    currentStreak === 0 && prevStreak > 0
+      ? getYesterdayString()
+      : getTodayString();
+
+  // streakToSave : valeur de streak à sauvegarder en DB au moment de l'activation.
+  // Préventif : currentStreak (encore intact).
+  // Rétroactif : prevStreak (streak d'avant la cassure).
+  const streakToSave = currentStreak > 0 ? currentStreak : prevStreak;
 
   // Séparer les routines par fréquence (quotidiennes vs hebdomadaires)
   const dailyRoutines = todaysRoutines.filter(
@@ -307,7 +344,9 @@ const Routines = () => {
           {!isLoading && (
             <StreakFreezeCard
               currentStreak={currentStreak}
+              streakToSave={streakToSave}
               streakAtRisk={streakAtRisk}
+              freezeDate={freezeDate}
             />
           )}
           {isLoading ? (

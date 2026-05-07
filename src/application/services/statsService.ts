@@ -8,6 +8,7 @@
 import { addDays, endOfDay, isWithinInterval, startOfDay } from "date-fns";
 import {
   getActiveRoutinesAtDate,
+  getRoutinesAtDate,
   getDayCompletionRate,
 } from "@/domain/routineRules";
 import {
@@ -17,6 +18,7 @@ import {
 import { formatDateYMD } from "@/shared/lib/date";
 import type { Routine, RoutineStatus } from "@/shared/types/routine";
 import type { Task } from "@/shared/types/task";
+import type { StreakFreezeEntry } from "@/shared/types/freeze";
 
 // ---------------------------------------------------------------------------
 // Types de sortie
@@ -203,8 +205,14 @@ export function computeLastNDaysStatus(
 }
 
 /**
- * Calcule completionRates pour une liste de dates — même algorithme que getCompletionRatesForMonth.
- * Les jours sans routines actives (ou toutes skippées) sont absents du résultat.
+ * Calcule completionRates pour une liste de dates.
+ * Retourne un Record<date, taux> où taux ∈ [-1, 0..100].
+ *
+ * Valeurs possibles :
+ *   - 100   : toutes routines actives complétées → streak continue
+ *   - 0–99  : routines actives non toutes complétées → casse le streak
+ *   - -1    : toutes routines skippées = jour de repos → streak neutre (ne casse pas)
+ *   - absent (undefined) : aucune routine ce jour-là → calculateCalendarStreak break (limite historique)
  */
 export function computeCompletionRates(
   routines: Routine[],
@@ -214,7 +222,14 @@ export function computeCompletionRates(
   const rates: Record<string, number> = {};
   for (const date of dates) {
     const active = getActiveRoutinesAtDate(routines, statuses, date);
-    if (active.length === 0) continue;
+    if (active.length === 0) {
+      // Si des routines existent mais toutes sont skippées → jour de repos (sentinel -1).
+      // Si aucune routine n'existe du tout → on omet la date (break dans calculateCalendarStreak).
+      if (getRoutinesAtDate(routines, date).length > 0) {
+        rates[date] = -1;
+      }
+      continue;
+    }
     const completed = active.filter((r) => {
       const s = statuses.find((s) => s.date === date && s.routineId === r.id);
       return s?.completed;
@@ -225,21 +240,18 @@ export function computeCompletionRates(
 }
 
 /**
- * Calcule le streak courant et le record depuis toutes les routines.
+ * Calcule le streak courant et le record.
+ * freezeEntry : entrée de freeze active ({date, streak}) ou null si aucun freeze.
  */
 export function computeStreaks(
   routines: Routine[],
   statuses: RoutineStatus[],
   allDates: string[],
-  freezeDates: string[] = [],
+  freezeEntry: StreakFreezeEntry | null = null,
 ): { currentStreak: number; recordStreak: number } {
   const completionRates = computeCompletionRates(routines, statuses, allDates);
   return {
-    currentStreak: calculateCalendarStreak(
-      completionRates,
-      new Date(),
-      freezeDates,
-    ),
+    currentStreak: calculateCalendarStreak(completionRates, new Date(), freezeEntry),
     recordStreak: calculateLongestStreak(routines, statuses, allDates),
   };
 }

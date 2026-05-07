@@ -250,22 +250,35 @@ const FreezeAnimModal = ({
 
 interface StreakFreezeCardProps {
   currentStreak: number;
+  // streakToSave : streak à sauvegarder en DB.
+  // = currentStreak si préventif (streak encore intact).
+  // = prevStreak si rétroactif (streak déjà cassé, calculé dans Routines.tsx).
+  streakToSave: number;
   streakAtRisk?: boolean;
+  freezeDate?: string;
 }
 
 const StreakFreezeCard = ({
   currentStreak,
+  streakToSave,
   streakAtRisk = false,
+  freezeDate,
 }: StreakFreezeCardProps) => {
   const { freezeAvailable, isActivating, nextRechargeLabel, activateFreeze } =
     useStreakFreeze();
   const [showAnim, setShowAnim] = useState(false);
 
   const handleConfirm = () => {
-    activateFreeze(undefined, {
-      onSuccess: () => setShowAnim(true),
-    });
+    activateFreeze(
+      {
+        date: freezeDate ?? new Date().toISOString().slice(0, 10),
+        streak: streakToSave,
+      },
+      { onSuccess: () => setShowAnim(true) },
+    );
   };
+
+  const isRetroactive = streakAtRisk && currentStreak === 0;
 
   const showActivateButton = freezeAvailable && streakAtRisk;
 
@@ -288,10 +301,10 @@ const StreakFreezeCard = ({
           }`,
           opacity: !freezeAvailable && !streakAtRisk ? 0.7 : 1,
         }}
-        className="rounded-2xl px-5 py-4 flex items-center gap-4"
+        className="rounded-2xl px-5 py-4 flex items-center gap-4 transition-all duration-200 hover:brightness-[1.08] hover:scale-[1.005]"
       >
         <span className="text-3xl select-none shrink-0" aria-hidden="true">
-          🧊
+          🐦‍🔥
         </span>
 
         <div className="flex-1 min-w-0">
@@ -303,12 +316,16 @@ const StreakFreezeCard = ({
                   color: streakAtRisk ? "hsl(45,95%,70%)" : "hsl(200,80%,70%)",
                 }}
               >
-                {streakAtRisk
-                  ? "Ton streak est en danger ⚠️"
-                  : "Freeze disponible"}
+                {isRetroactive
+                  ? "Streak cassé hier ⚠️"
+                  : streakAtRisk
+                    ? "Ton streak est en danger ⚠️"
+                    : "Freeze disponible"}
               </p>
               <p className="text-xs text-muted-foreground leading-snug">
-                {streakAtRisk ? (
+                {isRetroactive ? (
+                  "Utilise ton freeze pour récupérer ton streak d'hier"
+                ) : streakAtRisk ? (
                   <>
                     {" "}
                     Utilise ton freeze pour protéger tes{" "}
@@ -361,16 +378,28 @@ const StreakFreezeCard = ({
               <AlertDialogHeader>
                 <AlertDialogTitle>🧊 Utiliser ton freeze ?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  Ton streak de <strong>{currentStreak} jours</strong> sera
-                  protégé pour aujourd'hui. Tu disposes d'
-                  <strong>1 freeze par semaine</strong> — il se rechargera lundi
-                  prochain.
+                  {isRetroactive ? (
+                    <>
+                      Ton freeze va couvrir hier et restaurer ton streak. Tu
+                      disposes d'<strong>1 freeze par semaine</strong> — il se
+                      rechargera lundi prochain.
+                    </>
+                  ) : (
+                    <>
+                      Ton streak de <strong>{currentStreak} jours</strong> sera
+                      protégé pour aujourd'hui. Tu disposes d'
+                      <strong>1 freeze par semaine</strong> — il se rechargera
+                      lundi prochain.
+                    </>
+                  )}
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel>Annuler</AlertDialogCancel>
                 <AlertDialogAction onClick={handleConfirm}>
-                  Oui, protéger mon streak
+                  {isRetroactive
+                    ? "Oui, récupérer mon streak"
+                    : "Oui, protéger mon streak"}
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
@@ -381,7 +410,7 @@ const StreakFreezeCard = ({
       <FreezeAnimModal
         open={showAnim}
         onClose={() => setShowAnim(false)}
-        currentStreak={currentStreak}
+        currentStreak={streakToSave}
       />
     </>
   );

@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { X } from "lucide-react";
 import { useStats } from "@/application/hooks/useStats";
-import { getTodayString, getYesterdayString } from "@/shared/lib/date";
+import { getTodayString } from "@/shared/lib/date";
 import type { DayStatus } from "@/application/services/statsService";
 
 const DAY_LABELS = ["dim", "lun", "mar", "mer", "jeu", "ven", "sam"];
 
 const DotRow = ({ days }: { days: DayStatus[] }) => (
-  <div className="flex items-end gap-2">
+  <div className="flex items-end gap-1.5">
     {days.map((day) => {
       const isToday = day.status === "today";
       const isDone = day.status === "completed";
@@ -18,7 +18,9 @@ const DotRow = ({ days }: { days: DayStatus[] }) => (
       return (
         <div key={day.date} className="flex flex-col items-center gap-1">
           <div
-            aria-label={isToday ? "Aujourd'hui" : isDone ? "Complété" : "Manqué"}
+            aria-label={
+              isToday ? "Aujourd'hui" : isDone ? "Complété" : "Manqué"
+            }
             style={{
               width: 30,
               height: 30,
@@ -36,7 +38,7 @@ const DotRow = ({ days }: { days: DayStatus[] }) => (
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              fontSize: isToday ? 7 : 13,
+              fontSize: isToday ? 6 : 11,
               fontWeight: 700,
               color: isToday
                 ? "hsl(var(--muted-foreground))"
@@ -53,7 +55,13 @@ const DotRow = ({ days }: { days: DayStatus[] }) => (
           >
             {isToday ? "~" : isDone ? "✓" : "✗"}
           </div>
-          <span style={{ fontSize: 9, color: "hsl(var(--muted-foreground))", fontWeight: 500 }}>
+          <span
+            style={{
+              fontSize: 8,
+              color: "hsl(var(--muted-foreground))",
+              fontWeight: 500,
+            }}
+          >
             {label}
           </span>
         </div>
@@ -72,21 +80,14 @@ const MESSAGES = [
 const sessionKey = `broken-streak-dismissed-${getTodayString()}`;
 
 const BrokenStreakCard = () => {
-  const [closed, setClosed] = useState(() => !!sessionStorage.getItem(sessionKey));
+  const [closed, setClosed] = useState(
+    () => !!sessionStorage.getItem(sessionKey),
+  );
   const { currentStreak, lastDaysStatus } = useStats();
 
-  const lastActive = localStorage.getItem("daily-routines-last-active");
-  const prevStreak = parseInt(
-    localStorage.getItem("daily-routines-prev-streak") || "0",
-    10,
-  );
+  const prevStreak = parseInt(localStorage.getItem("prev-streak") || "0", 10);
 
-  const show =
-    !closed &&
-    currentStreak === 0 &&
-    lastActive !== null &&
-    lastActive < getYesterdayString() &&
-    prevStreak > 0;
+  const show = !closed && currentStreak === 0 && prevStreak > 0;
 
   if (!show) return null;
 
@@ -123,7 +124,7 @@ const BrokenStreakCard = () => {
       <div className="bs-wrapper">
         <div
           role="status"
-          className="relative overflow-hidden rounded-2xl px-5 py-4"
+          className="relative overflow-hidden rounded-2xl px-5 py-4 transition-all duration-200 hover:brightness-[1.08] hover:scale-[1.005]"
           style={{
             background:
               "linear-gradient(135deg, hsl(0,35%,10%) 0%, hsl(15,20%,12%) 60%, hsl(25,15%,13%) 100%)",
@@ -144,38 +145,49 @@ const BrokenStreakCard = () => {
           />
 
           <div className="relative flex items-start gap-4">
-            <div className="shrink-0 pt-0.5">
-              <span className="bs-emoji text-3xl select-none" aria-hidden="true">😮‍💨</span>
+            <div className="shrink-0 flex flex-col items-center gap-1.5 pt-0.5">
+              <span
+                className="bs-emoji text-3xl select-none"
+                aria-hidden="true"
+              >
+                😮‍💨
+              </span>
+              <div
+                className="rounded-xl px-2.5 py-1 text-center"
+                style={{
+                  background: "hsl(25,40%,14%)",
+                  border: "1px solid hsl(25,40%,22%)",
+                }}
+              >
+                <span
+                  className="text-base font-black leading-none"
+                  style={{ color: "hsl(25,90%,62%)" }}
+                >
+                  {displayStreak}
+                </span>
+                <span className="text-[9px] text-muted-foreground ml-1">
+                  j.
+                </span>
+              </div>
             </div>
 
             <div className="flex-1 min-w-0 space-y-2.5">
               <div>
-                <p className="text-sm font-bold leading-tight" style={{ color: "hsl(0,60%,72%)" }}>
+                <p
+                  className="text-sm font-bold leading-tight"
+                  style={{ color: "hsl(0,60%,72%)" }}
+                >
                   Streak cassé
                 </p>
-                <p className="text-xs mt-0.5" style={{ color: "hsl(var(--muted-foreground))" }}>
+                <p
+                  className="text-xs mt-0.5"
+                  style={{ color: "hsl(var(--muted-foreground))" }}
+                >
                   {message}
                 </p>
               </div>
 
-              <div className="flex items-center gap-4">
-                <div
-                  className="rounded-xl px-3 py-1.5 shrink-0"
-                  style={{
-                    background: "hsl(25,40%,14%)",
-                    border: "1px solid hsl(25,40%,22%)",
-                  }}
-                >
-                  <span className="text-lg font-black leading-none" style={{ color: "hsl(25,90%,62%)" }}>
-                    {displayStreak}
-                  </span>
-                  <span className="text-[10px] text-muted-foreground ml-1">
-                    jour{displayStreak > 1 ? "s" : ""}
-                  </span>
-                </div>
-
-                {lastDaysStatus.length > 0 && <DotRow days={lastDaysStatus} />}
-              </div>
+              {lastDaysStatus.length > 0 && <DotRow days={lastDaysStatus} />}
             </div>
 
             <button
