@@ -220,6 +220,166 @@ serve(async (req) => {
       );
     }
 
+    /**
+     * Avertissement streak à risque — envoyé une fois par jour à STREAK_WARNING_TIME (heure Paris)
+     * Cible : users avec des routines aujourd'hui mais 0 complétées (et pas tout skippé)
+     */
+    const STREAK_WARNING_TIME = Deno.env.get("STREAK_WARNING_TIME"); // ex: "21:00"
+    if (STREAK_WARNING_TIME && parisTime.startsWith(STREAK_WARNING_TIME)) {
+      try {
+        const todayStr = now.toISOString().slice(0, 10);
+        console.log(`🔥 Vérification streak à risque pour ${todayStr}...`);
+
+        // Toutes les routines actives (pas filtrées par notification_time)
+        const { data: allRoutines, error: allRoutinesError } =
+          await supabaseClient
+            .from("routines")
+            .select("id, user_id, frequency, week_days")
+            .eq("is_archived", false);
+
+        if (allRoutinesError) {
+          console.error(
+            "❌ ERREUR allRoutines streak check:",
+            allRoutinesError,
+          );
+        } else if (allRoutines && allRoutines.length > 0) {
+          // Filtrer les routines prévues aujourd'hui
+          const todayRoutines = allRoutines.filter((r: any) => {
+            const freq = (r.frequency || "daily").toString().toLowerCase();
+            if (freq === "daily") return true;
+            if (freq === "weekly") {
+              const weekDays = r.week_days || [];
+              return (
+                Array.isArray(weekDays) &&
+                weekDays
+                  .map(String)
+                  .map((s: string) => s.toLowerCase())
+                  .includes(currentDay)
+              );
+            }
+            return true;
+          });
+
+          // Grouper les ids de routine par user
+          const routinesByUser: Record<string, string[]> = {};
+          for (const r of todayRoutines) {
+            if (!r.user_id) continue;
+            if (!routinesByUser[r.user_id]) routinesByUser[r.user_id] = [];
+            routinesByUser[r.user_id].push(r.id);
+          }
+
+          const usersWithRoutines = Object.keys(routinesByUser);
+          if (usersWithRoutines.length > 0) {
+            // Récupérer les statuts du jour pour ces users
+            const { data: statuses, error: statusesError } =
+              await supabaseClient
+                .from("routine_statuses")
+                .select("routine_id, user_id, completed, skipped")
+                .eq("date", todayStr)
+                .in("user_id", usersWithRoutines);
+
+            if (statusesError) {
+              console.error(
+                "❌ ERREUR routine_statuses streak check:",
+                statusesError,
+              );
+            } else {
+              // Identifier les users à risque
+              const atRiskUserIds: string[] = [];
+              for (const userId of usersWithRoutines) {
+                const userRoutineIds = routinesByUser[userId];
+                const userStatuses = (statuses ?? []).filter(
+                  (s: any) =>
+                    s.user_id === userId &&
+                    userRoutineIds.includes(s.routine_id),
+                );
+                const completedCount = userStatuses.filter(
+                  (s: any) => s.completed,
+                ).length;
+                const allSkipped =
+                  userStatuses.length === userRoutineIds.length &&
+                  userStatuses.every((s: any) => s.skipped);
+
+                if (completedCount === 0 && !allSkipped) {
+                  atRiskUserIds.push(userId);
+                }
+              }
+
+              console.log(
+                `🔥 ${atRiskUserIds.length} users avec streak à risque`,
+              );
+
+              // Récupérer leurs subscriptions et envoyer
+              if (atRiskUserIds.length > 0) {
+                const { data: riskSubs } = await supabaseClient
+                  .from("push_subscriptions")
+                  .select("*")
+                  .in("user_id", atRiskUserIds);
+
+                const streakWarningMessages = [
+                  "T'as pas encore fait tes routines. Ton streak part en fumée ce soir. 🔥",
+                  "Série en danger ! Aucune routine complétée aujourd'hui. Tu fais quoi ? ⚠️",
+                  "Ton streak va mourir cette nuit si t'agis pas. Dernière chance. 🪺",
+                  "T'es vraiment sérieux ? Tu comptes vraiment abandonner ? 💀",
+                  "La flemme d'aujourd'hui casse la série de demain. C'est maintenant ou jamais. ⏰",
+                ];
+
+                for (const sub of riskSubs ?? []) {
+                  const body =
+                    streakWarningMessages[
+                      Math.floor(Math.random() * streakWarningMessages.length)
+                    ];
+                  notificationPromises.push(
+                    (async () => {
+                      try {
+                        await webpush.sendNotification(
+                          sub.subscription,
+                          JSON.stringify({
+                            title: "Série en danger 🔥",
+                            body,
+                            tag: `streak-warning-${sub.user_id}-${todayStr}`,
+                          }),
+                        );
+                        console.log(
+                          `[PUSH SUCCESS] Streak warning User: ${sub.user_id.substring(0, 8)}`,
+                        );
+                        return {
+                          success: true,
+                          userId: sub.user_id,
+                          itemType: "streak-warning",
+                        };
+                      } catch (error) {
+                        console.error(
+                          `[PUSH ERROR] Streak warning User: ${sub.user_id.substring(0, 8)} | ${error.message}`,
+                        );
+                        if (error.statusCode === 410) {
+                          await supabaseClient
+                            .from("push_subscriptions")
+                            .delete()
+                            .match({
+                              user_id: sub.user_id,
+                              endpoint: sub.subscription.endpoint,
+                            });
+                        }
+                        return {
+                          success: false,
+                          error: error.message,
+                          userId: sub.user_id,
+                          itemType: "streak-warning",
+                        };
+                      }
+                    })(),
+                  );
+                }
+              }
+            }
+          }
+        }
+      } catch (err) {
+        console.warn("⚠️ Erreur lors du streak warning check:", err);
+      }
+    }
+
     const userIds = Object.keys(notificationsByUser);
     console.log(`👥 ${userIds.length} utilisateurs concernés`);
 

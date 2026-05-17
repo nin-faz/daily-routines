@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import IntroDialog from "@/shared/components/IntroDialog";
 import { Link } from "react-router-dom";
 import Lottie from "lottie-react";
 import {
@@ -430,6 +431,7 @@ const Home = () => {
       />
 
       <Navigation />
+      <IntroDialog />
     </div>
   );
 };

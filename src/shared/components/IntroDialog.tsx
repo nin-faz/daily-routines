@@ -20,7 +20,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 
-const ONBOARDING_KEY = "onboarding_completed";
+const INTRO_KEY = "intro_completed";
 
 const steps: Array<{
   icon: typeof Sparkles;
@@ -57,16 +57,20 @@ const steps: Array<{
     icon: Bell,
     title: "Notifications & Personnalisation",
     description:
-      "Activez les notifications pour ne jamais manquer une routine. Pour une meilleur expérience, personnalisez les couleurs et thèmes selon vos préférences.",
+      "Activez les notifications pour ne jamais manquer une routine et les deadlines de vos tâches. Pour une meilleur expérience, personnalisez les couleurs et thèmes selon vos préférences.",
   },
   {
     icon: TrendingUp,
     title: "Statistiques & Archivage",
     description: (
       <>
-        Consultez rapidement vos taux de réussite et vos séries. Archivez définitivement les routines obsolètes pour garder votre espace de travail épuré.
+        Consultez rapidement vos taux de réussite et vos séries. Archivez
+        définitivement les routines obsolètes pour garder votre espace de
+        travail épuré.
         <span className="block mt-2 text-xs">
-          🧊 <strong>Streak Freeze</strong> — 1 protection par semaine visible dans vos Routines pour sauvegarder votre série si vous ratez un jour. Se recharge chaque lundi.
+          🐦‍🔥 <strong>Streak Éveil</strong> — 1 éveil par semaine visible dans
+          vos Routines pour ranimer votre série si vous ratez un jour. Se
+          recharge chaque lundi.
         </span>
       </>
     ),
@@ -92,7 +96,7 @@ const steps: Array<{
   },
 ];
 
-const OnboardingDialog = () => {
+const IntroDialog = () => {
   const [open, setOpen] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const touchStartX = useRef(0);
@@ -100,7 +104,7 @@ const OnboardingDialog = () => {
   const lastWheelTime = useRef(0);
 
   useEffect(() => {
-    const completed = localStorage.getItem(ONBOARDING_KEY);
+    const completed = localStorage.getItem(INTRO_KEY);
     if (!completed) {
       // Petit délai pour laisser le temps à la page de se charger
       const timer = setTimeout(() => setOpen(true), 500);
@@ -123,12 +127,12 @@ const OnboardingDialog = () => {
   };
 
   const handleComplete = () => {
-    localStorage.setItem(ONBOARDING_KEY, "true");
+    localStorage.setItem(INTRO_KEY, "true");
     setOpen(false);
   };
 
   const handleSkip = () => {
-    localStorage.setItem(ONBOARDING_KEY, "true");
+    localStorage.setItem(INTRO_KEY, "true");
     setOpen(false);
   };
 
@@ -290,4 +294,4 @@ const OnboardingDialog = () => {
   );
 };
 
-export default OnboardingDialog;
+export default IntroDialog;

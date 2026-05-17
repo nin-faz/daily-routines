@@ -30,9 +30,8 @@ import { RoutineListSkeleton } from "@/views/components/routine/RoutineSkeleton"
 import WelcomeBackModal from "@/views/components/routine/WelcomeBackDialog";
 import BrokenStreakCard from "@/views/components/streak/BrokenStreakCard";
 import NewStreakRecordCard from "@/views/components/streak/NewStreakRecordCard";
-import StreakFreezeCard from "@/views/components/streak/StreakFreezeDialog";
+import StreakReviveCard from "@/views/components/streak/StreakReviveDialog";
 import EmptyState from "@/shared/components/EmptyState";
-import OnboardingDialog from "@/shared/components/OnboardingDialog";
 import { useRoutines } from "@/application/hooks/useRoutines";
 import { usePageTitle } from "@/application/hooks/usePageTitle";
 import { useStats } from "@/application/hooks/useStats";
@@ -177,7 +176,7 @@ const Routines = () => {
       return s?.skipped;
     });
 
-  // streakAtRisk : vrai si on doit proposer d'activer le freeze.
+  // streakAtRisk : vrai si on doit proposer d'activer le revive.
   // Cas 1 (préventif) : streak intact mais rien complété aujourd'hui et dernière activité hier.
   // Cas 2 (rétroactif) : streak déjà cassé mais on avait un streak avant.
   // Exclu : jour de repos (allSkippedToday) → ne pas alarmer inutilement.
@@ -190,10 +189,10 @@ const Routines = () => {
       (currentStreak === 0 && prevStreak > 0)
     );
 
-  // freezeDate : date à couvrir avec le freeze.
+  // reviveDate : date à couvrir avec le revive.
   // Si le streak est déjà cassé → couvre hier (rétroactif).
   // Sinon → couvre aujourd'hui (préventif).
-  const freezeDate =
+  const reviveDate =
     currentStreak === 0 && prevStreak > 0
       ? getYesterdayString()
       : getTodayString();
@@ -342,11 +341,11 @@ const Routines = () => {
           <BrokenStreakCard />
           {!isLoading && <NewStreakRecordCard />}
           {!isLoading && (
-            <StreakFreezeCard
+            <StreakReviveCard
               currentStreak={currentStreak}
               streakToSave={streakToSave}
               streakAtRisk={streakAtRisk}
-              freezeDate={freezeDate}
+              reviveDate={reviveDate}
             />
           )}
           {isLoading ? (
@@ -387,7 +386,6 @@ const Routines = () => {
             </>
           )}
         </main>
-        <OnboardingDialog />
         <CreateRoutineDialog onCreateRoutine={handleCreateRoutine} />
 
         {editingRoutine && (

@@ -21,7 +21,7 @@ Une application web progressive (PWA) pour gérer vos routines quotidiennes, tâ
 - Calendrier heatmap (% de complétion par date)
 - Historique par routine (taux, streak actuel, streak max)
 - Dashboard global : KPIs (taux de complétion, série, record, deadlines) et graphiques d'évolution
-- Streak freeze : protection de streak consommable (`BrokenStreakCard`, `StreakFreezeDialog`)
+- Streak Éveil : protection de streak consommable — 1 par semaine, se recharge le lundi (`BrokenStreakCard`, `StreakReviveDialog`)
 - Record de streak : bannière animée (`NewStreakRecordCard`)
 - Statut des 7 derniers jours affiché sur le dashboard d'accueil
 - Skeletons animés pendant le chargement
@@ -58,9 +58,9 @@ Une application web progressive (PWA) pour gérer vos routines quotidiennes, tâ
 ### Expérience Utilisateur
 
 - **Dashboard d'accueil contextuel** (`Home.tsx`) : salutation + prénom, message motivationnel adapté au streak/heure, streak 7 derniers jours, progression du jour, routines du créneau actuel cochables directement, compteur de tâches en attente
-- Onboarding interactif pour les nouveaux utilisateurs
+- Dialog d'introduction interactif pour les nouveaux utilisateurs (`IntroDialog`)
 - Dialog de retour (`WelcomeBackDialog`) avec animation Lottie pour les utilisateurs revenant après une absence
-- Chatbot de feedback utilisateur (FeedbackChat + Netlify Forms)
+<!-- - Chatbot de feedback utilisateur (FeedbackChat + Netlify Forms) -->
 - Bouton d'aide contextuelle
 - 6 thèmes de couleur : Orange, Bleu, Vert, Violet, Rose, Cyan
 - Mode sombre / clair
@@ -86,7 +86,7 @@ Une application web progressive (PWA) pour gérer vos routines quotidiennes, tâ
 ## Stack technique
 
 | Catégorie     | Technologie                                 |
-| ------------- | ------------------------------------------- |
+| ------------- | ------------------------------------------- | ------------- | --- |
 | UI Framework  | React 18 + TypeScript                       |
 | Build         | Vite 5 + SWC                                |
 | Styling       | Tailwind CSS 3                              |
@@ -101,7 +101,7 @@ Une application web progressive (PWA) pour gérer vos routines quotidiennes, tâ
 | Toasts        | Sonner                                      |
 | Emails        | Resend (via Edge Function Supabase)         |
 | PWA           | vite-plugin-pwa + Service Worker + Web Push |
-| Feedbacks     | Netlify Forms                               |
+| <!--          | Feedbacks                                   | Netlify Forms | --> |
 
 ---
 
@@ -175,7 +175,7 @@ supabase/migrations/
 ├── 04_tasks.sql                 # Table tasks + RLS
 ├── 05_push_subscriptions.sql    # Table push_subscriptions
 ├── 06_cron_notifications.sql    # Config cron pg_cron
-└── migration_routines.sql       # Migration fréquence hebdomadaire
+└── 07_cron_weekly_summary.sql   # Cron résumé hebdomadaire
 ```
 
 ---
@@ -200,7 +200,7 @@ L'architecture suit **Domain-Driven Design** avec séparation stricte des respon
 src/
 ├── application/                  ← Orchestration app-specific
 │   ├── context/                  ← Global state: Auth, User, Theme, Notifications
-│   ├── hooks/                    ← React Query bridges + utilitaires: useRoutines, useFolders, useTasks, useStats, useStreakFreeze, useAdminQueries, usePageTitle, etc.
+│   ├── hooks/                    ← React Query bridges + utilitaires: useRoutines, useFolders, useTasks, useStats, useStreakRevive, useAdminQueries, usePageTitle, etc.
 │   ├── services/                 ← statsService, notifications, userProfileService
 │   ├── routes/                   ← Route guards: ProtectedRoute, GuestRoute
 │   └── components/
@@ -215,8 +215,8 @@ src/
 │       ├── Loader.tsx            ← App-wide generic components
 │       ├── EmptyState.tsx
 │       ├── HelpButton.tsx
-│       ├── FeedbackChat.tsx
-│       └── OnboardingDialog.tsx
+<!-- │       ├── FeedbackChat.tsx -->
+│       └── IntroDialog.tsx
 │
 ├── domain/                       ← Pure business logic (framework-agnostic)
 │   ├── routineRules.ts           ← Logique métier des routines
@@ -224,7 +224,7 @@ src/
 │   └── builders.ts               ← Constructeurs d'entités (Routine, Folder, Task)
 │
 ├── data/                         ← Data access layer
-│   ├── repositories/             ← DB abstraction: routines, folders, tasks, timer, admin, user, freeze
+│   ├── repositories/             ← DB abstraction: routines, folders, tasks, timer, admin, user, revive
 │   └── integrations/supabase/    ← Supabase SDK: client.ts, types.ts
 │
 ├── views/                        ← React rendering layer
@@ -246,7 +246,7 @@ src/
 │       ├── folder/               # FolderCard, CreateFolderDialog
 │       ├── routine/              # RoutineCard, Timer, CreateRoutineDialog, RoutineSkeleton, WelcomeBackDialog
 │       ├── stats/                # StatsSkeleton
-│       ├── streak/               # BrokenStreakCard, NewStreakRecordCard, StreakFreezeDialog
+│       ├── streak/               # BrokenStreakCard, NewStreakRecordCard, StreakReviveDialog
 │       ├── task/                 # TaskCard, CreateTaskDialog, TaskSkeleton
 │       └── theme/                # ThemeSelector, ThemeToggle
 │

@@ -14,3 +14,8 @@ verify_jwt = true
 enabled = true
 verify_jwt = false
 # Le cron est configuré via pg_cron dans la migration 06_cron_notifications.sql
+
+[functions.send-weekly-summary]
+enabled = true
+verify_jwt = false
+# Le cron est configuré via pg_cron dans la migration 07_cron_weekly_summary.sql

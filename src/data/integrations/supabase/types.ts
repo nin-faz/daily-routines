@@ -50,7 +50,7 @@ export type Database = {
           created_at: string
           email: string
           id: string
-          last_streak_freeze: Json | null
+          last_streak_revive: Json | null
           mode_theme: Database["public"]["Enums"]["theme_mode"]
           pseudo: string | null
           role: Database["public"]["Enums"]["app_role"]
@@ -61,7 +61,7 @@ export type Database = {
           created_at?: string
           email: string
           id?: string
-          last_streak_freeze?: Json | null
+          last_streak_revive?: Json | null
           mode_theme?: Database["public"]["Enums"]["theme_mode"]
           pseudo?: string | null
           role?: Database["public"]["Enums"]["app_role"]
@@ -72,7 +72,7 @@ export type Database = {
           created_at?: string
           email?: string
           id?: string
-          last_streak_freeze?: Json | null
+          last_streak_revive?: Json | null
           mode_theme?: Database["public"]["Enums"]["theme_mode"]
           pseudo?: string | null
           role?: Database["public"]["Enums"]["app_role"]

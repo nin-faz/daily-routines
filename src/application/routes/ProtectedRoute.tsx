@@ -3,7 +3,7 @@ import { Navigate } from "react-router-dom";
 import { useAuth } from "@/application/context/AuthContext";
 import { useUser } from "@/application/context/UserContext";
 import Loader from "@/shared/components/Loader";
-import FeedbackChat from "@/shared/components/FeedbackChat";
+// import FeedbackChat from "@/shared/components/FeedbackChat";
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -34,7 +34,7 @@ const ProtectedRoute = ({
   return (
     <>
       {children}
-      {!requireAdmin && <FeedbackChat />}
+      {/* {!requireAdmin && <FeedbackChat />} */}
     </>
   );
 };

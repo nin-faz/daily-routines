@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { routineStorage } from "@/data/repositories/routines";
 import { folderStorage } from "@/data/repositories/folders";
 import { taskStorage } from "@/data/repositories/tasks";
-import { freezeStorage } from "@/data/repositories/freeze";
+import { reviveStorage } from "@/data/repositories/revive";
 import { computeStreaks, computeLastNDaysStatus, getRoutineDateRange, type DayStatus } from "@/application/services/statsService";
 
 export const useStats = () => {
@@ -35,9 +35,9 @@ export const useStats = () => {
     gcTime: 1000 * 60 * 10,
   });
 
-  const { data: freezeEntry = null } = useQuery({
-    queryKey: ["streak-freeze"],
-    queryFn: () => freezeStorage.getLastStreakFreeze(),
+  const { data: reviveEntry = null } = useQuery({
+    queryKey: ["streak-revive"],
+    queryFn: () => reviveStorage.getLastStreakRevive(),
     staleTime: 1000 * 60 * 5,
   });
 
@@ -46,8 +46,8 @@ export const useStats = () => {
   const allDates = useMemo(() => getRoutineDateRange(activeRoutines, new Date()), [activeRoutines]);
 
   const { currentStreak, recordStreak } = useMemo(
-    () => computeStreaks(activeRoutines, statuses, allDates, freezeEntry),
-    [activeRoutines, statuses, allDates, freezeEntry],
+    () => computeStreaks(activeRoutines, statuses, allDates, reviveEntry),
+    [activeRoutines, statuses, allDates, reviveEntry],
   );
 
   const lastDaysStatus: DayStatus[] = useMemo(

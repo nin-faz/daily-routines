@@ -18,7 +18,7 @@ import {
 import { formatDateYMD } from "@/shared/lib/date";
 import type { Routine, RoutineStatus } from "@/shared/types/routine";
 import type { Task } from "@/shared/types/task";
-import type { StreakFreezeEntry } from "@/shared/types/freeze";
+import type { StreakReviveEntry } from "@/shared/types/revive";
 
 // ---------------------------------------------------------------------------
 // Types de sortie
@@ -241,17 +241,17 @@ export function computeCompletionRates(
 
 /**
  * Calcule le streak courant et le record.
- * freezeEntry : entrée de freeze active ({date, streak}) ou null si aucun freeze.
+ * reviveEntry : entrée de revive active ({date, streak}) ou null si aucun revive.
  */
 export function computeStreaks(
   routines: Routine[],
   statuses: RoutineStatus[],
   allDates: string[],
-  freezeEntry: StreakFreezeEntry | null = null,
+  reviveEntry: StreakReviveEntry | null = null,
 ): { currentStreak: number; recordStreak: number } {
   const completionRates = computeCompletionRates(routines, statuses, allDates);
   return {
-    currentStreak: calculateCalendarStreak(completionRates, new Date(), freezeEntry),
+    currentStreak: calculateCalendarStreak(completionRates, new Date(), reviveEntry),
     recordStreak: calculateLongestStreak(routines, statuses, allDates),
   };
 }

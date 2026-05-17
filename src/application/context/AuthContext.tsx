@@ -42,7 +42,24 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
      */
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === "SIGNED_IN" && session?.user) {
+        const storedUserId = localStorage.getItem("user-id");
+        if (storedUserId && storedUserId !== session.user.id) {
+          // Nouvel user différent — purge les données de l'ancien
+          const keepKeys = ["theme", "intro_completed"];
+          const toKeep: Record<string, string> = {};
+          keepKeys.forEach((key) => {
+            const value = localStorage.getItem(key);
+            if (value !== null) toKeep[key] = value;
+          });
+          localStorage.clear();
+          Object.entries(toKeep).forEach(([k, v]) =>
+            localStorage.setItem(k, v),
+          );
+        }
+        localStorage.setItem("user-id", session.user.id);
+      }
       setUser(session?.user ?? null);
       setSession(session);
       setLoading(false);
@@ -82,7 +99,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const { error } = await supabase.auth.signOut();
 
     if (!error) {
-      const keepKeys = ["theme", "onboarding_completed"];
+      const keepKeys = ["theme", "intro_completed"];
       const toKeep: Record<string, string> = {};
 
       // Sauvegarder les clés à garder
