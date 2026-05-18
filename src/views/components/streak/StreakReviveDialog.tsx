@@ -231,7 +231,7 @@ const StreakReviveCard = ({
               85%     { transform: rotate(3deg); }
             }
           `}</style>
-          {isRetroactive ? (
+          {isRetroactive && reviveAvailable ? (
             <div
               style={{
                 position: "relative",

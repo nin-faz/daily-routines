@@ -1,5 +1,5 @@
 import { Routine, RoutineStatus, TimeOfDay, RoutineFrequency, DayOfWeek } from "@/shared/types/routine";
-import { getActiveRoutinesAtDate } from "@/domain/routineRules";
+import { getActiveRoutinesAtDate, getRoutinesAtDate } from "@/domain/routineRules";
 import { formatDateYMD } from "@/shared/lib/date";
 import { supabase } from "@/data/integrations/supabase/client";
 import type { TablesInsert, TablesUpdate } from "@/data/integrations/supabase/types";
@@ -251,7 +251,15 @@ export const routineStorage = {
 
     for (const date of allDates) {
       const activeRoutines = getActiveRoutinesAtDate(routines, statuses, date);
-      if (activeRoutines.length === 0) continue;
+      if (activeRoutines.length === 0) {
+        const scheduledToday = getRoutinesAtDate(routines, date);
+        if (scheduledToday.length > 0) {
+          rates[date] = -1; // Toutes skippées → jour de repos
+        } else if (routines.some((r) => formatDateYMD(typeof r.createdAt === "string" ? new Date(r.createdAt) : r.createdAt) <= date)) {
+          rates[date] = -1; // Aucune routine planifiée ce jour → neutre
+        }
+        continue;
+      }
       const completedCount = activeRoutines.filter((routine) => {
         const status = statuses.find((s) => s.routineId === routine.id && s.date === date);
         return status && status.completed;
@@ -278,7 +286,15 @@ export const routineStorage = {
 
     for (const date of allDates) {
       const activeRoutines = getActiveRoutinesAtDate(routines, statuses, date);
-      if (activeRoutines.length === 0) continue;
+      if (activeRoutines.length === 0) {
+        const scheduledToday = getRoutinesAtDate(routines, date);
+        if (scheduledToday.length > 0) {
+          rates[date] = -1; // Toutes skippées → jour de repos
+        } else if (routines.some((r) => formatDateYMD(typeof r.createdAt === "string" ? new Date(r.createdAt) : r.createdAt) <= date)) {
+          rates[date] = -1; // Aucune routine planifiée ce jour → neutre
+        }
+        continue;
+      }
       const completedCount = activeRoutines.filter((routine) => {
         const status = statuses.find((s) => s.routineId === routine.id && s.date === date);
         return status && status.completed;

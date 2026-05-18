@@ -87,9 +87,10 @@ const steps: Array<{
         en bas de l'écran.{""}{" "}
         <span className="whitespace-nowrap">Bonne productivité !</span>
         <br /> <br />
-        <span className="inline-flex items-center justify-center w-full gap-1 mt-2 text-xs text-muted-foreground">
-          Besoin d’aide ? Cliquez sur <HelpCircle size={16} /> en haut à droite
-          à tout moment.
+        <span className="flex flex-wrap items-center justify-center w-full gap-1 mt-2 text-xs text-muted-foreground">
+          <span>Besoin d’aide ?</span>
+          <span className="inline-flex items-center gap-1 whitespace-nowrap">Cliquez sur <HelpCircle size={16} /></span>
+          <span className="whitespace-nowrap">en haut à droite à tout moment.</span>
         </span>
       </>
     ),

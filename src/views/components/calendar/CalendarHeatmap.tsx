@@ -87,6 +87,8 @@ const CalendarHeatmap = ({ onDateSelect }: CalendarHeatmapProps) => {
       if (completionRates[dateStr] === 100) {
         streak++;
         currentDate.setDate(currentDate.getDate() - 1);
+      } else if (completionRates[dateStr] === -1) {
+        currentDate.setDate(currentDate.getDate() - 1);
       } else {
         break;
       }

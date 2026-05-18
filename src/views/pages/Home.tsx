@@ -32,7 +32,7 @@ import type { RoutineStatus } from "@/shared/types/routine";
 import { Button } from "@/shared/components/ui/button";
 import CreateRoutineDialog from "@/views/components/routine/CreateRoutineDialog";
 
-const getGreetingConfig = (hour: number) => {
+const getGreetingConfig = (hour: number, minute: number) => {
   if (hour >= 5 && hour < 12)
     return {
       greeting: "Bonjour",
@@ -47,7 +47,7 @@ const getGreetingConfig = (hour: number) => {
       timeOfDay: TimeOfDay.AFTERNOON,
       iconColor: "text-yellow-300",
     };
-  if (hour >= 18 && hour < 22)
+  if (hour >= 18 && (hour < 23 || (hour === 23 && minute < 30)))
     return {
       greeting: "Bonsoir",
       Icon: Moon,
@@ -160,8 +160,10 @@ const Home = () => {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
 
   const firstName = user?.user_metadata?.display_name?.split(" ")[0] ?? null;
-  const hour = new Date().getHours();
-  const { greeting, Icon, timeOfDay, iconColor } = getGreetingConfig(hour);
+  const now = new Date();
+  const hour = now.getHours();
+  const minute = now.getMinutes();
+  const { greeting, Icon, timeOfDay, iconColor } = getGreetingConfig(hour, minute);
   const todayDate = getTodayString();
 
   const todayDayOfWeek = JS_DAY_TO_DAY_OF_WEEK[new Date().getDay()];

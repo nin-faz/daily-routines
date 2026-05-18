@@ -223,10 +223,21 @@ export function computeCompletionRates(
   for (const date of dates) {
     const active = getActiveRoutinesAtDate(routines, statuses, date);
     if (active.length === 0) {
-      // Si des routines existent mais toutes sont skippées → jour de repos (sentinel -1).
-      // Si aucune routine n'existe du tout → on omet la date (break dans calculateCalendarStreak).
-      if (getRoutinesAtDate(routines, date).length > 0) {
+      const scheduledToday = getRoutinesAtDate(routines, date);
+      if (scheduledToday.length > 0) {
+        // Toutes les routines du jour sont skippées → jour de repos.
         rates[date] = -1;
+      } else {
+        // Aucune routine planifiée ce jour (ex: routine hebdo pas ce jour-là).
+        // Si l'utilisateur avait déjà des routines → jour neutre, ne casse pas le streak.
+        const anyExistedAtDate = routines.some((r) => {
+          const created = typeof r.createdAt === "string" ? new Date(r.createdAt) : r.createdAt;
+          return formatDateYMD(created) <= date;
+        });
+        if (anyExistedAtDate) {
+          rates[date] = -1;
+        }
+        // Sinon : aucune routine créée → on omet → break dans calculateCalendarStreak (correct).
       }
       continue;
     }
