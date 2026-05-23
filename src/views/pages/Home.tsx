@@ -20,7 +20,7 @@ import Header from "@/application/components/layout/Header";
 import Navigation from "@/application/components/layout/Navigation";
 import { useStats } from "@/application/hooks/useStats";
 import { useRoutines } from "@/application/hooks/useRoutines";
-import { useAuth } from "@/application/context/AuthContext";
+import { useUser } from "@/application/context/UserContext";
 import { formatFrenchDate, getTodayString } from "@/shared/lib/date";
 import { usePageTitle } from "@/application/hooks/usePageTitle";
 import { TimeOfDay } from "@/shared/types/routine";
@@ -80,7 +80,8 @@ const getMotivationalMessage = (
 ): string => {
   if (totalCount > 0 && completedCount >= totalCount)
     return "Journée parfaite. Continue comme ça.";
-  if (streak === 0 && prevStreak > 1) return "T'as cassé ta série. Maintenant tu la reconstruis.";
+  if (streak === 0 && prevStreak > 1)
+    return "T'as cassé ta série. Maintenant tu la reconstruis.";
   if (streak > 30) return "Un mois de régularité. C'est du sérieux.";
   if (streak > 14) return "Deux semaines sans lâcher. Belle discipline.";
   if (streak > 7) return "Belle lancée. Ne t'arrête pas là.";
@@ -152,18 +153,21 @@ const HomeRoutineItem = ({
 
 const Home = () => {
   usePageTitle("Accueil");
-  const { user } = useAuth();
+  const userCtx = useUser();
   const { currentStreak, recordStreak, lastDaysStatus, tasks, isLoading } =
     useStats();
   const { activeRoutines, statuses, toggleComplete, addRoutine } =
     useRoutines();
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
 
-  const firstName = user?.user_metadata?.display_name?.split(" ")[0] ?? null;
+  const firstName = userCtx?.pseudo?.split(" ")[0] ?? null;
   const now = new Date();
   const hour = now.getHours();
   const minute = now.getMinutes();
-  const { greeting, Icon, timeOfDay, iconColor } = getGreetingConfig(hour, minute);
+  const { greeting, Icon, timeOfDay, iconColor } = getGreetingConfig(
+    hour,
+    minute,
+  );
   const todayDate = getTodayString();
 
   const todayDayOfWeek = JS_DAY_TO_DAY_OF_WEEK[new Date().getDay()];

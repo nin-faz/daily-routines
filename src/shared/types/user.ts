@@ -1,6 +1,7 @@
 export interface UserProfile {
   role: Role;
   isAdmin: boolean;
+  pseudo: string | null;
 }
 
 export interface UserContextType extends UserProfile {

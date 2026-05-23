@@ -15,6 +15,7 @@ export const useUser = () => {
 export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   const { user } = useAuth();
   const [role, setRole] = useState<Role>(Role.User);
+  const [pseudo, setPseudo] = useState<string | null>(null);
   const [userLoading, setUserLoading] = useState(true);
 
   useEffect(() => {
@@ -23,6 +24,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     const load = async () => {
       if (!user) {
         setRole(Role.User);
+        setPseudo(null);
         setUserLoading(false);
         return;
       }
@@ -31,6 +33,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
 
       if (shouldUpdate) {
         setRole((profile.role as Role) || Role.User);
+        setPseudo(profile.pseudo ?? null);
         setUserLoading(false);
       }
     };
@@ -45,6 +48,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   const value: UserContextType = {
     role,
     isAdmin: role === Role.Admin,
+    pseudo,
     loading: userLoading,
   };
 

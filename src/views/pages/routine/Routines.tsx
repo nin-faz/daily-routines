@@ -338,7 +338,7 @@ const Routines = () => {
             daysAbsent={daysAbsent}
             routinesCount={todaysRoutines.length}
           />
-          <BrokenStreakCard />
+          {!isLoading && <BrokenStreakCard />}
           {!isLoading && <NewStreakRecordCard />}
           {!isLoading && (
             <StreakReviveCard

@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "@/data/integrations/supabase/client";
+import { upsertProfile } from "@/application/services/userProfileService";
 import { User, Session } from "@supabase/supabase-js";
 
 interface AuthContextType {
@@ -75,15 +76,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     password: string,
     displayName?: string,
   ) => {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          display_name: displayName,
-        },
-      },
-    });
+    const { data, error } = await supabase.auth.signUp({ email, password });
+    if (!error && data.user && displayName) {
+      await upsertProfile(data.user.id, { email, pseudo: displayName }).catch(() => {});
+    }
     return { data, error };
   };
 

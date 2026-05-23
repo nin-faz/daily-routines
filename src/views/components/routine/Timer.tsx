@@ -20,9 +20,11 @@ const Timer = ({ duration, onComplete, routineId }: TimerProps) => {
   );
   const [isRunning, setIsRunning] = useState(savedState?.isRunning ?? false);
   const intervalRef = useRef<number | null>(null);
+  const hasStartedRef = useRef(savedState !== null);
 
-  // Save timer state whenever it changes
   useEffect(() => {
+    if (isRunning) hasStartedRef.current = true;
+    if (!hasStartedRef.current) return;
     timerStorage.saveTimerState({
       routineId,
       timeLeft,
