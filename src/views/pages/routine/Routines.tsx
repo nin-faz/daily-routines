@@ -48,7 +48,7 @@ const Routines = () => {
     updateRoutine,
     deleteRoutine,
   } = useRoutines();
-  const { currentStreak } = useStats();
+  const { currentStreak, isLoading: isStatsLoading } = useStats();
 
   // Stocke la date du jour au format AAAA-MM-JJ
   const [todayDate, setTodayDate] = useState(getTodayString());
@@ -182,6 +182,7 @@ const Routines = () => {
   // Exclu : jour de repos (allSkippedToday) → ne pas alarmer inutilement.
   const streakAtRisk =
     !isLoading &&
+    !isStatsLoading &&
     completedCount === 0 &&
     !allSkippedToday &&
     (

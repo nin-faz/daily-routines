@@ -113,3 +113,28 @@ export const unsubscribeFromPushNotifications = async (): Promise<boolean> => {
     return false;
   }
 };
+
+/**
+ * Supprime la subscription de Supabase uniquement (sans browser unsub).
+ * Utilisé au logout pour que le prochain login puisse re-enregistrer.
+ */
+export const deleteSubscriptionFromDB = async (): Promise<void> => {
+  if (!("serviceWorker" in navigator) || !("PushManager" in window)) return;
+
+  try {
+    const registration = await navigator.serviceWorker.getRegistration();
+    const subscription = await registration?.pushManager.getSubscription();
+    if (!subscription) return;
+
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+
+    await supabase
+      .from("push_subscriptions")
+      .delete()
+      .eq("user_id", session.user.id)
+      .eq("endpoint", subscription.endpoint);
+  } catch (error) {
+    console.error("Erreur suppression subscription DB:", error);
+  }
+};

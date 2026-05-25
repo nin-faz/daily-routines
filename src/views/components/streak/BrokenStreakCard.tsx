@@ -83,11 +83,11 @@ const BrokenStreakCard = () => {
   const [closed, setClosed] = useState(
     () => !!sessionStorage.getItem(sessionKey),
   );
-  const { currentStreak, lastDaysStatus } = useStats();
+  const { currentStreak, lastDaysStatus, isLoading } = useStats();
 
   const prevStreak = parseInt(localStorage.getItem("prev-streak") || "0", 10);
 
-  const show = !closed && currentStreak === 0 && prevStreak > 0;
+  const show = !isLoading && !closed && currentStreak === 0 && prevStreak > 0;
 
   if (!show) return null;
 

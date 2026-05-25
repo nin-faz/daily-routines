@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "@/data/integrations/supabase/client";
 import { upsertProfile } from "@/application/services/userProfileService";
+import { deleteSubscriptionFromDB, registerServiceWorker } from "@/application/services/notifications";
 import { User, Session } from "@supabase/supabase-js";
 
 interface AuthContextType {
@@ -60,6 +61,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           );
         }
         localStorage.setItem("user-id", session.user.id);
+
+        // Re-enregistrer la subscription push si le browser l'a encore active
+        if ("serviceWorker" in navigator && "PushManager" in window && Notification.permission === "granted") {
+          navigator.serviceWorker.getRegistration().then((reg) =>
+            reg?.pushManager.getSubscription().then((sub) => {
+              if (sub) registerServiceWorker();
+            })
+          );
+        }
       }
       setUser(session?.user ?? null);
       setSession(session);
@@ -92,6 +102,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const signOut = async () => {
+    await deleteSubscriptionFromDB();
     const { error } = await supabase.auth.signOut();
 
     if (!error) {
