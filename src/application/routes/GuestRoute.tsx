@@ -16,7 +16,7 @@ const GuestRoute = ({ children }: GuestRouteProps) => {
 
   // Si l'utilisateur est déjà connecté, on le renvoie vers l'accueil
   if (user) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/dashboard" replace />;
   }
 
   return <>{children}</>;

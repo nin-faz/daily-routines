@@ -18,6 +18,7 @@ import {
 import { registerServiceWorker } from "@/application/services/notifications";
 
 const Home = lazy(() => import("@/views/pages/Home"));
+const Dashboard = lazy(() => import("@/views/pages/Dashboard"));
 const Routines = lazy(() => import("@/views/pages/routine/Routines"));
 const Calendar = lazy(() => import("@/views/pages/Calendar"));
 const Tasks = lazy(() => import("@/views/pages/Tasks"));
@@ -162,11 +163,12 @@ const AppContent = () => {
               }
             />
             <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/" element={<Home />} />
             <Route
-              path="/"
+              path="/dashboard"
               element={
                 <ProtectedRoute>
-                  <Home />
+                  <Dashboard />
                 </ProtectedRoute>
               }
             />

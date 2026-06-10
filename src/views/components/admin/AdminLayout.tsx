@@ -38,7 +38,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
         <div className="container hidden md:flex h-14 items-center justify-between">
           <div className="flex items-center gap-4">
             <Link
-              to="/"
+              to="/dashboard"
               className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
             >
               <ArrowLeft className="h-4 w-4" />
@@ -69,7 +69,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
         <div className="container flex md:hidden flex-col gap-1 py-2">
           <div className="flex items-center justify-between w-full">
             <Link
-              to="/"
+              to="/dashboard"
               className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors text-sm"
             >
               <ArrowLeft className="h-5 w-5" />

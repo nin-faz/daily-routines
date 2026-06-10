@@ -57,7 +57,8 @@ Une application web progressive (PWA) pour gérer vos routines quotidiennes, tâ
 
 ### Expérience Utilisateur
 
-- **Dashboard d'accueil contextuel** (`Home.tsx`) : salutation + prénom, message motivationnel adapté au streak/heure, streak 7 derniers jours, progression du jour, routines du créneau actuel cochables directement, compteur de tâches en attente
+- **Dashboard d'accueil contextuel** (`Dashboard.tsx`) : salutation + pseudo, message motivationnel adapté au streak/heure, streak 7 derniers jours, progression du jour, routines du créneau actuel cochables directement, compteur de tâches en attente
+- **Landing page publique** (`Home.tsx`) : page d'accueil pour les visiteurs non connectés — présentation des fonctionnalités, timer animé, marquee, actus, FAQ, instructions d'installation PWA
 - Dialog d'introduction interactif pour les nouveaux utilisateurs (`IntroDialog`)
 - Dialog de retour (`WelcomeBackDialog`) avec animation Lottie pour les utilisateurs revenant après une absence
 <!-- - Chatbot de feedback utilisateur (FeedbackChat + Netlify Forms) -->
@@ -99,7 +100,8 @@ Une application web progressive (PWA) pour gérer vos routines quotidiennes, tâ
 | Dates         | date-fns                                    |
 | Icônes        | lucide-react                                |
 | Toasts        | Sonner                                      |
-| Emails        | Resend (via Edge Function Supabase)         |
+| Emails        | Infomaniak (via Edge Function Supabase)     |
+| Analytics     | Umami (self-hosted, privacy-first)          |
 | PWA           | vite-plugin-pwa + Service Worker + Web Push |
 | <!--          | Feedbacks                                   | Netlify Forms | --> |
 
@@ -158,12 +160,12 @@ npx supabase start
 
 ### Edge Functions
 
-| Fonction                       | Rôle                                            |
-| ------------------------------ | ----------------------------------------------- |
-| `welcome-email`                | Email de bienvenue à l'inscription (via Resend) |
-| `save-subscription`            | Sauvegarde l'abonnement push en base            |
-| `send-scheduled-notifications` | Envoi planifié des notifications (cron)         |
-| `send-weekly-summary`          | Résumé hebdomadaire envoyé par notification     |
+| Fonction                       | Rôle                                                                  |
+| ------------------------------ | --------------------------------------------------------------------- |
+| `welcome-email`                | Email de bienvenue à l'inscription (via Resend)                       |
+| `save-subscription`            | Sauvegarde l'abonnement push en base                                  |
+| `send-scheduled-notifications` | Envoi planifié des notifications (cron) + génération des tokens HMAC  |
+| `send-weekly-summary`          | Résumé hebdomadaire envoyé par notification push (cron dimanche soir) |
 
 ### Migrations
 
@@ -229,7 +231,8 @@ src/
 │
 ├── views/                        ← React rendering layer
 │   ├── pages/                    ← Route pages
-│   │   ├── Home.tsx              # Dashboard d'accueil contextuel (/)
+│   │   ├── Home.tsx              # Landing page publique (/)
+│   │   ├── Dashboard.tsx         # Dashboard d'accueil contextuel (/dashboard)
 │   │   ├── Auth.tsx              # Login / Signup
 │   │   ├── Calendar.tsx          # Calendrier + heatmap
 │   │   ├── Stats.tsx             # Dashboard statistiques

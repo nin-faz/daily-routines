@@ -61,7 +61,7 @@ const TimerView = () => {
         setRoutine(found);
         if (!savedState) setTimeLeft(found.duration * 60);
       } else {
-        navigate("/");
+        navigate("/dashboard");
       }
     };
     loadRoutine();

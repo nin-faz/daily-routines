@@ -66,7 +66,7 @@ const AllRoutines = () => {
           <div className="flex items-start gap-2">
             <Button
               variant="ghost"
-              onClick={() => navigate("/")}
+              onClick={() => navigate("/dashboard")}
               className="focus-visible:ring-2 focus-visible:ring-primary"
               aria-label="Retour à l'accueil"
             >

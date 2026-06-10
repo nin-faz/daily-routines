@@ -51,7 +51,7 @@ const RoutineDetails = () => {
   const routines = allRoutines.length ? allRoutines : routinesToday;
 
   if (!routineId) {
-    navigate("/");
+    navigate("/dashboard");
     return null;
   }
 
@@ -96,7 +96,7 @@ const RoutineDetails = () => {
   if (!routine) {
     // Si les requêtes sont encore en chargement, éviter un redirection brutale — ne rien afficher tant que c'est chargé
     if (isLoading || isLoadingStats || isLoadingRoutineStatuses) return null;
-    navigate("/");
+    navigate("/dashboard");
     return null;
   }
 
