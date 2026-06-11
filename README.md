@@ -58,7 +58,8 @@ Une application web progressive (PWA) pour gérer vos routines quotidiennes, tâ
 ### Expérience Utilisateur
 
 - **Dashboard d'accueil contextuel** (`Dashboard.tsx`) : salutation + pseudo, message motivationnel adapté au streak/heure, streak 7 derniers jours, progression du jour, routines du créneau actuel cochables directement, compteur de tâches en attente
-- **Landing page publique** (`Home.tsx`) : page d'accueil pour les visiteurs non connectés — présentation des fonctionnalités, timer animé, marquee, actus, FAQ, instructions d'installation PWA
+- **Landing page publique** (`Home.tsx`) : page d'accueil pour les visiteurs non connectés — présentation des fonctionnalités, timer animé, marquee, FAQ, instructions d'installation PWA
+- **Page Nouveautés publique** (`Actus.tsx`) : changelog complet des fonctionnalités, accessible via `/actus`
 - Dialog d'introduction interactif pour les nouveaux utilisateurs (`IntroDialog`)
 - Dialog de retour (`WelcomeBackDialog`) avec animation Lottie pour les utilisateurs revenant après une absence
 <!-- - Chatbot de feedback utilisateur (FeedbackChat + Netlify Forms) -->
@@ -162,7 +163,7 @@ npx supabase start
 
 | Fonction                       | Rôle                                                                  |
 | ------------------------------ | --------------------------------------------------------------------- |
-| `welcome-email`                | Email de bienvenue à l'inscription (via Resend)                       |
+| `welcome-email`                | Email de bienvenue à l'inscription (via Infomaniak)                   |
 | `save-subscription`            | Sauvegarde l'abonnement push en base                                  |
 | `send-scheduled-notifications` | Envoi planifié des notifications (cron) + génération des tokens HMAC  |
 | `send-weekly-summary`          | Résumé hebdomadaire envoyé par notification push (cron dimanche soir) |
@@ -232,6 +233,7 @@ src/
 ├── views/                        ← React rendering layer
 │   ├── pages/                    ← Route pages
 │   │   ├── Home.tsx              # Landing page publique (/)
+│   │   ├── Actus.tsx             # Changelog public (/actus)
 │   │   ├── Dashboard.tsx         # Dashboard d'accueil contextuel (/dashboard)
 │   │   ├── Auth.tsx              # Login / Signup
 │   │   ├── Calendar.tsx          # Calendrier + heatmap
@@ -269,6 +271,7 @@ public/
 ├── icon-512.png                  # Icône PWA 512x512
 ├── placeholder.svg               # Placeholder image générique
 ├── _redirects                    # Règles de redirection Netlify
+├── sitemap.xml                   # Sitemap SEO
 └── robots.txt
 ```
 

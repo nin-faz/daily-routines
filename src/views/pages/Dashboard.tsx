@@ -205,9 +205,11 @@ const Home = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-bg pb-36 md:pb-24">
+    <main className="min-h-screen bg-gradient-bg pb-36 md:pb-24">
       <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8 max-w-3xl space-y-4">
-        <Header />
+        <header className="mb-0">
+          <Header />
+        </header>
 
         {/* Hero greeting */}
         <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary to-primary/80 px-5 py-6 text-primary-foreground shadow-lg animate-in fade-in slide-in-from-bottom-2 duration-500">
@@ -438,7 +440,7 @@ const Home = () => {
 
       <Navigation />
       <IntroDialog />
-    </div>
+    </main>
   );
 };
 

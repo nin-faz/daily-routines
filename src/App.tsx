@@ -1,4 +1,5 @@
 import { Suspense, lazy, useEffect } from "react";
+import { HelmetProvider } from "react-helmet-async";
 import { Toaster } from "@/shared/components/ui/toaster";
 import { Toaster as Sonner } from "@/shared/components/ui/sonner";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -44,6 +45,7 @@ const AdminDashboard = lazy(() => import("@/views/pages/admin/AdminDashboard"));
 const AdminUsers = lazy(() => import("@/views/pages/admin/AdminUsers"));
 const AdminProjects = lazy(() => import("@/views/pages/admin/AdminFolders"));
 const AdminTasks = lazy(() => import("@/views/pages/admin/AdminTasks"));
+const Actus = lazy(() => import("@/views/pages/Actus"));
 const NotFound = lazy(() => import("@/views/pages/NotFound"));
 
 const queryClient = new QueryClient();
@@ -164,6 +166,7 @@ const AppContent = () => {
             />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/" element={<Home />} />
+            <Route path="/actus" element={<Actus />} />
             <Route
               path="/dashboard"
               element={
@@ -294,6 +297,7 @@ const AppContent = () => {
 };
 
 const App = () => (
+  <HelmetProvider>
   <QueryClientProvider client={queryClient}>
     <ThemeProvider attribute="class" enableSystem={false}>
       <NotificationProvider>
@@ -308,6 +312,7 @@ const App = () => (
       </NotificationProvider>
     </ThemeProvider>
   </QueryClientProvider>
+  </HelmetProvider>
 );
 
 export default App;

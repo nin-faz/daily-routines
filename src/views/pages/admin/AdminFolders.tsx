@@ -19,7 +19,7 @@ import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 
 const AdminFolders = () => {
-  usePageTitle("Admin — Dossiers");
+  usePageTitle("Dossiers · Admin");
   const { data: folders = [], isLoading: loading } = useAdminFolders();
 
   const [filters, setFilters] = useState<Record<string, string>>({});

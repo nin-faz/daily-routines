@@ -87,7 +87,7 @@ const FolderDetails = () => {
   };
 
   return (
-    <div className="container mx-auto max-w-2xl py-8 px-4">
+    <main className="container mx-auto max-w-2xl py-8 px-4">
       <div className="flex justify-between items-center mb-4">
         <div className="flex items-start gap-2">
           <Button
@@ -96,12 +96,12 @@ const FolderDetails = () => {
             className="focus-visible:ring-2 focus-visible:ring-primary"
             aria-label="Retour à l'accueil"
           >
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <ArrowLeft className="h-4 w-4 mr-2" aria-hidden="true" />
             Retour
           </Button>
         </div>
         <div className="flex items-center gap-2">
-          <ClipboardList className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
+          <ClipboardList className="h-6 w-6 sm:h-8 sm:w-8 text-primary" aria-hidden="true" />
           <h1 className="text-2xl sm:text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent">
             Mes tâches
           </h1>
@@ -218,7 +218,7 @@ const FolderDetails = () => {
           onUpdateTask={handleUpdateTask}
         />
       )}
-    </div>
+    </main>
   );
 };
 

@@ -241,8 +241,9 @@ const Marquee = () => {
             </span>
             {item.text}
             <span
+              aria-hidden="true"
               style={{
-                color: "rgba(255,255,255,0.12)",
+                color: "#fb923c",
                 marginLeft: "2.5rem",
                 fontSize: "1.2rem",
               }}
@@ -256,36 +257,10 @@ const Marquee = () => {
   );
 };
 
-const ACTUS = [
-  {
-    date: "Mai 2026",
-    tag: "Nouveauté",
-    title: "L'Éveil 🪺 — une seconde chance pour ton streak",
-    desc: "Une série cassée ne signifie plus tout perdre. Active l'Éveil une fois par semaine pour couvrir un jour manqué.",
-  },
-  {
-    date: "Mai 2026",
-    tag: "Amélioration",
-    title: "Timer plein écran",
-    desc: "Le timer passe en plein écran pour un vrai mode focus.",
-  },
-  {
-    date: "Avr. 2026",
-    tag: "Amélioration",
-    title: "Notifications push repensées",
-    desc: "Reçois des rappels au bon moment, complète une routine directement depuis la notification — sans ouvrir l'app.",
-  },
-  {
-    date: "Mar. 2026",
-    tag: "Nouveauté",
-    title: "Jours de repos 😴",
-    desc: "Journée chargée, imprévu, ou simple besoin de souffler — marque tes routines comme repos. Ton streak est préservé.",
-  },
-];
 
 const NAV_LINKS = [
   { label: "Fonctionnalités", href: "#features" },
-  { label: "Actus", href: "#actus" },
+  { label: "Actus", href: "/actus" },
   { label: "FAQ", href: "#faq" },
 ];
 
@@ -343,7 +318,7 @@ const Home = () => {
         @media (min-width: 768px) { .hero-section { max-height: 200vh; } }
       `}</style>
 
-      <div
+      <main
         style={{ background: "#0a0a0a", color: "#fff", overflowX: "hidden" }}
       >
         {/* ══ NAVBAR desktop — pill centré ══ */}
@@ -365,7 +340,7 @@ const Home = () => {
               className="flex items-center gap-2.5 font-bold tracking-tight text-white no-underline px-4 py-2"
               style={{ fontSize: "1.05rem", cursor: "pointer" }}
             >
-              <img src="/logo.svg" alt="Daily Routines" className="h-8 w-8" />
+              <img src="/logo.svg" alt="Logo Daily Routines" className="h-8 w-8" />
               <span>Daily Routines</span>
             </a>
             <div
@@ -376,7 +351,7 @@ const Home = () => {
                 margin: "0 6px",
               }}
             />
-            <nav className="flex items-center">
+            <nav className="flex items-center" aria-label="Navigation principale">
               {NAV_LINKS.map((l) => (
                 <a
                   key={l.href}
@@ -433,7 +408,7 @@ const Home = () => {
             className="flex items-center gap-2 font-bold text-white no-underline"
             style={{ fontSize: "1.05rem" }}
           >
-            <img src="/logo.svg" alt="Daily Routines" className="h-8 w-8" />
+            <img src="/logo.svg" alt="Logo Daily Routines" className="h-8 w-8" />
           </a>
           <button
             className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-white/10 transition-colors outline-none"
@@ -451,7 +426,7 @@ const Home = () => {
             style={{ background: "#0a0a0a" }}
           >
             <div className="flex items-center justify-between px-5 py-4">
-              <img src="/logo.svg" alt="Daily Routines" className="h-8 w-8" />
+              <img src="/logo.svg" alt="Logo Daily Routines" className="h-8 w-8" />
               <button
                 className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-white/10 transition-colors outline-none"
                 onClick={() => setMobileMenuOpen(false)}
@@ -509,6 +484,7 @@ const Home = () => {
             muted
             loop
             playsInline
+            aria-hidden="true"
           />
           {/* Dégradé gauche seulement pour lisibilité du texte, droite transparente */}
           <div
@@ -623,10 +599,10 @@ const Home = () => {
                   href="#install"
                   className="inline-flex items-center gap-2 mt-5 hover:text-white transition-colors"
                   style={{
-                    color: "rgba(255,255,255,0.45)",
+                    color: "rgba(255,255,255,0.65)",
                     fontSize: "0.82rem",
                     textDecoration: "none",
-                    borderBottom: "1px solid rgba(255,255,255,0.15)",
+                    borderBottom: "1px solid rgba(255,255,255,0.3)",
                     paddingBottom: "2px",
                   }}
                 >
@@ -654,7 +630,7 @@ const Home = () => {
             <Reveal>
               <p
                 style={{
-                  color: "rgba(255,255,255,0.45)",
+                  color: "rgba(255,255,255,0.6)",
                   fontSize: "0.8rem",
                   fontWeight: 700,
                   letterSpacing: "0.25em",
@@ -1161,7 +1137,7 @@ const Home = () => {
                         <span
                           style={{
                             color: t.done
-                              ? "rgba(255,255,255,0.4)"
+                              ? "rgba(255,255,255,0.55)"
                               : "rgba(255,255,255,0.75)",
                             fontSize: "0.82rem",
                             textDecoration: t.done ? "line-through" : "none",
@@ -1210,7 +1186,7 @@ const Home = () => {
                       <span
                         style={{
                           marginLeft: "auto",
-                          color: "rgba(255,255,255,0.4)",
+                          color: "rgba(255,255,255,0.6)",
                           fontSize: "0.7rem",
                         }}
                       >
@@ -1223,7 +1199,7 @@ const Home = () => {
                   <div style={{ padding: "1rem 1.5rem" }}>
                     <div
                       style={{
-                        color: "rgba(255,255,255,0.4)",
+                        color: "rgba(255,255,255,0.6)",
                         fontSize: "0.68rem",
                         letterSpacing: "0.12em",
                         textTransform: "uppercase",
@@ -1284,7 +1260,7 @@ const Home = () => {
             <Reveal>
               <p
                 style={{
-                  color: "rgba(255,255,255,0.45)",
+                  color: "rgba(255,255,255,0.65)",
                   fontSize: "0.75rem",
                   letterSpacing: "0.2em",
                   textTransform: "uppercase",
@@ -1325,6 +1301,7 @@ const Home = () => {
                     src="/preview-dashboard.png"
                     alt="Aperçu Daily Routines — dashboard avec streak, routines du jour et progression"
                     className="w-full block"
+                    loading="lazy"
                   />
                 </div>
               </div>
@@ -1334,108 +1311,6 @@ const Home = () => {
 
         {/* ══ MARQUEE ══ */}
         <Marquee />
-
-        {/* ══ ACTUS ══ */}
-        <section
-          id="actus"
-          className="py-16 md:py-32 px-6 md:px-16"
-          style={{ background: "#0d0d0d" }}
-        >
-          <div className="max-w-3xl mx-auto">
-            <Reveal>
-              <p
-                style={{
-                  color: "rgba(255,255,255,0.45)",
-                  fontSize: "0.75rem",
-                  letterSpacing: "0.2em",
-                  textTransform: "uppercase",
-                  marginBottom: "1rem",
-                }}
-              >
-                Changelog
-              </p>
-              <h2
-                style={{
-                  fontSize: "clamp(2rem, 5vw, 3.2rem)",
-                  fontWeight: 900,
-                  letterSpacing: "-0.03em",
-                  marginBottom: "4rem",
-                }}
-              >
-                Dernières <span style={{ color: "#fb923c" }}>nouveautés</span>
-              </h2>
-            </Reveal>
-            {ACTUS.map((a, i) => (
-              <Reveal key={a.title} delay={i * 100}>
-                <article
-                  className="grid gap-8 pb-12"
-                  style={{
-                    gridTemplateColumns: "auto 1fr",
-                    borderBottom:
-                      i < ACTUS.length - 1
-                        ? "1px solid rgba(255,255,255,0.07)"
-                        : "none",
-                    paddingTop: i > 0 ? "3rem" : 0,
-                  }}
-                >
-                  <div style={{ paddingTop: "0.3rem" }}>
-                    <div
-                      style={{
-                        width: 10,
-                        height: 10,
-                        borderRadius: "50%",
-                        background: "#f97316",
-                      }}
-                    />
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-3 mb-3">
-                      <span
-                        style={{
-                          color: "rgba(255,255,255,0.5)",
-                          fontSize: "0.8rem",
-                        }}
-                      >
-                        {a.date}
-                      </span>
-                      <span
-                        style={{
-                          background: "rgba(249,115,22,0.12)",
-                          color: "#fb923c",
-                          fontSize: "0.7rem",
-                          fontWeight: 700,
-                          padding: "0.15rem 0.65rem",
-                          borderRadius: "999px",
-                        }}
-                      >
-                        {a.tag}
-                      </span>
-                    </div>
-                    <h3
-                      style={{
-                        fontSize: "1.15rem",
-                        fontWeight: 700,
-                        marginBottom: "0.6rem",
-                        color: "rgba(255,255,255,0.95)",
-                      }}
-                    >
-                      {a.title}
-                    </h3>
-                    <p
-                      style={{
-                        color: "rgba(255,255,255,0.65)",
-                        fontSize: "0.9rem",
-                        lineHeight: 1.7,
-                      }}
-                    >
-                      {a.desc}
-                    </p>
-                  </div>
-                </article>
-              </Reveal>
-            ))}
-          </div>
-        </section>
 
         {/* ══ FAQ ══ */}
         <section
@@ -1447,7 +1322,7 @@ const Home = () => {
             <Reveal>
               <p
                 style={{
-                  color: "rgba(255,255,255,0.45)",
+                  color: "rgba(255,255,255,0.65)",
                   fontSize: "0.75rem",
                   letterSpacing: "0.2em",
                   textTransform: "uppercase",
@@ -1515,7 +1390,7 @@ const Home = () => {
             <Reveal>
               <p
                 style={{
-                  color: "rgba(255,255,255,0.45)",
+                  color: "rgba(255,255,255,0.65)",
                   fontSize: "0.75rem",
                   letterSpacing: "0.2em",
                   textTransform: "uppercase",
@@ -1619,7 +1494,7 @@ const Home = () => {
                   ))}
                   <p
                     style={{
-                      color: "rgba(255,255,255,0.35)",
+                      color: "rgba(255,255,255,0.55)",
                       fontSize: "0.75rem",
                       marginTop: "1rem",
                     }}
@@ -1699,7 +1574,7 @@ const Home = () => {
                   ))}
                   <p
                     style={{
-                      color: "rgba(255,255,255,0.35)",
+                      color: "rgba(255,255,255,0.55)",
                       fontSize: "0.75rem",
                       marginTop: "1rem",
                     }}
@@ -1769,7 +1644,27 @@ const Home = () => {
             </Reveal>
           </div>
         </section>
-      </div>
+
+        {/* ══ FOOTER ══ */}
+        <footer
+          style={{
+            background: "#000",
+            borderTop: "1px solid rgba(255,255,255,0.06)",
+            padding: "2rem 1.5rem",
+            textAlign: "center",
+          }}
+        >
+          <p style={{ color: "rgba(255,255,255,0.75)", fontSize: "0.8rem" }}>
+            © {new Date().getFullYear()} Daily Routines ·{" "}
+            <a
+              href="https://daily-routines.fr"
+              style={{ color: "rgba(255,255,255,0.85)", textDecoration: "none" }}
+            >
+              daily-routines.fr
+            </a>
+          </p>
+        </footer>
+      </main>
     </>
   );
 };

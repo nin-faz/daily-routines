@@ -34,7 +34,7 @@ import { fr } from "date-fns/locale";
 import { usePageTitle } from "@/application/hooks/usePageTitle";
 
 const AdminUsers = () => {
-  usePageTitle("Admin — Utilisateurs");
+  usePageTitle("Utilisateurs · Admin");
   const { data: users = [], isLoading: loading, refetch } = useAdminUsers();
   const { toast } = useToast();
   const [filters, setFilters] = useState<Record<string, string>>({});

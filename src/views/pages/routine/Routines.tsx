@@ -306,7 +306,7 @@ const Routines = () => {
         <header className="mb-6 sm:mb-8">
           <Header />
           <div className="flex items-center justify-center gap-2 mb-4">
-            <Sparkles className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
+            <Sparkles className="h-6 w-6 sm:h-8 sm:w-8 text-primary" aria-hidden="true" />
             <h1 className="text-2xl sm:text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent">
               Mes Routines
             </h1>
@@ -363,7 +363,7 @@ const Routines = () => {
               {dailyRoutines.length > 0 && (
                 <div className="space-y-4">
                   <div className="flex items-center gap-2">
-                    <Repeat className="h-6 w-6 text-primary" />
+                    <Repeat className="h-6 w-6 text-primary" aria-hidden="true" />
                     <h2 className="text-lg font-semibold">Quotidiennes</h2>
                   </div>
                   <div className="space-y-4 pl-2">
@@ -376,7 +376,7 @@ const Routines = () => {
               {weeklyRoutines.length > 0 && (
                 <div className="space-y-4">
                   <div className="flex items-center gap-2">
-                    <CalendarDays className="h-6 w-6 text-primary" />
+                    <CalendarDays className="h-6 w-6 text-primary" aria-hidden="true" />
                     <h2 className="text-lg font-semibold">Hebdomadaires</h2>
                   </div>
                   <div className="space-y-4 pl-2">

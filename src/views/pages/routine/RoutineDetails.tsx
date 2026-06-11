@@ -170,7 +170,7 @@ const RoutineDetails = () => {
   const firstToLastDate = getDatesOfCurrentMonth(new Date());
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
+    <main className="min-h-screen bg-gradient-to-b from-background to-muted/20">
       <div className="container mx-auto px-4 py-8 max-w-2xl">
         <div className="mb-6">
           <div className="flex justify-between items-center mb-4">
@@ -181,12 +181,12 @@ const RoutineDetails = () => {
                 className="focus-visible:ring-2 focus-visible:ring-primary"
                 aria-label="Retour à l'accueil"
               >
-                <ArrowLeft className="h-4 w-4 mr-2" />
+                <ArrowLeft className="h-4 w-4 mr-2" aria-hidden="true" />
                 Retour
               </Button>
             </div>
             <div className="flex items-center gap-2">
-              <Sparkles className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
+              <Sparkles className="h-6 w-6 sm:h-8 sm:w-8 text-primary" aria-hidden="true" />
               <h1 className="text-2xl sm:text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent">
                 Ma routine
               </h1>
@@ -243,7 +243,7 @@ const RoutineDetails = () => {
           <Card className="transition-all duration-200 hover:scale-[1.04] hover:shadow-lg hover:border-primary/60 hover:bg-primary/5">
             <CardContent className="p-3 sm:p-4 text-center flex flex-col justify-center h-full">
               <div className="mx-auto mb-2 p-2 rounded-lg bg-primary/10 inline-flex">
-                <Calendar className="h-5 w-5 text-primary" />
+                <Calendar className="h-5 w-5 text-primary" aria-hidden="true" />
               </div>
               <p className="text-2xl sm:text-3xl font-bold text-foreground">
                 {totalCompletions}
@@ -257,7 +257,7 @@ const RoutineDetails = () => {
           <Card className="transition-all duration-200 hover:scale-[1.04] hover:shadow-lg hover:border-primary/60 hover:bg-primary/5">
             <CardContent className="p-3 sm:p-4 text-center flex flex-col justify-center h-full">
               <div className="mx-auto mb-2 p-2 rounded-lg bg-green-500/10 inline-flex">
-                <TrendingUp className="h-5 w-5 text-green-600" />
+                <TrendingUp className="h-5 w-5 text-green-600" aria-hidden="true" />
               </div>
               <p className="text-2xl sm:text-3xl font-bold text-foreground">
                 {completionRate}%
@@ -271,7 +271,7 @@ const RoutineDetails = () => {
           <Card className="transition-all duration-200 hover:scale-[1.04] hover:shadow-lg hover:border-primary/60 hover:bg-primary/5">
             <CardContent className="p-3 sm:p-4 text-center flex flex-col justify-center h-full">
               <div className="mx-auto mb-2 p-2 rounded-lg bg-primary/10 inline-flex">
-                <Flame className="h-5 w-5 text-primary" />
+                <Flame className="h-5 w-5 text-primary" aria-hidden="true" />
               </div>
               <p className="text-2xl sm:text-3xl font-bold text-foreground">
                 {currentStreak}
@@ -285,7 +285,7 @@ const RoutineDetails = () => {
           <Card className="transition-all duration-200 hover:scale-[1.04] hover:shadow-lg hover:border-primary/60 hover:bg-primary/5">
             <CardContent className="p-3 sm:p-4 text-center flex flex-col justify-center h-full">
               <div className="mx-auto mb-2 p-2 rounded-lg bg-secondary/10 inline-flex">
-                <Award className="h-5 w-5 text-secondary" />
+                <Award className="h-5 w-5 text-secondary" aria-hidden="true" />
               </div>
               <p className="text-2xl sm:text-3xl font-bold text-foreground">
                 {longestStreak}
@@ -445,7 +445,7 @@ const RoutineDetails = () => {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </main>
   );
 };
 

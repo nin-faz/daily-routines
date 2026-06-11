@@ -172,7 +172,7 @@ const Stats = () => {
   ].filter((dataForProject) => dataForProject.value > 0);
 
   return (
-    <div className="min-h-screen bg-gradient-bg pb-20 md:pb-24">
+    <main className="min-h-screen bg-gradient-bg pb-20 md:pb-24">
       <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8 max-w-3xl">
         <header className="mb-6 sm:mb-8">
           <Header />
@@ -555,7 +555,7 @@ const Stats = () => {
       </div>
 
       <Navigation />
-    </div>
+    </main>
   );
 };
 

@@ -150,8 +150,9 @@ const Tasks = () => {
                       size="icon"
                       className="h-8 w-8"
                       onClick={() => setSelectedFolderId(null)}
+                      aria-label="Retour"
                     >
-                      <ArrowLeft className="h-5 w-5" />
+                      <ArrowLeft className="h-5 w-5" aria-hidden="true" />
                     </Button>
                     <h2 className="text-lg sm:text-xl font-bold truncate">
                       {selectedFolder?.name}
