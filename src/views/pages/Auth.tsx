@@ -22,6 +22,7 @@ import {
 import { useToast } from "@/application/hooks/use-toast";
 import { Loader2, LogIn, UserPlus } from "lucide-react";
 import Loader from "@/shared/components/Loader";
+import { Helmet } from "react-helmet-async";
 import { usePageTitle } from "@/application/hooks/usePageTitle";
 import { emailSchema, passwordSchema } from "@/shared/lib/validationSchemas";
 
@@ -119,6 +120,10 @@ const Auth = () => {
   }
 
   return (
+    <>
+      <Helmet>
+        <meta name="robots" content="noindex, nofollow" />
+      </Helmet>
     <main className="min-h-screen flex items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md shadow-lg">
         <CardHeader className="text-center space-y-2">
@@ -316,6 +321,7 @@ const Auth = () => {
         </Tabs>
       </Card>
     </main>
+    </>
   );
 };
 

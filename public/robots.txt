@@ -1,4 +1,18 @@
 User-agent: *
 Allow: /
+Allow: /actus
+Disallow: /dashboard
+Disallow: /routines
+Disallow: /routine/
+Disallow: /timer/
+Disallow: /calendar
+Disallow: /tasks
+Disallow: /folder/
+Disallow: /stats
+Disallow: /profile
+Disallow: /admin/
+Disallow: /reset-password
+Disallow: /auth
+Disallow: /forgot-password
 
 Sitemap: https://daily-routines.fr/sitemap.xml

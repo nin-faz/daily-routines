@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import { useAuth } from "@/application/context/AuthContext";
 import { usePageTitle } from "@/application/hooks/usePageTitle";
 import { Button } from "@/shared/components/ui/button";
@@ -63,6 +64,8 @@ const ForgotPassword = () => {
 
   if (isEmailSent) {
     return (
+      <>
+        <Helmet><meta name="robots" content="noindex, nofollow" /></Helmet>
       <main className="min-h-screen bg-gradient-bg flex items-center justify-center p-4">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center space-y-4">
@@ -97,10 +100,13 @@ const ForgotPassword = () => {
           </CardFooter>
         </Card>
       </main>
+      </>
     );
   }
 
   return (
+    <>
+      <Helmet><meta name="robots" content="noindex, nofollow" /></Helmet>
     <main className="min-h-screen bg-gradient-bg flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center space-y-4">
@@ -168,6 +174,7 @@ const ForgotPassword = () => {
         </form>
       </Card>
     </main>
+    </>
   );
 };
 

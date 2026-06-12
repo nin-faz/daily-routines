@@ -1,5 +1,9 @@
 # Daily Routine Tracker
 
+**🌐 [daily-routines.fr](https://daily-routines.fr)**
+
+[![QR Code](https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=https://daily-routines.fr)](https://daily-routines.fr)
+
 Une application web progressive (PWA) pour gérer vos routines quotidiennes, tâches et dossiers — construite avec React 18, TypeScript et Supabase.
 
 ---
@@ -200,6 +204,7 @@ L'application est installable sur mobile et desktop :
 L'architecture suit **Domain-Driven Design** avec séparation stricte des responsabilités :
 
 ```
+SEO.md                            # Documentation SEO complète (JSON-LD, OG, canonical, robots, headers...)
 src/
 ├── application/                  ← Orchestration app-specific
 │   ├── context/                  ← Global state: Auth, User, Theme, Notifications
@@ -272,7 +277,8 @@ public/
 ├── placeholder.svg               # Placeholder image générique
 ├── _redirects                    # Règles de redirection Netlify
 ├── sitemap.xml                   # Sitemap SEO
-└── robots.txt
+├── robots.txt                    # Directives crawlers + blocage AI bots
+└── _headers                      # Security headers Netlify (X-Frame-Options, etc.)
 ```
 
 ### Concept clé : Séparation des responsabilités

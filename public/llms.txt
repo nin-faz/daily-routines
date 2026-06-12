@@ -1,0 +1,46 @@
+# Daily Routines
+
+> L'application PWA gratuite pour créer tes routines quotidiennes, suivre tes habitudes et maintenir ta série. Disponible sur iPhone, Android et navigateur.
+> Dernière mise à jour : 2026-06-12
+
+## Application
+
+Daily Routines est une Progressive Web App (PWA) française, gratuite et sans abonnement. Elle permet de :
+
+- Créer des routines quotidiennes ou hebdomadaires avec durée et créneau horaire (Matin, Après-midi, Soir)
+- Suivre un streak de jours consécutifs avec protection hebdomadaire (Éveil)
+- Utiliser un timer plein écran avec progression circulaire
+- Recevoir des notifications push sur iOS 16.4+ (Safari) et Android (Chrome)
+- Organiser des tâches et projets en dossiers avec deadlines
+- Consulter des statistiques détaillées et un calendrier heatmap
+- Marquer des jours de repos sans perdre sa série
+
+## Fonctionnalité unique — L'Éveil
+
+L'Éveil est une protection de streak consommable, rechargeable chaque semaine (lundi). Si un jour est manqué, l'utilisateur peut activer l'Éveil pour couvrir ce jour — rétroactivement ou préventivement. Le streak repart comme si de rien n'était.
+
+## Technique
+
+- Framework : React 18 + TypeScript + Vite
+- Backend : Supabase (Auth, PostgreSQL, Edge Functions)
+- PWA : Service Worker + Web Push (VAPID)
+- Hébergement : Netlify
+- Domaine : daily-routines.fr
+
+## Pages publiques
+
+- [Accueil](https://daily-routines.fr/) — landing page avec présentation des fonctionnalités, FAQ, guide d'installation PWA
+- [Nouveautés](https://daily-routines.fr/actus) — changelog complet depuis janvier 2026
+
+## Historique des mises à jour
+
+- Juin 2026 : Page d'accueil publique
+- Mai 2026 : Éveil streak, Timer plein écran
+- Avril 2026 : Notifications push repensées, Résumé hebdomadaire
+- Mars 2026 : Jours de repos, Bannière record personnel
+- Février 2026 : Archivage de routines, Routines hebdomadaires
+- Janvier 2026 : Dossiers & Tâches, Notifications push PWA
+
+## Contact
+
+Site : https://daily-routines.fr

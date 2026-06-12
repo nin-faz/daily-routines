@@ -1,12 +1,12 @@
 {
   "name": "Daily Routines",
   "short_name": "Daily Routines",
-  "description": "Gérez vos routines et dossiers quotidiens",
+  "description": "Crée tes routines quotidiennes, suis ton streak, complète tes tâches. Timer intégré, notifications push, statistiques et calendrier heatmap. Gratuit.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#f46734",
+  "theme_color": "#f97316",
   "orientation": "portrait",
   "icons": [
     {

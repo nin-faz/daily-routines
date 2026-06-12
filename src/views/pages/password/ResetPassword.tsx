@@ -15,6 +15,7 @@ import {
 } from "@/shared/components/ui/card";
 import { useToast } from "@/application/hooks/use-toast";
 import { Loader2, Lock, CheckCircle } from "lucide-react";
+import { Helmet } from "react-helmet-async";
 import { usePageTitle } from "@/application/hooks/usePageTitle";
 
 const ResetPassword = () => {
@@ -155,6 +156,8 @@ const ResetPassword = () => {
 
   if (isSuccess) {
     return (
+      <>
+        <Helmet><meta name="robots" content="noindex, nofollow" /></Helmet>
       <main className="min-h-screen bg-gradient-bg flex items-center justify-center p-4">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center space-y-4">
@@ -179,10 +182,13 @@ const ResetPassword = () => {
           </CardFooter>
         </Card>
       </main>
+      </>
     );
   }
 
   return (
+    <>
+      <Helmet><meta name="robots" content="noindex, nofollow" /></Helmet>
     <main className="min-h-screen bg-gradient-bg flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center space-y-4">
@@ -247,6 +253,7 @@ const ResetPassword = () => {
         </form>
       </Card>
     </main>
+    </>
   );
 };
 

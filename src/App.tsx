@@ -131,7 +131,9 @@ const AppContent = () => {
     };
   }, [user, refreshStatus]);
 
-  if (!user || !theme || user.loading || theme.loading) {
+  const isPublicRoute = ["/", "/actus"].includes(window.location.pathname);
+
+  if (!isPublicRoute && (!user || !theme || user.loading || theme.loading)) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader />

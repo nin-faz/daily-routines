@@ -1,5 +1,6 @@
 import { ReactNode } from "react";
 import { Navigate } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import { useAuth } from "@/application/context/AuthContext";
 import { useUser } from "@/application/context/UserContext";
 import Loader from "@/shared/components/Loader";
@@ -23,8 +24,7 @@ const ProtectedRoute = ({
   }
 
   if (!user) {
-    window.location.href = "/";
-    return <Loader />;
+    return <Navigate to="/" replace />;
   }
   // Si un malin essaye d'accéder via l'url à une page admin alors qu'il n'est pas admin
   if (requireAdmin && !isAdmin) {
@@ -33,6 +33,9 @@ const ProtectedRoute = ({
 
   return (
     <>
+      <Helmet>
+        <meta name="robots" content="noindex, nofollow" />
+      </Helmet>
       {children}
       {/* {!requireAdmin && <FeedbackChat />} */}
     </>

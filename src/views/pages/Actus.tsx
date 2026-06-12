@@ -7,6 +7,7 @@ const ACTUS = [
   {
     id: "landing-page",
     date: "Juin 2026",
+    isoDate: "2026-06",
     tag: "Nouveauté",
     title: "Page d'accueil publique",
     desc: "Daily Routines dispose désormais d'une landing page publique. Présentation des fonctionnalités, timer animé, FAQ et guide d'installation PWA — tout ce qu'il faut pour découvrir l'app avant de s'inscrire.",
@@ -15,6 +16,7 @@ const ACTUS = [
   {
     id: "eveil",
     date: "Mai 2026",
+    isoDate: "2026-05",
     tag: "Nouveauté",
     title: "L'Éveil 🪺 — une seconde chance pour ton streak",
     desc: "Rater un jour ne signifie plus tout perdre. L'Éveil est une protection de streak consommable, rechargeable chaque semaine (lundi). Active-le pour couvrir un jour manqué — rétroactivement ou préventivement. Ton streak repart comme si de rien n'était.",
@@ -23,6 +25,7 @@ const ACTUS = [
   {
     id: "timer-plein-ecran",
     date: "Mai 2026",
+    isoDate: "2026-05",
     tag: "Amélioration",
     title: "Timer plein écran",
     desc: "Le minuteur de routine passe désormais en mode plein écran. Affichage immersif, progression circulaire, zéro distraction. Le focus n'est plus une intention — c'est une réalité.",
@@ -31,6 +34,7 @@ const ACTUS = [
   {
     id: "notifications-push",
     date: "Avr. 2026",
+    isoDate: "2026-04",
     tag: "Amélioration",
     title: "Notifications push repensées",
     desc: "Les rappels sont plus intelligents. Tu peux désormais compléter une routine directement depuis la notification push, sans ouvrir l'app. Les notifications s'adaptent à tes créneaux horaires (Matin, Après-midi, Soir) et incluent les deadlines de tes dossiers.",
@@ -39,6 +43,7 @@ const ACTUS = [
   {
     id: "resume-hebdomadaire",
     date: "Avr. 2026",
+    isoDate: "2026-04",
     tag: "Nouveauté",
     title: "Résumé hebdomadaire",
     desc: "Chaque dimanche soir, reçois un résumé de ta semaine par notification push. Taux de complétion, streak actuel, meilleures journées — un bilan clair pour repartir motivé le lundi.",
@@ -47,6 +52,7 @@ const ACTUS = [
   {
     id: "jours-de-repos",
     date: "Mar. 2026",
+    isoDate: "2026-03",
     tag: "Nouveauté",
     title: "Jours de repos 😴",
     desc: "Journée chargée, imprévu, ou simple besoin de souffler — tu peux désormais marquer tes routines comme \"jour de repos\". Ton streak est préservé. L'app ne t'accuse pas, elle t'accompagne.",
@@ -55,6 +61,7 @@ const ACTUS = [
   {
     id: "record-streak",
     date: "Mar. 2026",
+    isoDate: "2026-03",
     tag: "Nouveauté",
     title: "Bannière record personnel 🏆",
     desc: "Quand tu bats ton record de streak all-time, une bannière animée s'affiche. Un moment de célébration mérité — parce que la constance mérite d'être reconnue.",
@@ -63,6 +70,7 @@ const ACTUS = [
   {
     id: "routines-archivees",
     date: "Fév. 2026",
+    isoDate: "2026-02",
     tag: "Nouveauté",
     title: "Archivage de routines",
     desc: "Archive les routines que tu ne pratiques plus sans les supprimer. Elles disparaissent de ta vue principale mais restent consultables. Parfait pour les routines saisonnières ou temporairement mises en pause.",
@@ -71,6 +79,7 @@ const ACTUS = [
   {
     id: "routines-hebdomadaires",
     date: "Fév. 2026",
+    isoDate: "2026-02",
     tag: "Nouveauté",
     title: "Routines hebdomadaires",
     desc: "Crée des routines qui n'apparaissent que certains jours de la semaine. Course le lundi, yoga le mercredi et vendredi — l'app s'adapte à ton planning, pas l'inverse.",
@@ -79,6 +88,7 @@ const ACTUS = [
   {
     id: "dossiers-taches",
     date: "Jan. 2026",
+    isoDate: "2026-01",
     tag: "Nouveauté",
     title: "Dossiers & Tâches",
     desc: "Organise tes projets et objectifs en dossiers. Décompose chaque projet en tâches à cocher, avec ou sans deadline. Calendrier intégré pour visualiser les échéances. Un vrai gestionnaire de projets léger, dans la même app.",
@@ -87,6 +97,7 @@ const ACTUS = [
   {
     id: "notifications-push-v1",
     date: "Jan. 2026",
+    isoDate: "2026-01",
     tag: "Nouveauté",
     title: "Notifications push (PWA)",
     desc: "L'app envoie des rappels push directement sur ton téléphone, même fermée. Compatible iOS 16.4+ (Safari) et Android (Chrome). Installe l'app sur ton écran d'accueil pour en profiter.",
@@ -104,6 +115,7 @@ const Actus = () => {
   return (
     <>
       <Helmet>
+        <title>Nouveautés — Daily Routines</title>
         <meta
           name="description"
           content="Toutes les mises à jour de Daily Routines — nouvelles fonctionnalités, améliorations : Éveil streak, timer plein écran, notifications push, jours de repos et plus."
@@ -121,7 +133,7 @@ const Actus = () => {
           content="https://daily-routines.fr/logo.png"
         />
         <meta property="og:locale" content="fr_FR" />
-        <meta name="twitter:card" content="summary" />
+        <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Nouveautés — Daily Routines" />
         <meta
           name="twitter:description"
@@ -133,16 +145,36 @@ const Actus = () => {
         />
         <script type="application/ld+json">{JSON.stringify({
           "@context": "https://schema.org",
-          "@type": "CollectionPage",
-          "name": "Nouveautés — Daily Routines",
-          "description": "Toutes les mises à jour de Daily Routines — nouvelles fonctionnalités, améliorations : Éveil streak, timer plein écran, notifications push, jours de repos et plus.",
-          "url": "https://daily-routines.fr/actus",
-          "inLanguage": "fr",
-          "isPartOf": {
-            "@type": "WebApplication",
-            "name": "Daily Routines",
-            "url": "https://daily-routines.fr"
-          }
+          "@graph": [
+            {
+              "@type": "CollectionPage",
+              "@id": "https://daily-routines.fr/actus#collectionpage",
+              "name": "Nouveautés — Daily Routines",
+              "description": "Toutes les mises à jour de Daily Routines — nouvelles fonctionnalités, améliorations : Éveil streak, timer plein écran, notifications push, jours de repos et plus.",
+              "url": "https://daily-routines.fr/actus",
+              "inLanguage": "fr",
+              "isPartOf": { "@id": "https://daily-routines.fr/#webapp" },
+              "mainEntity": {
+                "@type": "ItemList",
+                "@id": "https://daily-routines.fr/actus#itemlist",
+                "itemListElement": ACTUS.map((a, i) => ({
+                  "@type": "ListItem",
+                  "position": i + 1,
+                  "name": a.title,
+                  "description": a.desc,
+                  "url": `https://daily-routines.fr/actus#${a.id}`
+                }))
+              }
+            },
+            {
+              "@type": "BreadcrumbList",
+              "@id": "https://daily-routines.fr/actus#breadcrumb",
+              "itemListElement": [
+                { "@type": "ListItem", "position": 1, "name": "Accueil", "item": "https://daily-routines.fr/" },
+                { "@type": "ListItem", "position": 2, "name": "Nouveautés", "item": "https://daily-routines.fr/actus" }
+              ]
+            }
+          ]
         })}</script>
       </Helmet>
       <style>{`
@@ -277,7 +309,7 @@ const Actus = () => {
               >
                 <div className="flex items-center gap-3 mb-3 flex-wrap">
                   <time
-                    dateTime={a.date}
+                    dateTime={a.isoDate}
                     style={{
                       color: "rgba(255,255,255,0.65)",
                       fontSize: "0.8rem",

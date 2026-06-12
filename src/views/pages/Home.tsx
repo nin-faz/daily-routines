@@ -13,6 +13,7 @@ import {
   Menu,
   X,
 } from "lucide-react";
+import { Helmet } from "react-helmet-async";
 import { useAuth } from "@/application/context/AuthContext";
 
 /* ── Scroll-reveal hook ── */
@@ -289,11 +290,13 @@ const Home = () => {
   const { user, loading } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  if (loading) return null;
-  if (user) return <Navigate to="/dashboard" replace />;
+  if (!loading && user) return <Navigate to="/dashboard" replace />;
 
   return (
     <>
+      <Helmet>
+        <link rel="canonical" href="https://daily-routines.fr/" />
+      </Helmet>
       <style>{`
         @keyframes float     { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-14px)} }
         @keyframes glow-pulse{ 0%,100%{opacity:.2} 50%{opacity:.4} }
@@ -480,6 +483,8 @@ const Home = () => {
             className="relative w-full block"
             style={{ opacity: 0.28 }}
             src="/videos/presentation.mp4"
+            poster="/videos/presentation-poster.avif"
+            preload="none"
             autoPlay
             muted
             loop
@@ -526,7 +531,11 @@ const Home = () => {
                   Gratuit · Aucune carte requise
                 </div>
 
-                <h1
+                <h1 className="sr-only">
+                  Routines quotidiennes et suivi d'habitudes — Daily Routines
+                </h1>
+                <p
+                  aria-hidden="true"
                   style={{
                     fontSize: "clamp(3.2rem, 8vw, 6rem)",
                     fontWeight: 900,
@@ -547,7 +556,7 @@ const Home = () => {
                   >
                     n'attend pas.
                   </span>
-                </h1>
+                </p>
 
                 <p
                   style={{
@@ -555,13 +564,55 @@ const Home = () => {
                     fontSize: "clamp(1rem, 2vw, 1.2rem)",
                     lineHeight: 1.75,
                     maxWidth: "480px",
-                    marginBottom: "2.5rem",
+                    marginBottom: "2rem",
                   }}
                 >
-                  Crée tes routines, construis ta série, mesure tes progrès.
-                  <br />
-                  Chaque habitude forge qui tu deviens.
+                  L'app PWA gratuite pour créer tes routines quotidiennes, suivre tes habitudes et maintenir ta série. Sur iPhone, Android et navigateur.
                 </p>
+                <div
+                  className="flex items-center gap-2 flex-wrap"
+                  style={{ marginBottom: "1.5rem" }}
+                >
+                  <span
+                    style={{
+                      color: "rgba(255,255,255,0.55)",
+                      fontSize: "0.78rem",
+                      fontWeight: 600,
+                      background: "rgba(255,255,255,0.06)",
+                      border: "1px solid rgba(255,255,255,0.1)",
+                      borderRadius: "999px",
+                      padding: "0.25rem 0.75rem",
+                    }}
+                  >
+                    ✓ Actif depuis janvier 2026
+                  </span>
+                  <span
+                    style={{
+                      color: "rgba(255,255,255,0.55)",
+                      fontSize: "0.78rem",
+                      fontWeight: 600,
+                      background: "rgba(255,255,255,0.06)",
+                      border: "1px solid rgba(255,255,255,0.1)",
+                      borderRadius: "999px",
+                      padding: "0.25rem 0.75rem",
+                    }}
+                  >
+                    ✓ Mis à jour en juin 2026
+                  </span>
+                  <span
+                    style={{
+                      color: "rgba(255,255,255,0.55)",
+                      fontSize: "0.78rem",
+                      fontWeight: 600,
+                      background: "rgba(255,255,255,0.06)",
+                      border: "1px solid rgba(255,255,255,0.1)",
+                      borderRadius: "999px",
+                      padding: "0.25rem 0.75rem",
+                    }}
+                  >
+                    ✓ 100% gratuit
+                  </span>
+                </div>
 
                 <div className="flex items-center gap-5 flex-wrap">
                   <Link to="/auth">
@@ -1301,6 +1352,8 @@ const Home = () => {
                     src="/preview-dashboard.png"
                     alt="Aperçu Daily Routines — dashboard avec streak, routines du jour et progression"
                     className="w-full block"
+                    width={300}
+                    height={650}
                     loading="lazy"
                   />
                 </div>
@@ -1656,12 +1709,12 @@ const Home = () => {
         >
           <p style={{ color: "rgba(255,255,255,0.75)", fontSize: "0.8rem" }}>
             © {new Date().getFullYear()} Daily Routines ·{" "}
-            <a
-              href="https://daily-routines.fr"
+            <Link
+              to="/"
               style={{ color: "rgba(255,255,255,0.85)", textDecoration: "none" }}
             >
               daily-routines.fr
-            </a>
+            </Link>
           </p>
         </footer>
       </main>
