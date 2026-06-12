@@ -31,12 +31,12 @@ const ArchivePage = () => {
                 className="focus-visible:ring-2 focus-visible:ring-primary"
                 aria-label="Retour à l'accueil"
               >
-                <ArrowLeft className="h-4 w-4 mr-2" />
+                <ArrowLeft className="h-4 w-4 mr-2" aria-hidden="true" />
                 Retour
               </Button>
             </div>
             <div className="flex justify-center items-center gap-2 ">
-              <Archive className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
+              <Archive className="h-6 w-6 sm:h-8 sm:w-8 text-primary" aria-hidden="true" />
               <h1 className="text-2xl sm:text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent">
                 Routines archivées
               </h1>

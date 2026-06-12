@@ -23,12 +23,12 @@ const ProtectedRoute = ({
   }
 
   if (!user) {
-    window.location.href = "/auth";
+    window.location.href = "/";
     return <Loader />;
   }
-
+  // Si un malin essaye d'accéder via l'url à une page admin alors qu'il n'est pas admin
   if (requireAdmin && !isAdmin) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/dashboard" replace />;
   }
 
   return (

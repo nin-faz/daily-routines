@@ -61,7 +61,7 @@ const TimerView = () => {
         setRoutine(found);
         if (!savedState) setTimeLeft(found.duration * 60);
       } else {
-        navigate("/");
+        navigate("/dashboard");
       }
     };
     loadRoutine();
@@ -181,7 +181,7 @@ const TimerView = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
+    <main className="min-h-screen bg-gradient-to-b from-background to-muted/20">
       <div className="container mx-auto px-4 py-8 max-w-2xl">
         <div className="mb-6">
           <Button
@@ -190,7 +190,7 @@ const TimerView = () => {
             className="focus-visible:ring-2 focus-visible:ring-primary"
             aria-label="Retour"
           >
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <ArrowLeft className="h-4 w-4 mr-2" aria-hidden="true" />
             Retour
           </Button>
         </div>
@@ -257,7 +257,7 @@ const TimerView = () => {
             aria-label="Arrêter et quitter"
             className="w-14 h-14 rounded-full bg-muted flex items-center justify-center hover:bg-muted/80 transition-colors"
           >
-            <Square className="h-5 w-5 fill-current text-muted-foreground" />
+            <Square className="h-5 w-5 fill-current text-muted-foreground" aria-hidden="true" />
           </button>
           <button
             onClick={() => setIsRunning(!isRunning)}
@@ -265,7 +265,7 @@ const TimerView = () => {
             aria-label={isRunning ? "Pause" : "Reprendre"}
             className="w-20 h-20 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg shadow-primary/30 disabled:opacity-50 hover:opacity-90 transition-opacity"
           >
-            {isRunning ? <Pause className="h-8 w-8" /> : <Play className="h-8 w-8" />}
+            {isRunning ? <Pause className="h-8 w-8" aria-hidden="true" /> : <Play className="h-8 w-8" aria-hidden="true" />}
           </button>
           <button
             onClick={handleReset}
@@ -273,12 +273,12 @@ const TimerView = () => {
             aria-label="Recommencer"
             className="w-14 h-14 rounded-full bg-muted flex items-center justify-center hover:bg-muted/80 transition-colors disabled:opacity-40"
           >
-            <RotateCcw className="h-5 w-5 text-muted-foreground" />
+            <RotateCcw className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
           </button>
         </div>
       </div>
       </div>
-    </div>
+    </main>
   );
 };
 

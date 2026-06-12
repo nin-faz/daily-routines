@@ -59,18 +59,18 @@ const AllRoutines = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-gradient-bg pb-36 md:pb-24">
+    <main className="min-h-screen bg-gradient-bg pb-36 md:pb-24">
       <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8 max-w-4xl">
         <Header />
         <div className="flex justify-between items-center mb-4">
           <div className="flex items-start gap-2">
             <Button
               variant="ghost"
-              onClick={() => navigate("/")}
+              onClick={() => navigate("/dashboard")}
               className="focus-visible:ring-2 focus-visible:ring-primary"
               aria-label="Retour à l'accueil"
             >
-              <ArrowLeft className="h-4 w-4 mr-2" />
+              <ArrowLeft className="h-4 w-4 mr-2" aria-hidden="true" />
               Retour
             </Button>
           </div>
@@ -128,7 +128,7 @@ const AllRoutines = () => {
       />
 
       <Navigation />
-    </div>
+    </main>
   );
 };
 

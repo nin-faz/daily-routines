@@ -32,7 +32,7 @@ const UserMenu = () => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative">
+        <Button variant="ghost" size="icon" className="relative" aria-label="Menu utilisateur">
           <User className="h-5 w-5" />
           {isAdmin && (
             <span className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-primary" />

@@ -29,7 +29,7 @@ type AdminTaskDisplay = Database["public"]["Tables"]["tasks"]["Row"] & {
 };
 
 const AdminTasks = () => {
-  usePageTitle("Admin — Tâches");
+  usePageTitle("Tâches · Admin");
   const [tasks, setTasks] = useState<AdminTaskDisplay[]>([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState<Record<string, string>>({});

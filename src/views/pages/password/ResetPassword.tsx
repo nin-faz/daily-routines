@@ -155,11 +155,11 @@ const ResetPassword = () => {
 
   if (isSuccess) {
     return (
-      <div className="min-h-screen bg-gradient-bg flex items-center justify-center p-4">
+      <main className="min-h-screen bg-gradient-bg flex items-center justify-center p-4">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center space-y-4">
             <div className="mx-auto w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center">
-              <CheckCircle className="h-8 w-8 text-white" />
+              <CheckCircle className="h-8 w-8 text-white" aria-hidden="true" />
             </div>
             <CardTitle className="text-2xl sm:text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
               Mot de passe réinitialisé !
@@ -178,16 +178,16 @@ const ResetPassword = () => {
             </Button>
           </CardFooter>
         </Card>
-      </div>
+      </main>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-bg flex items-center justify-center p-4">
+    <main className="min-h-screen bg-gradient-bg flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center space-y-4">
           <div className="mx-auto w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center">
-            <Lock className="h-8 w-8 text-white" />
+            <Lock className="h-8 w-8 text-white" aria-hidden="true" />
           </div>
           <CardTitle className="text-2xl sm:text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
             Nouveau mot de passe
@@ -230,12 +230,15 @@ const ResetPassword = () => {
             >
               {isLoading ? (
                 <>
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  <Loader2
+                    className="h-4 w-4 animate-spin mr-2"
+                    aria-hidden="true"
+                  />
                   Mise à jour...
                 </>
               ) : (
                 <>
-                  <Lock className="h-4 w-4 mr-2" />
+                  <Lock className="h-4 w-4 mr-2" aria-hidden="true" />
                   Réinitialiser le mot de passe
                 </>
               )}
@@ -243,7 +246,7 @@ const ResetPassword = () => {
           </CardFooter>
         </form>
       </Card>
-    </div>
+    </main>
   );
 };
 
