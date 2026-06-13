@@ -176,32 +176,20 @@ const Routines = () => {
       return s?.skipped;
     });
 
-  // streakAtRisk : vrai si on doit proposer d'activer le revive.
-  // Cas 1 (préventif) : streak intact mais rien complété aujourd'hui et dernière activité hier.
-  // Cas 2 (rétroactif) : streak déjà cassé mais on avait un streak avant.
-  // Exclu : jour de repos (allSkippedToday) → ne pas alarmer inutilement.
+  // streakAtRisk : vrai uniquement si le streak est déjà cassé (rétroactif).
+  // Exclu : jour de repos (allSkippedToday).
   const streakAtRisk =
     !isLoading &&
     !isStatsLoading &&
-    completedCount === 0 &&
     !allSkippedToday &&
-    (
-      (currentStreak > 0 && lastActive === getYesterdayString()) ||
-      (currentStreak === 0 && prevStreak > 0)
-    );
+    currentStreak === 0 &&
+    prevStreak > 0;
 
-  // reviveDate : date à couvrir avec le revive.
-  // Si le streak est déjà cassé → couvre hier (rétroactif).
-  // Sinon → couvre aujourd'hui (préventif).
-  const reviveDate =
-    currentStreak === 0 && prevStreak > 0
-      ? getYesterdayString()
-      : getTodayString();
+  // reviveDate : toujours hier (on couvre le jour manqué).
+  const reviveDate = getYesterdayString();
 
-  // streakToSave : valeur de streak à sauvegarder en DB au moment de l'activation.
-  // Préventif : currentStreak (encore intact).
-  // Rétroactif : prevStreak (streak d'avant la cassure).
-  const streakToSave = currentStreak > 0 ? currentStreak : prevStreak;
+  // streakToSave : prevStreak (streak d'avant la cassure).
+  const streakToSave = prevStreak;
 
   // Séparer les routines par fréquence (quotidiennes vs hebdomadaires)
   const dailyRoutines = todaysRoutines.filter(

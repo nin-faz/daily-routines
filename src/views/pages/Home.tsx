@@ -12,6 +12,7 @@ import {
   Sparkles,
   Menu,
   X,
+  Loader,
 } from "lucide-react";
 import { Helmet } from "react-helmet-async";
 import { useAuth } from "@/application/context/AuthContext";
@@ -258,7 +259,6 @@ const Marquee = () => {
   );
 };
 
-
 const NAV_LINKS = [
   { label: "Fonctionnalités", href: "#features" },
   { label: "Actus", href: "/actus" },
@@ -289,8 +289,12 @@ const FAQ_ITEMS = [
 const Home = () => {
   const { user, loading } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
-  if (!loading && user) return <Navigate to="/dashboard" replace />;
+  if (loading) return <Loader />;
+  if (user) return <Navigate to="/dashboard" replace />;
 
   return (
     <>
@@ -343,7 +347,11 @@ const Home = () => {
               className="flex items-center gap-2.5 font-bold tracking-tight text-white no-underline px-4 py-2"
               style={{ fontSize: "1.05rem", cursor: "pointer" }}
             >
-              <img src="/logo.svg" alt="Logo Daily Routines" className="h-8 w-8" />
+              <img
+                src="/logo.svg"
+                alt="Logo Daily Routines"
+                className="h-8 w-8"
+              />
               <span>Daily Routines</span>
             </a>
             <div
@@ -354,7 +362,10 @@ const Home = () => {
                 margin: "0 6px",
               }}
             />
-            <nav className="flex items-center" aria-label="Navigation principale">
+            <nav
+              className="flex items-center"
+              aria-label="Navigation principale"
+            >
               {NAV_LINKS.map((l) => (
                 <a
                   key={l.href}
@@ -402,8 +413,13 @@ const Home = () => {
 
         {/* ══ NAVBAR mobile — barre simple ══ */}
         <header
-          className="md:hidden fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-5 py-4"
-          style={{ backdropFilter: "blur(20px)", background: "rgba(10,10,10,0.85)" }}
+          className="md:hidden fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-5"
+          style={{
+            paddingTop: "calc(env(safe-area-inset-top) + 1rem)",
+            paddingBottom: "1rem",
+            backdropFilter: "blur(20px)",
+            background: "rgba(10,10,10,0.85)",
+          }}
         >
           <a
             href="#"
@@ -411,7 +427,11 @@ const Home = () => {
             className="flex items-center gap-2 font-bold text-white no-underline"
             style={{ fontSize: "1.05rem" }}
           >
-            <img src="/logo.svg" alt="Logo Daily Routines" className="h-8 w-8" />
+            <img
+              src="/logo.svg"
+              alt="Logo Daily Routines"
+              className="h-8 w-8"
+            />
           </a>
           <button
             className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-white/10 transition-colors outline-none"
@@ -428,8 +448,18 @@ const Home = () => {
             className="md:hidden fixed inset-0 z-[60] flex flex-col"
             style={{ background: "#0a0a0a" }}
           >
-            <div className="flex items-center justify-between px-5 py-4">
-              <img src="/logo.svg" alt="Logo Daily Routines" className="h-8 w-8" />
+            <div
+              className="flex items-center justify-between px-5"
+              style={{
+                paddingTop: "calc(env(safe-area-inset-top) + 1rem)",
+                paddingBottom: "1rem",
+              }}
+            >
+              <img
+                src="/logo.svg"
+                alt="Logo Daily Routines"
+                className="h-8 w-8"
+              />
               <button
                 className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-white/10 transition-colors outline-none"
                 onClick={() => setMobileMenuOpen(false)}
@@ -481,10 +511,9 @@ const Home = () => {
         >
           <video
             className="relative w-full block"
-            style={{ opacity: 0.28 }}
+            style={{ opacity: 0.38 }}
             src="/videos/presentation.mp4"
-            poster="/videos/presentation-poster.avif"
-            preload="none"
+            //preload="auto"
             autoPlay
             muted
             loop
@@ -513,24 +542,6 @@ const Home = () => {
           >
             <div className="w-full max-w-7xl mx-auto px-6 md:px-12 py-16 md:py-28">
               <div className="max-w-2xl">
-                <div
-                  className="inline-flex items-center gap-2 mb-6 md:mb-10"
-                  style={{
-                    background: "rgba(249,115,22,0.12)",
-                    border: "1px solid rgba(249,115,22,0.25)",
-                    borderRadius: "999px",
-                    padding: "0.35rem 1rem",
-                    color: "#fb923c",
-                    fontSize: "0.75rem",
-                    fontWeight: 700,
-                    letterSpacing: "0.1em",
-                    textTransform: "uppercase",
-                  }}
-                >
-                  <Flame className="h-3 w-3" aria-hidden="true" />
-                  Gratuit · Aucune carte requise
-                </div>
-
                 <h1 className="sr-only">
                   Routines quotidiennes et suivi d'habitudes — Daily Routines
                 </h1>
@@ -567,7 +578,9 @@ const Home = () => {
                     marginBottom: "2rem",
                   }}
                 >
-                  L'app PWA gratuite pour créer tes routines quotidiennes, suivre tes habitudes et maintenir ta série. Sur iPhone, Android et navigateur.
+                  L'app PWA gratuite pour créer tes routines quotidiennes,
+                  suivre tes habitudes et maintenir ta série. Sur iPhone,
+                  Android et navigateur.
                 </p>
                 <div
                   className="flex items-center gap-2 flex-wrap"
@@ -1711,7 +1724,10 @@ const Home = () => {
             © {new Date().getFullYear()} Daily Routines ·{" "}
             <Link
               to="/"
-              style={{ color: "rgba(255,255,255,0.85)", textDecoration: "none" }}
+              style={{
+                color: "rgba(255,255,255,0.85)",
+                textDecoration: "none",
+              }}
             >
               daily-routines.fr
             </Link>

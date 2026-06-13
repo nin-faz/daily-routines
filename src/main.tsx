@@ -3,6 +3,8 @@ import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
 
+window.history.scrollRestoration = "manual";
+
 // Enregistrer le Service Worker dès que possible pour les notifications push
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", async () => {

@@ -195,7 +195,6 @@ const StreakReviveCard = ({
     );
   };
 
-  const isRetroactive = streakAtRisk && currentStreak === 0;
   const showActivateButton = reviveAvailable && streakAtRisk;
 
   return (
@@ -231,7 +230,7 @@ const StreakReviveCard = ({
               85%     { transform: rotate(3deg); }
             }
           `}</style>
-          {isRetroactive && reviveAvailable ? (
+          {streakAtRisk && reviveAvailable ? (
             <div
               style={{
                 position: "relative",
@@ -325,26 +324,14 @@ const StreakReviveCard = ({
                   color: streakAtRisk ? "hsl(45,95%,70%)" : "hsl(35,95%,70%)",
                 }}
               >
-                {isRetroactive
+                {streakAtRisk
                   ? "Streak cassé hier ⚠️"
-                  : streakAtRisk
-                    ? "Ton streak est en danger ⚠️"
-                    : "Éveil disponible"}
+                  : "Éveil disponible"}
               </p>
               <p className="text-xs text-muted-foreground leading-snug">
-                {isRetroactive ? (
-                  "Utilise ton éveil pour récupérer ton streak d'hier"
-                ) : streakAtRisk ? (
-                  <>
-                    {" "}
-                    Utilise ton éveil pour protéger tes{" "}
-                    <strong style={{ color: "hsl(45,95%,65%)" }}>
-                      {currentStreak} jours
-                    </strong>
-                  </>
-                ) : (
-                  "1 éveil disponible cette semaine · se recharge chaque lundi"
-                )}
+                {streakAtRisk
+                  ? "Utilise ton éveil pour récupérer ton streak d'hier"
+                  : "1 éveil disponible cette semaine · se recharge chaque lundi"}
               </p>
             </>
           ) : (
@@ -359,7 +346,7 @@ const StreakReviveCard = ({
           )}
         </div>
 
-        {!reviveAvailable && !streakAtRisk && (
+        {!reviveAvailable && (
           <span
             className="text-xs font-semibold px-3 py-1.5 rounded-lg shrink-0 whitespace-nowrap"
             style={{ background: "hsl(35,20%,18%)", color: "hsl(30,10%,55%)" }}
@@ -430,28 +417,15 @@ const StreakReviveCard = ({
                   Ranimer ton streak ?
                 </AlertDialogTitle>
                 <AlertDialogDescription>
-                  {isRetroactive ? (
-                    <>
-                      Ton éveil va couvrir hier et restaurer ton streak. Tu
-                      disposes d'<strong>1 éveil par semaine</strong> — il se
-                      rechargera lundi prochain.
-                    </>
-                  ) : (
-                    <>
-                      Ton streak de <strong>{currentStreak} jours</strong> sera
-                      protégé pour aujourd'hui. Tu disposes d'
-                      <strong>1 éveil par semaine</strong> — il se rechargera
-                      lundi prochain.
-                    </>
-                  )}
+                  Ton éveil va couvrir hier et restaurer ton streak. Tu
+                  disposes d'<strong>1 éveil par semaine</strong> — il se
+                  rechargera lundi prochain.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel>Annuler</AlertDialogCancel>
                 <AlertDialogAction onClick={handleConfirm}>
-                  {isRetroactive
-                    ? "Oui, ranimer mon streak"
-                    : "Oui, protéger mon streak"}
+                  Oui, ranimer mon streak
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
