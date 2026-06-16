@@ -92,3 +92,6 @@ USING (public.is_admin(auth.uid()));
 
 -- Éveil de streak : {date, streak, activatedAt} JSONB (1 revive/semaine ISO)
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS last_streak_revive JSONB;
+
+-- Dernier streak positif connu (cross-device, remplace localStorage prev-streak)
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS prev_streak INTEGER DEFAULT 0;

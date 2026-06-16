@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { X } from "lucide-react";
 import { useStats } from "@/application/hooks/useStats";
+import { useStreakRevive } from "@/application/hooks/useStreakRevive";
 import { getTodayString } from "@/shared/lib/date";
 import type { DayStatus } from "@/application/services/statsService";
 
@@ -84,8 +85,10 @@ const BrokenStreakCard = () => {
     () => !!sessionStorage.getItem(sessionKey),
   );
   const { currentStreak, lastDaysStatus, isLoading } = useStats();
+  const { prevStreak: prevStreakDB } = useStreakRevive();
 
-  const prevStreak = parseInt(localStorage.getItem("prev-streak") || "0", 10);
+  const localPrevStreak = parseInt(localStorage.getItem("prev-streak") || "0", 10);
+  const prevStreak = prevStreakDB > 0 ? prevStreakDB : localPrevStreak;
 
   const show = !isLoading && !closed && currentStreak === 0 && prevStreak > 0;
 

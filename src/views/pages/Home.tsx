@@ -512,8 +512,8 @@ const Home = () => {
           <video
             className="relative w-full block"
             style={{ opacity: 0.38 }}
-            src="/videos/presentation.mp4"
-            //preload="auto"
+            src="/videos/presentation-compressed.mp4"
+            poster="/videos/presentation-poster.jpg"
             autoPlay
             muted
             loop

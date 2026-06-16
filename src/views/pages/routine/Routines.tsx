@@ -31,6 +31,7 @@ import WelcomeBackModal from "@/views/components/routine/WelcomeBackDialog";
 import BrokenStreakCard from "@/views/components/streak/BrokenStreakCard";
 import NewStreakRecordCard from "@/views/components/streak/NewStreakRecordCard";
 import StreakReviveCard from "@/views/components/streak/StreakReviveDialog";
+import { useStreakRevive } from "@/application/hooks/useStreakRevive";
 import EmptyState from "@/shared/components/EmptyState";
 import { useRoutines } from "@/application/hooks/useRoutines";
 import { usePageTitle } from "@/application/hooks/usePageTitle";
@@ -49,6 +50,7 @@ const Routines = () => {
     deleteRoutine,
   } = useRoutines();
   const { currentStreak, isLoading: isStatsLoading } = useStats();
+  const { prevStreak, savePrevStreak } = useStreakRevive();
 
   // Stocke la date du jour au format AAAA-MM-JJ
   const [todayDate, setTodayDate] = useState(getTodayString());
@@ -90,6 +92,7 @@ const Routines = () => {
   useEffect(() => {
     if (!isLoading && currentStreak > 0) {
       localStorage.setItem("prev-streak", currentStreak.toString());
+      savePrevStreak(currentStreak);
     }
   }, [currentStreak, isLoading]);
 
@@ -152,10 +155,9 @@ const Routines = () => {
     lastActive !== null &&
     lastActive < getYesterdayString();
 
-  // prevStreak : valeur du streak juste avant qu'il passe à 0, stockée en localStorage.
-  // Mis à jour dans le useEffect ci-dessus dès que currentStreak > 0.
-  // Permet d'afficher "tu avais X jours" dans BrokenStreakCard et de détecter la perte de streak.
-  const prevStreak = parseInt(localStorage.getItem("prev-streak") || "0", 10);
+  // prevStreak : DB (cross-device) avec fallback localStorage.
+  const localPrevStreak = parseInt(localStorage.getItem("prev-streak") || "0", 10);
+  const effectivePrevStreak = prevStreak > 0 ? prevStreak : localPrevStreak;
 
   const todayDayOfWeek = JS_DAY_TO_DAY_OF_WEEK[new Date().getDay()];
   const todaysRoutines = getTodaysRoutines(
@@ -183,13 +185,13 @@ const Routines = () => {
     !isStatsLoading &&
     !allSkippedToday &&
     currentStreak === 0 &&
-    prevStreak > 0;
+    effectivePrevStreak > 0;
 
   // reviveDate : toujours hier (on couvre le jour manqué).
   const reviveDate = getYesterdayString();
 
-  // streakToSave : prevStreak (streak d'avant la cassure).
-  const streakToSave = prevStreak;
+  // streakToSave : effectivePrevStreak (streak d'avant la cassure).
+  const streakToSave = effectivePrevStreak;
 
   // Séparer les routines par fréquence (quotidiennes vs hebdomadaires)
   const dailyRoutines = todaysRoutines.filter(

@@ -38,6 +38,12 @@ export const useStreakRevive = () => {
     staleTime: 1000 * 60 * 5,
   });
 
+  const { data: prevStreakFromDB = 0 } = useQuery({
+    queryKey: ["prev-streak"],
+    queryFn: () => reviveStorage.getPrevStreak(),
+    staleTime: 1000 * 60 * 5,
+  });
+
   const reviveAvailable = !reviveEntry || !isCurrentWeek(reviveEntry.activatedAt ?? reviveEntry.date);
 
   const { mutate: activateRevive, isPending } = useMutation({
@@ -48,11 +54,20 @@ export const useStreakRevive = () => {
     },
   });
 
+  const { mutate: savePrevStreak } = useMutation({
+    mutationFn: (streak: number) => reviveStorage.savePrevStreak(streak),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["prev-streak"] });
+    },
+  });
+
   return {
     reviveAvailable,
     reviveEntry: reviveEntry ?? null,
     activateRevive,
     isActivating: isPending,
     nextRechargeLabel: reviveAvailable ? null : getNextMonday(),
+    prevStreak: prevStreakFromDB,
+    savePrevStreak,
   };
 };

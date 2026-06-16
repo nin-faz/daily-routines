@@ -4,6 +4,26 @@ import type { StreakReviveEntry } from "@/shared/types/revive";
 export type { StreakReviveEntry };
 
 export const reviveStorage = {
+  async getPrevStreak(): Promise<number> {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return 0;
+    const { data } = await supabase
+      .from("profiles")
+      .select("prev_streak")
+      .eq("id", user.id)
+      .single();
+    return (data as { prev_streak?: number | null } | null)?.prev_streak ?? 0;
+  },
+
+  async savePrevStreak(streak: number): Promise<void> {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    await supabase
+      .from("profiles")
+      .update({ prev_streak: streak } as never)
+      .eq("id", user.id);
+  },
+
   async getLastStreakRevive(): Promise<StreakReviveEntry | null> {
     const {
       data: { user },
