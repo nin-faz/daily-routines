@@ -85,7 +85,7 @@ const steps: Array<{
           +
         </span>{" "}
         en bas de l'écran.{""}{" "}
-        <span className="whitespace-nowrap">Bonne productivité !</span>
+        <span className="whitespace-nowrap">Bonne productivité&nbsp;!</span>
         <br /> <br />
         <span className="flex flex-wrap items-center justify-center w-full gap-1 mt-2 text-xs text-muted-foreground">
           <span>Besoin d’aide ?</span>
@@ -278,7 +278,7 @@ const IntroDialog = () => {
             >
               {isLastStep ? (
                 <>
-                  C'est parti !
+                  C'est parti&nbsp;!
                   <Rocket className="h-4 w-4 ml-1" />
                 </>
               ) : (

@@ -132,5 +132,12 @@ All colors MUST be HSL.
   body {
     @apply bg-background text-foreground;
   }
+
+  /* Sur iOS, les mouvements tactiles sur un input sont interprétés comme un geste
+     de scroll, ce qui bloque le déplacement du curseur et la sélection de texte.
+     manipulation = uniquement tap/clic, sans interception pan/zoom. */
+  input, textarea {
+    touch-action: manipulation;
+  }
 }
 

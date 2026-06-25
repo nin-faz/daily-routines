@@ -79,8 +79,7 @@ export default function HelpButton() {
                   Nombre de jours consécutifs où au moins une routine a été
                   complétée.
                   <span className="block mt-1 text-xs">
-                    Objectif : maintenir la régularité et ne pas casser la série
-                    !
+                    Objectif&nbsp;: maintenir la régularité et ne pas casser la série&nbsp;!
                   </span>
                 </p>
               </div>

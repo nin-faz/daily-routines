@@ -165,7 +165,7 @@ const ResetPassword = () => {
               <CheckCircle className="h-8 w-8 text-white" aria-hidden="true" />
             </div>
             <CardTitle className="text-2xl sm:text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-              Mot de passe réinitialisé !
+              Mot de passe réinitialisé&nbsp;!
             </CardTitle>
             <CardDescription className="text-base">
               Votre mot de passe a été mis à jour avec succès. Vous pouvez

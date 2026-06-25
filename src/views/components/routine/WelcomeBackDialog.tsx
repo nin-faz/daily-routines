@@ -44,7 +44,7 @@ const WelcomeBackModal = ({
           <Lottie animationData={welcomeBackAnimation} loop={true} />
         </div>
         <div className="space-y-1">
-          <h2 className="text-lg font-semibold">Bon retour !</h2>
+          <h2 className="text-lg font-semibold">Bon retour&nbsp;!</h2>
           <p className="text-sm text-muted-foreground leading-relaxed">
             {message}
           </p>

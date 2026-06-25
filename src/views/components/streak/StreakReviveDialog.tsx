@@ -129,7 +129,7 @@ const ReviveAnimModal = ({
         onOpenChange={(o) => !o && onClose()}
       >
         <DialogContent className="max-w-[280px] text-center flex flex-col items-center gap-2 p-8 border-orange-500/20 bg-background/95 backdrop-blur-sm shadow-2xl">
-          <DialogTitle className="sr-only">Éveil activé !</DialogTitle>
+          <DialogTitle className="sr-only">Éveil activé&nbsp;!</DialogTitle>
           {phase === "egg" && (
             <Lottie
               animationData={eggBrokenAnimation}
@@ -414,7 +414,7 @@ const StreakReviveCard = ({
                       </defs>
                     </svg>
                   </span>
-                  Ranimer ton streak ?
+                  Ranimer ton streak&nbsp;?
                 </AlertDialogTitle>
                 <AlertDialogDescription>
                   Ton éveil va couvrir hier et restaurer ton streak. Tu

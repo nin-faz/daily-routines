@@ -296,7 +296,7 @@ const Home = () => {
               {allDone ? (
                 <span className="flex items-center gap-1 text-xs font-medium text-green-500">
                   <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />
-                  Tout bouclé !
+                  Tout bouclé&nbsp;!
                 </span>
               ) : (
                 <span className="text-xs text-muted-foreground tabular-nums">
@@ -336,7 +336,7 @@ const Home = () => {
               🎉
             </p>
             <p className="font-semibold text-sm text-green-600 dark:text-green-400">
-              Journée bouclée !
+              Journée bouclée&nbsp;!
             </p>
             <p className="text-xs text-muted-foreground mt-1">
               Reviens demain pour continuer.

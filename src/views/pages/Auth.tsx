@@ -124,19 +124,73 @@ const Auth = () => {
       <Helmet>
         <meta name="robots" content="noindex, nofollow" />
       </Helmet>
-    <main className="min-h-screen flex items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-md shadow-lg">
+      <style>{`
+        @keyframes glow-pulse { 0%,100%{opacity:.12} 50%{opacity:.22} }
+        .auth-glow { animation: glow-pulse 5s ease-in-out infinite; }
+        .auth-title-gradient {
+          background: linear-gradient(135deg, hsl(var(--primary)) 0%, #fde68a 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+        }
+      `}</style>
+    <main
+      className="min-h-screen flex flex-col items-center justify-center p-4 relative overflow-hidden bg-background"
+    >
+      {/* Blobs orange — même vibe que Home, intensité réduite pour ne pas écraser le fond clair */}
+      <div
+        className="auth-glow pointer-events-none absolute"
+        style={{
+          width: "600px", height: "600px",
+          borderRadius: "50%",
+          background: "radial-gradient(circle, hsl(var(--primary) / 0.25) 0%, transparent 70%)",
+          top: "-150px", right: "-100px",
+        }}
+        aria-hidden="true"
+      />
+      <div
+        className="auth-glow pointer-events-none absolute"
+        style={{
+          width: "400px", height: "400px",
+          borderRadius: "50%",
+          background: "radial-gradient(circle, hsl(var(--primary) / 0.15) 0%, transparent 70%)",
+          bottom: "-100px", left: "-80px",
+          animationDelay: "2.5s",
+        }}
+        aria-hidden="true"
+      />
+
+      <div className="relative z-10 w-full max-w-md flex flex-col gap-4">
+        <a
+          href="/"
+          className="text-muted-foreground hover:text-foreground transition-colors text-sm w-fit"
+          style={{ textDecoration: "none" }}
+        >
+          ← Retour à l'accueil
+        </a>
+
+      <Card className="w-full shadow-xl">
         <CardHeader className="text-center space-y-2">
-          <div className="mx-auto w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
+          <div
+            className="mx-auto w-14 h-14 rounded-2xl flex items-center justify-center"
+            style={{
+              background: "linear-gradient(135deg, hsl(var(--primary) / 0.15), hsl(var(--primary) / 0.05))",
+              border: "1px solid hsl(var(--primary) / 0.3)",
+            }}
+          >
             <img
               src="/logo.svg"
               alt="Logo"
-              className="h-10 w-10 text-primary"
+              className="h-10 w-10"
               aria-hidden="true"
             />
           </div>
-          <CardTitle className="text-2xl font-bold">Daily Routine</CardTitle>
-          <CardDescription>Gérez vos routines quotidiennes</CardDescription>
+          <CardTitle className="auth-title-gradient text-2xl font-bold">
+            Daily Routines
+          </CardTitle>
+          <CardDescription>
+            Gérez vos routines quotidiennes
+          </CardDescription>
         </CardHeader>
 
         <Tabs defaultValue="signin" className="w-full">
@@ -181,7 +235,7 @@ const Auth = () => {
                       to="/forgot-password"
                       className="text-sm text-primary hover:underline"
                     >
-                      Mot de passe oublié ?
+                      Mot de passe oublié&nbsp;?
                     </Link>
                   </div>
                   <PasswordInput
@@ -320,6 +374,7 @@ const Auth = () => {
           </TabsContent>
         </Tabs>
       </Card>
+      </div>
     </main>
     </>
   );

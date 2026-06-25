@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect } from "react";
+import { Suspense, lazy, useEffect, useState } from "react";
 import { HelmetProvider } from "react-helmet-async";
 import { Toaster } from "@/shared/components/ui/toaster";
 import { Toaster as Sonner } from "@/shared/components/ui/sonner";
@@ -11,7 +11,7 @@ import { ThemeProvider as CustomThemeProvider } from "@/application/context/Them
 import { useTheme } from "@/application/context/ThemeContext";
 import ProtectedRoute from "@/application/routes/ProtectedRoute";
 import GuestRoute from "@/application/routes/GuestRoute";
-import Loader from "@/shared/components/Loader";
+import SplashScreen from "@/shared/components/SplashScreen";
 import {
   NotificationProvider,
   useNotifications,
@@ -131,24 +131,34 @@ const AppContent = () => {
     };
   }, [user, refreshStatus]);
 
-  const isPublicRoute = ["/", "/actus"].includes(window.location.pathname);
+  // Splash uniquement si l'user était déjà connecté (clé user-id en localStorage) convertit en boolean
+  const wasLoggedIn = !!localStorage.getItem("user-id");
 
-  if (!isPublicRoute && (!user || !theme || user.loading || theme.loading)) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader />
-      </div>
-    );
-  }
+  // Évite d'afficher le robot sur les pages publiques pour les visiteurs non connectés
+
+  const isLoading = !user || !theme || user.loading || theme.loading;
+  const [splashVisible, setSplashVisible] = useState(wasLoggedIn && isLoading);
+  const [minTimeDone, setMinTimeDone] = useState(false);
+
+  useEffect(() => {
+    const t = setTimeout(() => setMinTimeDone(true), 1500);
+    return () => clearTimeout(t);
+  }, []);
+
+  useEffect(() => {
+    if (!isLoading && minTimeDone) setSplashVisible(false);
+  }, [isLoading, minTimeDone]);
 
   return (
     <>
+      <SplashScreen visible={splashVisible} />
       <Toaster />
       <Sonner />
       <BrowserRouter
         future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
       >
-        <Suspense fallback={<Loader className="py-12" />}>
+        {/* Splash couvre déjà les phases de chargement — pas besoin d'un fallback visible */}
+        <Suspense fallback={null}>
           <Routes>
             <Route
               path="/auth"
@@ -300,20 +310,20 @@ const AppContent = () => {
 
 const App = () => (
   <HelmetProvider>
-  <QueryClientProvider client={queryClient}>
-    <ThemeProvider attribute="class" enableSystem={false}>
-      <NotificationProvider>
-        <AuthProvider>
-          <UserProvider>
-            <CustomThemeProvider>
-              <ThemeInitializer />
-              <AppContent />
-            </CustomThemeProvider>
-          </UserProvider>
-        </AuthProvider>
-      </NotificationProvider>
-    </ThemeProvider>
-  </QueryClientProvider>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider attribute="class" enableSystem={false}>
+        <NotificationProvider>
+          <AuthProvider>
+            <UserProvider>
+              <CustomThemeProvider>
+                <ThemeInitializer />
+                <AppContent />
+              </CustomThemeProvider>
+            </UserProvider>
+          </AuthProvider>
+        </NotificationProvider>
+      </ThemeProvider>
+    </QueryClientProvider>
   </HelmetProvider>
 );
 

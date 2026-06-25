@@ -151,7 +151,7 @@ const CreateTaskDialog = ({
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Que devez-vous faire ?"
-              autoFocus
+              autoFocus={window.matchMedia("(pointer: fine)").matches}
             />
           </div>
 

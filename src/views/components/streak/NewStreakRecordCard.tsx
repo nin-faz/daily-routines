@@ -116,7 +116,7 @@ const NewStreakRecordCard = () => {
 
             <div className="flex-1 min-w-0">
               <p className="font-bold text-sm bg-gradient-to-r from-yellow-300 via-amber-300 to-orange-300 bg-clip-text text-transparent leading-tight">
-                Nouveau record personnel !
+                Nouveau record personnel&nbsp;!
               </p>
               <p className="text-xs text-yellow-200/70 mt-0.5 flex items-center gap-1">
                 <Sparkles

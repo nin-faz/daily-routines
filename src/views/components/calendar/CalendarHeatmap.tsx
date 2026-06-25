@@ -218,7 +218,7 @@ const CalendarHeatmap = ({ onDateSelect }: CalendarHeatmapProps) => {
               <div className="text-xs">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
                   <span className="font-medium mb-2 sm:mb-0 sm:mr-4">
-                    Taux de réussite :
+                    Taux de réussite&nbsp;:
                   </span>
                   <div className="flex items-center flex-wrap gap-5">
                     <div className="flex items-center gap-1.5">
@@ -288,7 +288,7 @@ const CalendarHeatmap = ({ onDateSelect }: CalendarHeatmapProps) => {
 
             {/* Statistiques clés */}
             <div className="bg-muted/30 py-2.5 px-4 rounded-lg">
-              <h3 className="mb-2.5 underline underline-offset-2">Ce mois :</h3>
+              <h3 className="mb-2.5 underline underline-offset-2">Ce mois&nbsp;:</h3>
               <div className="flex flex-col items-center gap-1 sm:gap-2.5">
                 {/* Jours parfaits */}
                 <Card className="transition-all duration-200 hover:scale-[1.04] hover:shadow-lg hover:border-green-600/60 hover:bg-green-100/40 group cursor-pointer min-w-64 sm:min-w-40 p-0">
@@ -347,14 +347,14 @@ const CalendarHeatmap = ({ onDateSelect }: CalendarHeatmapProps) => {
             {currentStreak >= 7 && (
               <div className="bg-gradient-to-br from-yellow-500/10 to-orange-500/10 p-4 rounded-lg border border-yellow-500/20 text-center">
                 <div className="text-2xl mb-2">🏆</div>
-                <p className="text-xs font-medium">Série légendaire !</p>
+                <p className="text-xs font-medium">Série légendaire&nbsp;!</p>
               </div>
             )}
 
             {monthStats.averageRate >= 90 && (
               <div className="bg-gradient-to-br from-blue-500/10 to-purple-500/10 p-4 rounded-lg border border-blue-500/20 text-center">
                 <div className="text-2xl mb-2">⭐</div>
-                <p className="text-xs font-medium">Taux d'excellence !</p>
+                <p className="text-xs font-medium">Taux d'excellence&nbsp;!</p>
               </div>
             )}
           </div>

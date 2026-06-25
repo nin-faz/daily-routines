@@ -73,7 +73,7 @@ const ForgotPassword = () => {
               <CheckCircle className="h-8 w-8 text-white" aria-hidden="true" />
             </div>
             <CardTitle className="text-2xl sm:text-3xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-              Email envoyé !
+              Email envoyé&nbsp;!
             </CardTitle>
             <CardDescription className="text-base">
               Si un compte existe avec l'adresse <strong>{email}</strong>, vous

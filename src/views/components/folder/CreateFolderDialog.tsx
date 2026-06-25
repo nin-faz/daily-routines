@@ -121,7 +121,7 @@ const CreateFolderDialog = ({
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Ex: Achats, Travail..."
-              autoFocus
+              autoFocus={window.matchMedia("(pointer: fine)").matches}
             />
           </div>
 

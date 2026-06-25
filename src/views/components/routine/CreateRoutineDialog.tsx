@@ -277,7 +277,7 @@ const CreateRoutineDialog = ({
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Ex: Sport, Méditation..."
-              autoFocus
+              autoFocus={window.matchMedia("(pointer: fine)").matches}
             />
           </div>
 

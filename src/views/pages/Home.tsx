@@ -12,8 +12,8 @@ import {
   Sparkles,
   Menu,
   X,
-  Loader,
 } from "lucide-react";
+import Loader from "@/shared/components/Loader";
 import { Helmet } from "react-helmet-async";
 import { useAuth } from "@/application/context/AuthContext";
 
@@ -796,7 +796,7 @@ const Home = () => {
                   }}
                 >
                   Un système de streak qui récompense ta régularité. Manque un
-                  jour ? L'Éveil 🪺 te donne une seconde chance — une fois par
+                  jour&nbsp;? L'Éveil 🪺 te donne une seconde chance — une fois par
                   semaine.
                 </p>
               </Reveal>
@@ -1565,7 +1565,7 @@ const Home = () => {
                       marginTop: "1rem",
                     }}
                   >
-                    Notifications push : iOS 16.4+ requis
+                    Notifications push&nbsp;: iOS 16.4+ requis
                   </p>
                 </div>
               </Reveal>

@@ -129,7 +129,7 @@ export function WeeklyView({ selectedDate, onDateSelect }: WeeklyViewProps) {
             à 100%
           </Badge>
           <Badge variant="outline" className="justify-center">
-            Moy. : {weekStats.averageCompletion}%
+            Moy.&nbsp;: {weekStats.averageCompletion}%
           </Badge>
           <Badge variant="outline" className="justify-center">
             {weekStats.totalDeadlines} deadline
@@ -139,7 +139,7 @@ export function WeeklyView({ selectedDate, onDateSelect }: WeeklyViewProps) {
 
         {/* Légende - cachée sur mobile, visible sur desktop */}
         <div className="hidden sm:flex items-center gap-3 text-xs bg-muted/30 p-2 rounded-lg">
-          <span className="font-medium">Taux de réussite :</span>
+          <span className="font-medium">Taux de réussite&nbsp;:</span>
           <div className="flex items-center gap-1.5">
             <div className="w-3 h-3 rounded-sm bg-muted border flex-shrink-0" />
             <span>0%</span>
@@ -162,7 +162,7 @@ export function WeeklyView({ selectedDate, onDateSelect }: WeeklyViewProps) {
       {/* Légende mobile uniquement */}
       <div className="sm:hidden bg-muted/30 p-3 rounded-lg">
         <div className="flex flex-col gap-2 text-xs">
-          <span className="font-medium">Taux de réussite :</span>
+          <span className="font-medium">Taux de réussite&nbsp;:</span>
           <div className="flex items-center flex-wrap gap-2">
             <div className="flex items-center gap-1.5">
               <div className="w-4 h-4 rounded-sm bg-muted border flex-shrink-0" />

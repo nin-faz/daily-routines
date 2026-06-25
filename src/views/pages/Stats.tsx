@@ -337,7 +337,7 @@ const Stats = () => {
                                     {label}
                                   </div>
                                   <div className="mb-1 text-xs text-muted-foreground">
-                                    Taux : {payload[0].value}%
+                                    Taux&nbsp;: {payload[0].value}%
                                   </div>
                                   <div className="text-xs">
                                     {routinesForDay.length === 0 ? (
@@ -505,13 +505,13 @@ const Stats = () => {
                       <div className="flex items-center gap-2">
                         <div className="w-3 h-3 rounded-full bg-muted" />
                         <span className="text-sm">
-                          À faire: {tasksByStatus.todo}
+                          À faire&nbsp;: {tasksByStatus.todo}
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
                         <div className="w-3 h-3 rounded-full bg-primary" />
                         <span className="text-sm">
-                          Terminé: {tasksByStatus.done}
+                          Terminé&nbsp;: {tasksByStatus.done}
                         </span>
                       </div>
                     </div>

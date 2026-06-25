@@ -11,7 +11,8 @@ const GuestRoute = ({ children }: GuestRouteProps) => {
   const { user, loading } = useAuth();
 
   if (loading) {
-    return <Loader />;
+    return;
+    <Loader />;
   }
 
   // Si l'utilisateur est déjà connecté, on le renvoie vers l'accueil
