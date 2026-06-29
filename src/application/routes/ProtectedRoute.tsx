@@ -4,6 +4,7 @@ import { Helmet } from "react-helmet-async";
 import { useAuth } from "@/application/context/AuthContext";
 import { useUser } from "@/application/context/UserContext";
 import Loader from "@/shared/components/Loader";
+import AppBackground from "@/shared/components/AppBackground";
 // import FeedbackChat from "@/shared/components/FeedbackChat";
 
 interface ProtectedRouteProps {
@@ -36,7 +37,10 @@ const ProtectedRoute = ({
       <Helmet>
         <meta name="robots" content="noindex, nofollow" />
       </Helmet>
-      {children}
+      <AppBackground />
+      <div className="protected-layout">
+        {children}
+      </div>
       {/* {!requireAdmin && <FeedbackChat />} */}
     </>
   );

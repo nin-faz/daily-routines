@@ -237,7 +237,7 @@ const Home = () => {
                     className="absolute left-0 top-1/2 -translate-x-full -translate-y-1/2 border-y-[6px] border-r-[8px] border-y-transparent border-r-white/15 w-0 h-0"
                     aria-hidden="true"
                   />
-                  <h1 className="text-xl sm:text-2xl font-bold">
+                  <h1 className="text-xl sm:text-2xl font-bold text-primary-foreground">
                     {greeting}
                     {firstName ? `, ${firstName}` : ""} 👋
                   </h1>
@@ -290,7 +290,7 @@ const Home = () => {
 
         {/* Progress card */}
         {!isLoading && totalCount > 0 && (
-          <div className="rounded-2xl border border-border bg-card px-5 py-4 shadow-sm animate-in fade-in slide-in-from-bottom-2 duration-500 delay-75">
+          <div className="relative z-[1] rounded-2xl border border-primary/15 bg-card/80 backdrop-blur-md dark:bg-card/50 dark:border-white/10 px-5 py-4 shadow-sm animate-in fade-in slide-in-from-bottom-2 duration-500 delay-75">
             <div className="flex items-center justify-between mb-3">
               <p className="text-sm font-semibold">Aujourd'hui</p>
               {allDone ? (
@@ -346,7 +346,7 @@ const Home = () => {
 
         {/* Current slot routines */}
         {!isLoading && currentSlotRoutines.length > 0 && !allDone && (
-          <div className="rounded-2xl border border-border bg-card px-5 py-3 shadow-sm animate-in fade-in slide-in-from-bottom-2 duration-500 delay-100">
+          <div className="relative z-[1] rounded-2xl border border-primary/15 bg-card/80 backdrop-blur-md dark:bg-card/50 dark:border-white/10 px-5 py-3 shadow-sm animate-in fade-in slide-in-from-bottom-2 duration-500 delay-100">
             <div className="flex items-center justify-between mb-1">
               <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-medium">
                 À faire maintenant
@@ -392,7 +392,7 @@ const Home = () => {
         {!isLoading && pendingTasksCount > 0 && (
           <Link
             to="/tasks"
-            className="flex items-center justify-between rounded-2xl border border-border bg-card px-5 py-4 shadow-sm hover:bg-muted/40 active:scale-[0.98] transition-all animate-in fade-in slide-in-from-bottom-2 duration-500 delay-125"
+            className="flex items-center justify-between relative z-[1] rounded-2xl border border-primary/15 bg-card/80 backdrop-blur-md dark:bg-card/50 dark:border-white/10 px-5 py-4 shadow-sm hover:bg-muted/40 active:scale-[0.98] transition-all animate-in fade-in slide-in-from-bottom-2 duration-500 delay-125"
           >
             <div className="flex items-center gap-3">
               <ClipboardList
@@ -416,7 +416,7 @@ const Home = () => {
         {/* CTA to routines */}
         <Link
           to="/routines"
-          className="flex items-center justify-between rounded-2xl border border-border bg-card px-5 py-4 shadow-sm hover:bg-muted/40 active:scale-[0.98] transition-all animate-in fade-in slide-in-from-bottom-2 duration-500 delay-150"
+          className="flex items-center justify-between relative z-[1] rounded-2xl border border-primary/15 bg-card/80 backdrop-blur-md dark:bg-card/50 dark:border-white/10 px-5 py-4 shadow-sm hover:bg-muted/40 active:scale-[0.98] transition-all animate-in fade-in slide-in-from-bottom-2 duration-500 delay-150"
         >
           <div className="flex items-center gap-3">
             <Sparkles

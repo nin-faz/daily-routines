@@ -131,6 +131,7 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+    background-image: var(--gradient-bg);
   }
 
   /* Sur iOS, les mouvements tactiles sur un input sont interprétés comme un geste
@@ -141,3 +142,18 @@ All colors MUST be HSL.
   }
 }
 
+@layer utilities {
+  /* Pages protégées : fond transparent pour laisser les orbs AppBackground visibles */
+  .protected-layout .bg-gradient-bg {
+    background-image: none !important;
+    background-color: transparent !important;
+  }
+
+  .glass-card {
+    @apply bg-card/70 backdrop-blur-md border border-border/50;
+  }
+
+  .dark .glass-card {
+    @apply bg-card/50 backdrop-blur-md border border-white/[0.06];
+  }
+}

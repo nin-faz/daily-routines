@@ -80,7 +80,7 @@ const AllRoutines = () => {
 
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-bold">Toutes les routines</h1>
+            <h1 className="text-2xl sm:text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent">Toutes les routines</h1>
             <p className="text-sm text-muted-foreground">
               Gérez et modifiez vos routines existantes
             </p>

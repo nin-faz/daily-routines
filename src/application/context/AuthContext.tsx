@@ -71,6 +71,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           );
         }
       }
+      if (event === "SIGNED_OUT") {
+        localStorage.removeItem("user-id");
+      }
       setUser(session?.user ?? null);
       setSession(session);
       setLoading(false);
