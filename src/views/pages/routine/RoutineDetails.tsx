@@ -19,16 +19,8 @@ import {
   Sparkles,
   Clock,
 } from "lucide-react";
-import { getTimeOfDayLabel, getFrequencyLabel } from "@/shared/lib/days";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  Cell,
-} from "recharts";
+import { getTimeOfDayLabel, getFrequencyLabel, JS_DAY_TO_DAY_OF_WEEK } from "@/shared/lib/days";
+import { AreaChart, Area, XAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { format, parseISO, differenceInDays } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useState, useMemo } from "react";
@@ -92,6 +84,30 @@ const RoutineDetails = () => {
       };
     });
   }, [completedDates, selectedMonth, selectedYear]);
+
+  // Jours planifiés ce mois selon la fréquence de la routine
+  const monthSummary = useMemo(() => {
+    const today = getTodayString();
+    const pastDays = chartData.filter(e => e.fullDate <= today);
+    const completedCount = pastDays.filter(e => e.completed).length;
+
+    if (!routine) return { planned: 0, completed: completedCount };
+
+    let planned = 0;
+    if (routine.frequency === "daily") {
+      planned = pastDays.length;
+    } else {
+      // Hebdomadaire : compter les jours planifiés passés ce mois
+      const weekDays = routine.weekDays ?? [];
+      planned = pastDays.filter(e => {
+        const jsDay = new Date(e.fullDate + "T00:00:00").getDay();
+        const dayName = JS_DAY_TO_DAY_OF_WEEK[jsDay];
+        return weekDays.includes(dayName);
+      }).length;
+    }
+
+    return { planned, completed: completedCount };
+  }, [chartData, routine]);
 
   if (!routine) {
     // Si les requêtes sont encore en chargement, éviter un redirection brutale — ne rien afficher tant que c'est chargé
@@ -297,61 +313,84 @@ const RoutineDetails = () => {
           </Card>
         </div>
 
-        {/* Chart */}
+        {/* Area chart — taux cumulé */}
         <Card className="mb-6">
           <CardHeader>
-            <CardTitle>
-              Activité des {firstToLastDate.length} derniers jours
-            </CardTitle>
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <CardTitle>
+                Activité — {format(new Date(selectedYear, selectedMonth), "MMMM yyyy", { locale: fr })}
+              </CardTitle>
+              <div className="text-right">
+                <span className="text-2xl font-bold text-primary">{monthSummary.completed}</span>
+                <span className="text-sm text-muted-foreground"> / {monthSummary.planned} jour{monthSummary.planned > 1 ? "s" : ""}</span>
+              </div>
+            </div>
+            {monthSummary.planned > 0 && (
+              <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden mt-2">
+                <div
+                  className="h-full rounded-full transition-all duration-700"
+                  style={{
+                    width: `${Math.min(100, Math.round((monthSummary.completed / monthSummary.planned) * 100))}%`,
+                    background: "var(--gradient-primary)",
+                  }}
+                />
+              </div>
+            )}
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={200}>
-              <BarChart data={chartData}>
+              <AreaChart data={chartData.filter(e => e.fullDate <= getTodayString())} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.4} />
+                    <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0.02} />
+                  </linearGradient>
+                </defs>
                 <XAxis
                   dataKey="date"
-                  tick={{ fontSize: 12 }}
-                  stroke="hsl(var(--muted-foreground))"
+                  tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
+                  axisLine={false}
+                  tickLine={false}
+                  interval={4}
                 />
-                <YAxis hide />
                 <Tooltip
                   content={({ active, payload }) => {
                     if (active && payload && payload[0]) {
-                      const data = payload[0].payload;
+                      const d = payload[0].payload;
                       return (
-                        <div
-                          className="bg-card border rounded-lg p-2 shadow-lg"
-                          aria-live="polite"
-                        >
-                          <p className="text-sm font-semibold">
-                            {format(parseISO(data.fullDate), "dd MMMM yyyy", {
-                              locale: fr,
-                            })}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {data.completed ? "✓ Complété" : "✗ Non complété"}
-                          </p>
+                        <div className="bg-card border rounded-lg px-3 py-2 shadow-lg text-xs">
+                          <p className="font-semibold">{format(parseISO(d.fullDate), "dd MMMM yyyy", { locale: fr })}</p>
+                          <p className="text-muted-foreground">{d.completed ? "✓ Complété" : "✗ Non complété"}</p>
                         </div>
                       );
                     }
                     return null;
                   }}
                 />
-                <Bar dataKey="completed" radius={[4, 4, 0, 0]}>
-                  {chartData.map((entry, index) => (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={
-                        entry.completed
-                          ? "hsl(var(--primary))"
-                          : "hsl(var(--muted))"
-                      }
-                      aria-label={
-                        entry.completed ? "Jour complété" : "Jour non complété"
-                      }
-                    />
-                  ))}
-                </Bar>
-              </BarChart>
+                <Area
+                  type="monotone"
+                  dataKey="completed"
+                  stroke="hsl(var(--primary))"
+                  strokeWidth={2}
+                  fill="url(#areaGradient)"
+                  dot={(props) => {
+                    const { cx, cy, payload } = props;
+                    if (!payload.completed) return <g key={props.key} />;
+                    return (
+                      <circle
+                        key={props.key}
+                        cx={cx}
+                        cy={cy}
+                        r={3}
+                        fill="hsl(var(--primary))"
+                        stroke="hsl(var(--background))"
+                        strokeWidth={1.5}
+                      />
+                    );
+                  }}
+                  activeDot={{ r: 5, fill: "hsl(var(--primary))" }}
+                />
+              </AreaChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>

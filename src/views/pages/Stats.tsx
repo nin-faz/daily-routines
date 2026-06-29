@@ -122,6 +122,20 @@ const Stats = () => {
     [tasks],
   );
 
+  // Jours ce mois où 100% des routines étaient complétées
+  const monthlyDaySummary = React.useMemo(() => {
+    let completedDays = 0;
+    for (const date of datesUpToToday) {
+      const active = getActiveRoutinesAtDate(filteredRoutines, statuses, date);
+      if (active.length === 0) continue;
+      const allDone = active.every((r) =>
+        statuses.some((s) => s.date === date && s.routineId === r.id && s.completed)
+      );
+      if (allDone) completedDays++;
+    }
+    return { completed: completedDays, total: datesUpToToday.length };
+  }, [filteredRoutines, statuses, datesUpToToday]);
+
   const filteredTasks = React.useMemo(() => {
     return tasks.filter((t) => {
       const folderMatch =
@@ -292,6 +306,28 @@ const Stats = () => {
                 </CardContent>
               </Card>
             </div>
+
+            {/* Résumé jours complétés ce mois */}
+            <Card className="mb-4 sm:mb-6">
+              <CardContent className="p-4 sm:p-5">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-sm font-semibold">Jours 100% complétés ce mois</p>
+                  <div>
+                    <span className="text-2xl font-bold text-primary">{monthlyDaySummary.completed}</span>
+                    <span className="text-sm text-muted-foreground"> / {monthlyDaySummary.total} jours</span>
+                  </div>
+                </div>
+                <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
+                  <div
+                    className="h-full rounded-full transition-all duration-700"
+                    style={{
+                      width: `${monthlyDaySummary.total > 0 ? Math.round((monthlyDaySummary.completed / monthlyDaySummary.total) * 100) : 0}%`,
+                      background: "var(--gradient-primary)",
+                    }}
+                  />
+                </div>
+              </CardContent>
+            </Card>
 
             {/* Graphiques */}
             <div className="grid md:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
